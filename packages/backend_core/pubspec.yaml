@@ -1,0 +1,12 @@
+name: backend_core
+description: Shared interfaces, domain models, and logging for all backend implementations.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+
+resolution: workspace
+
+dependencies:
+  logger: ^2.5.0

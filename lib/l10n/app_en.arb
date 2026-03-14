@@ -1,0 +1,101 @@
+{
+  "@@locale": "en",
+  "appTitle": "eipat",
+  "onboardingTitle": "Onboarding",
+  "onboardingBody": "This screen is the onboarding module skeleton to be reused in future projects.",
+  "onboardingContinue": "Continue",
+  "authTitle": "Authentication",
+  "authBackendLabel": "Active provider: {provider}",
+  "@authBackendLabel": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "authDescription": "This skeleton tests the auth flow with anonymous login. Email/password and OAuth are also supported.",
+  "authSignInAnonymous": "Sign in anonymously",
+  "authSignInWithEmail": "Sign in with email",
+  "authEmail": "Email",
+  "authPassword": "Password",
+  "authBackendSelection": "Backend Selection",
+  "authSignInWithGoogle": "Sign in with Google",
+  "authOrDivider": "or",
+  "authRegister": "Register",
+  "authName": "Full Name",
+  "homeTitle": "Home",
+  "homeSkeletonReady": "Skeleton Ready",
+  "homeSkeletonDescription": "Auth, onboarding, profile, and backend adapter structure is set up with Riverpod 3.",
+  "homeOpenExampleFeed": "Open Example Feed",
+  "homeGoToProfile": "Go to Profile",
+  "homeBuyCredit": "Buy Credit",
+  "homeSignOut": "Sign Out",
+  "exampleFeedTitle": "Example Feed",
+  "exampleFeedEmptyTitle": "No Example Items",
+  "exampleFeedEmpty": "The example feed is empty. Refresh to pull the latest sample payload.",
+  "exampleFeedErrorTitle": "Could not load example feed",
+  "exampleFeedErrorBody": "The template feed could not be loaded. Retry to validate the slice again.",
+  "exampleFeedSelected": "Selected {title}",
+  "@exampleFeedSelected": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTitle": "Profile",
+  "profileUser": "User",
+  "profileNoSession": "No active session",
+  "profileError": "Could not load profile data",
+  "buyCreditTitle": "Buy Credit",
+  "buyCreditInsufficientTitle": "Insufficient Credit",
+  "buyCreditDescription": "This screen opens via the central credit guard. Real payment adapters connect here.",
+  "buyCreditSendIntent": "Send purchase intent (demo)",
+  "errorUnexpected": "An unexpected error occurred.",
+  "errorLoadFailed": "Failed to load.",
+  "retry": "Retry",
+  "dashboardTitle": "e-iPAT",
+  "dashboardWelcome": "Welcome, {name}",
+  "@dashboardWelcome": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardRemainingTokens": "Remaining Tokens: {count}",
+  "@dashboardRemainingTokens": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardBuyTokens": "Buy Tokens",
+  "dashboardParcelQuery": "Query Parcel",
+  "dashboardQueryHistory": "Query History",
+  "dashboardPromoCode": "Promo Code",
+  "dashboardPromoHint": "Enter code",
+  "dashboardPromoUse": "Apply",
+  "dashboardSignOut": "Sign Out",
+  "parcelQueryTitle": "Query Parcel",
+  "parcelQueryInfo": "Parcel Information",
+  "parcelQueryMahalle": "Neighborhood",
+  "parcelQueryMahalleManual": "Neighborhood (manual entry)",
+  "parcelQueryEskiAdaParsel": "Old Block/Parcel",
+  "parcelQueryYeniAdaParsel": "New Block/Parcel",
+  "parcelQueryHisseAlani": "User Share Area (m²)",
+  "parcelQueryOptional": "Optional",
+  "parcelQuerySubmit": "Query (100 Tokens)",
+  "parcelQueryResult": "Query Result",
+  "queryHistoryTitle": "Query History",
+  "queryHistoryEmpty": "No queries yet.",
+  "queryHistoryTokens": "-{count} tokens",
+  "@queryHistoryTokens": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+name: backend_mock
+description: Mock backend implementation for local development and tests.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+
+resolution: workspace
+
+dependencies:
+  backend_core:
+    path: ../backend_core

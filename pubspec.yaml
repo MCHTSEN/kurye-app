@@ -1,0 +1,61 @@
+name: eipat
+description: "Reusable Flutter skeleton for multi-backend apps."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+
+workspace:
+  - packages/backend_core
+  - packages/backend_firebase
+  - packages/backend_mock
+  - packages/backend_supabase
+  - packages/backend_custom
+
+dependencies:
+  auto_route: ^11.1.0
+  cached_network_image: ^3.4.1
+  backend_core:
+    path: packages/backend_core
+  backend_custom:
+    path: packages/backend_custom
+  backend_firebase:
+    path: packages/backend_firebase
+  backend_mock:
+    path: packages/backend_mock
+  backend_supabase:
+    path: packages/backend_supabase
+  connectivity_plus: ^7.0.0
+  dio: ^5.9.2
+  flutter:
+    sdk: flutter
+  flutter_local_notifications: ^18.0.1
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^3.0.3
+  flutter_secure_storage: ^9.2.4
+  intl: any
+  logger: ^2.5.0
+  mixpanel_flutter: ^2.5.0
+  permission_handler: ^12.0.1
+  riverpod_annotation: ^3.0.3
+  sentry_dio: ^8.12.0
+  sentry_flutter: ^8.12.0
+  shared_preferences: ^2.5.3
+  shimmer: ^3.0.0
+
+dev_dependencies:
+  build_runner: ^2.4.14
+  flutter_test:
+    sdk: flutter
+  golden_toolkit: ^0.15.0
+  integration_test:
+    sdk: flutter
+  riverpod: ^3.0.3
+  riverpod_generator: ^3.0.0
+  very_good_analysis: ^10.2.0
+
+flutter:
+  uses-material-design: true
+  generate: true

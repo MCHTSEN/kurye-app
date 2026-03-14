@@ -1,0 +1,101 @@
+{
+  "@@locale": "tr",
+  "appTitle": "eipat",
+  "onboardingTitle": "Onboarding",
+  "onboardingBody": "Bu ekran gelecekteki projelerde tekrar kullanılacak onboarding modülü iskeletidir.",
+  "onboardingContinue": "Devam et",
+  "authTitle": "Kimlik Doğrulama",
+  "authBackendLabel": "Aktif provider: {provider}",
+  "@authBackendLabel": {
+    "placeholders": {
+      "provider": {
+        "type": "String"
+      }
+    }
+  },
+  "authDescription": "Bu iskelette anonymous login ile auth akışı test edilir. E-posta/şifre ve OAuth da desteklenir.",
+  "authSignInAnonymous": "Anonim giriş yap",
+  "authSignInWithEmail": "E-posta ile giriş yap",
+  "authEmail": "E-posta",
+  "authPassword": "Şifre",
+  "authBackendSelection": "Backend Seçimi",
+  "authSignInWithGoogle": "Google ile giriş yap",
+  "authOrDivider": "veya",
+  "authRegister": "Kayıt ol",
+  "authName": "Ad Soyad",
+  "homeTitle": "Ana Sayfa",
+  "homeSkeletonReady": "İskelet Hazır",
+  "homeSkeletonDescription": "Auth, onboarding, profile ve backend adapter yapısı Riverpod 3 ile kuruludur.",
+  "homeOpenExampleFeed": "Ornek Feed Ac",
+  "homeGoToProfile": "Profile Git",
+  "homeBuyCredit": "Buy Credit",
+  "homeSignOut": "Çıkış Yap",
+  "exampleFeedTitle": "Ornek Feed",
+  "exampleFeedEmptyTitle": "Ornek Icerik Yok",
+  "exampleFeedEmpty": "Ornek feed bos. Son sample veriyi cekmek icin yenileyin.",
+  "exampleFeedErrorTitle": "Ornek feed yuklenemedi",
+  "exampleFeedErrorBody": "Template feed yuklenemedi. Slice'i tekrar dogrulamak icin yeniden deneyin.",
+  "exampleFeedSelected": "{title} secildi",
+  "@exampleFeedSelected": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTitle": "Profil",
+  "profileUser": "Kullanıcı",
+  "profileNoSession": "Aktif oturum yok",
+  "profileError": "Profil verisi yüklenemedi",
+  "buyCreditTitle": "Buy Credit",
+  "buyCreditInsufficientTitle": "Kredi Yetersiz",
+  "buyCreditDescription": "Bu ekran merkezi credit guard ile açılır. Gerçek ödeme adapterları buraya bağlanır.",
+  "buyCreditSendIntent": "Satın alma niyeti gönder (demo)",
+  "errorUnexpected": "Beklenmeyen bir hata oluştu.",
+  "errorLoadFailed": "Yükleme başarısız oldu.",
+  "retry": "Tekrar dene",
+  "dashboardTitle": "e-iPAT",
+  "dashboardWelcome": "Hoş geldin, {name}",
+  "@dashboardWelcome": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardRemainingTokens": "Kalan Token: {count}",
+  "@dashboardRemainingTokens": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardBuyTokens": "Token Al",
+  "dashboardParcelQuery": "Parsel Sorgula",
+  "dashboardQueryHistory": "Sorgu Geçmişi",
+  "dashboardPromoCode": "Promosyon Kodu",
+  "dashboardPromoHint": "Kodu girin",
+  "dashboardPromoUse": "Kullan",
+  "dashboardSignOut": "Çıkış Yap",
+  "parcelQueryTitle": "Parsel Sorgula",
+  "parcelQueryInfo": "Parsel Bilgileri",
+  "parcelQueryMahalle": "Mahalle",
+  "parcelQueryMahalleManual": "Mahalle (manuel giriş)",
+  "parcelQueryEskiAdaParsel": "Eski Ada/Parsel",
+  "parcelQueryYeniAdaParsel": "Yeni Ada/Parsel",
+  "parcelQueryHisseAlani": "Kullanıcı Hisse Alanı (m²)",
+  "parcelQueryOptional": "Opsiyonel",
+  "parcelQuerySubmit": "Sorgula (100 Token)",
+  "parcelQueryResult": "Sorgu Sonucu",
+  "queryHistoryTitle": "Sorgu Geçmişi",
+  "queryHistoryEmpty": "Henüz sorgu yapılmadı.",
+  "queryHistoryTokens": "-{count} token",
+  "@queryHistoryTokens": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
+}

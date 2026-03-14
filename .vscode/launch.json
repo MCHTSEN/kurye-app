@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "eipat-dev-custom",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=APP_ENV=dev",
+        "--dart-define=BACKEND_PROVIDER=custom",
+        "--dart-define=CUSTOM_API_BASE_URL=https://api.example.com",
+        "--dart-define=ANALYTICS_ENABLED=true"
+      ]
+    },
+    {
+      "name": "eipat-staging-supabase",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=APP_ENV=staging",
+        "--dart-define=BACKEND_PROVIDER=supabase",
+        "--dart-define=SUPABASE_URL=https://your-project.supabase.co",
+        "--dart-define=SUPABASE_ANON_KEY=your-anon-key",
+        "--dart-define=ANALYTICS_ENABLED=true"
+      ]
+    },
+    {
+      "name": "eipat-prod-firebase",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [
+        "--dart-define=APP_ENV=prod",
+        "--dart-define=BACKEND_PROVIDER=firebase",
+        "--dart-define=ANALYTICS_ENABLED=true"
+      ]
+    }
+  ]
+}
