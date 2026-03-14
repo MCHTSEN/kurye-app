@@ -2,18 +2,17 @@
 
 **Active Milestone:** M001 — Core Dispatch App
 **Active Slice:** S03 — Order creation & customer tracking
-**Phase:** slice-complete
+**Phase:** summarizing
 **Requirements Status:** 18 active · 0 validated · 4 deferred · 1 out of scope
 
 ## Milestone Registry
 - 🔄 **M001:** Core Dispatch App
 
 ## Recent Decisions
-- D016: Controlled DropdownButtonFormField pattern for order form
-- D017: musteriId resolved from AppUserProfile.musteriId directly
+- None recorded
 
 ## Blockers
 - None
 
 ## Next Action
-S03 complete (T01 + T02 done). Run slice-level verification and merge.
+All tasks done in S03. Write slice summary and complete slice.
