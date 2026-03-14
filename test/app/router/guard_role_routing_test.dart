@@ -25,10 +25,10 @@ void main() {
       );
     });
 
-    test('null role maps to /home', () {
+    test('null role maps to /role-selection', () {
       expect(
         AppAccessGuard.homePathForRole(null),
-        '/home',
+        '/role-selection',
       );
     });
   });

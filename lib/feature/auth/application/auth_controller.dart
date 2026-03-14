@@ -1,5 +1,8 @@
+import 'package:backend_core/backend_core.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../app/router/app_router.dart';
+import '../../../app/router/guards/app_access_guard.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/navigation/navigation_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
@@ -22,13 +25,10 @@ class AuthController extends _$AuthController {
           .signInWithEmail(email: email, password: password),
     );
     if (!ref.mounted) return;
-
     state = nextState;
 
     if (!nextState.hasError) {
-      // Profil provider'ı yenile (rol bilgisi için)
-      ref.invalidate(currentUserProfileProvider);
-      ref.read(appNavigationStateProvider).clearAll();
+      await _navigateAfterAuth();
     }
   }
 
@@ -46,12 +46,10 @@ class AuthController extends _$AuthController {
       ),
     );
     if (!ref.mounted) return;
-
     state = nextState;
 
     if (!nextState.hasError) {
-      ref.invalidate(currentUserProfileProvider);
-      ref.read(appNavigationStateProvider).clearAll();
+      await _navigateAfterAuth();
     }
   }
 
@@ -61,12 +59,10 @@ class AuthController extends _$AuthController {
       () => ref.read(authRepositoryProvider).signInAnonymously(),
     );
     if (!ref.mounted) return;
-
     state = nextState;
 
     if (!nextState.hasError) {
-      ref.invalidate(currentUserProfileProvider);
-      ref.read(appNavigationStateProvider).clearAll();
+      await _navigateAfterAuth();
     }
   }
 
@@ -76,12 +72,10 @@ class AuthController extends _$AuthController {
       () => ref.read(authRepositoryProvider).signInWithGoogle(idToken: idToken),
     );
     if (!ref.mounted) return;
-
     state = nextState;
 
     if (!nextState.hasError) {
-      ref.invalidate(currentUserProfileProvider);
-      ref.read(appNavigationStateProvider).clearAll();
+      await _navigateAfterAuth();
     }
   }
 
@@ -91,10 +85,29 @@ class AuthController extends _$AuthController {
       () => ref.read(authRepositoryProvider).signOut(),
     );
     if (!ref.mounted) return;
-
     state = nextState;
 
     ref.invalidate(currentUserProfileProvider);
     ref.read(appNavigationStateProvider).requireLogin();
+  }
+
+  /// Login başarılı → profil sorgula → doğru sayfaya yönlendir.
+  Future<void> _navigateAfterAuth() async {
+    ref.invalidate(currentUserProfileProvider);
+
+    AppUserProfile? profile;
+    try {
+      profile = await ref.read(currentUserProfileProvider.future);
+    } on Object {
+      // profil yoksa null kalır → role selection'a gider
+    }
+
+    if (!ref.mounted) return;
+
+    ref.read(appNavigationStateProvider).clearAll();
+
+    final targetPath = AppAccessGuard.homePathForRole(profile?.role);
+    final router = ref.read(appRouterProvider);
+    await router.replacePath(targetPath);
   }
 }
