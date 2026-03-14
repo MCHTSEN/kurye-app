@@ -1,4 +1,4 @@
-import 'package:eipat/core/network/dio_api_client.dart';
+import 'package:bursamotokurye/core/network/dio_api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,30 +1,107 @@
-# eipat — Reusable Flutter Skeleton
+# CLAUDE.md
 
-Multi-backend mobile app skeleton with monorepo architecture.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Architecture
+## Project Overview
+
+Multi-backend Flutter mobile app skeleton (monorepo). Backend is selected at compile time via entry point — only the chosen SDK is included in the binary.
+
+## Architecture
 
 ```
-eipat/                          → Main Flutter app
+lib/
+  app/              → Bootstrap, MaterialApp, router (auto_route + guards)
+  core/             → Pure infrastructure: environment, network (Dio), Sentry, notifications, theme, constants
+  product/          → Riverpod providers wiring core + backend: auth, credit, navigation, analytics, runtime, widgets
+  feature/          → Vertical slices: domain/ → data/ → application/ → presentation/
+  l10n/             → ARB files (Turkish-first: app_tr.arb template)
+
 packages/
-  backend_core/                 → Interfaces, domain models, logging (pure Dart)
-  backend_firebase/             → Firebase implementation
-  backend_supabase/             → Supabase implementation
-  backend_custom/               → Custom REST API implementation (default)
+  backend_core/     → Interfaces + domain models (pure Dart, no SDK deps)
+  backend_firebase/ → Firebase implementation
+  backend_supabase/ → Supabase implementation
+  backend_custom/   → Custom REST API implementation
+  backend_mock/     → Zero-setup mock for tests and demos
+```
+
+**Layer flow:** `backend_core` (contracts) → `core` (infra) → `product` (Riverpod composition) → `feature` (user-facing)
+
+## Key Commands
+
+```bash
+flutter run --dart-define-from-file=.env.dev                            # Run with dev config (default backend from env)
+flutter run -t lib/main_firebase.dart --dart-define-from-file=.env.dev  # Force Firebase backend
+flutter run -t lib/main_supabase.dart --dart-define-from-file=.env.dev  # Force Supabase backend
+flutter run -t lib/main_custom.dart --dart-define-from-file=.env.dev    # Force Custom API backend
+flutter build apk --dart-define-from-file=.env.prod                     # Production build
+
+flutter pub get                                                         # Resolve workspace dependencies
+dart run build_runner build --delete-conflicting-outputs                 # Regenerate Riverpod (.g.dart) code
+flutter gen-l10n                                                        # Regenerate localization files
+flutter analyze                                                         # Static analysis (must be 0 issues)
+flutter test                                                            # Run all tests
+flutter test test/feature/example_feed/                                 # Run tests for a specific feature
+flutter test --name "returns remote items"                              # Run a single test by name
 ```
 
 ## Backend Selection (Compile-Time)
 
-Backend is selected via entry point, not runtime config:
+Entry point determines backend. `main.dart` reads `BACKEND_PROVIDER` from dart-define. Explicit entry points (`main_firebase.dart`, etc.) override it.
 
-```bash
-flutter run                                    # Custom API (default)
-flutter run -t lib/main_firebase.dart          # Firebase
-flutter run -t lib/main_supabase.dart          # Supabase
-flutter run -t lib/main_custom.dart            # Custom API (explicit)
+`BackendModule` is the abstract factory — each backend implements it. Provided via `backendModuleProvider` override in `bootstrap()`.
+
+```dart
+// How providers consume backend services:
+AuthGateway authGateway(Ref ref) => ref.watch(backendModuleProvider).createAuthGateway();
 ```
 
-Only the selected backend's SDK is included in the final binary.
+**Custom backend uses its own Dio instance** (not the app's `DioApiClient`) to avoid circular dependency: app Dio depends on `TokenRefreshService`, which comes from `BackendModule`.
+
+## Bootstrap Flow
+
+`main()` → `AppEnvironment.fromDartDefine()` → `createBackendModule(env)` → `bootstrap(module, env)`:
+1. Disable logging in release mode
+2. Initialize Sentry (before anything that can throw)
+3. Set up error handlers + `ErrorWidget.builder`
+4. Initialize backend module (`Firebase.initializeApp()`, etc.)
+5. Wrap app in `ProviderScope` with environment + backend module overrides
+
+## Router & Guard System
+
+`AppAccessGuard` runs on every navigation and enforces this priority:
+1. Onboarding incomplete → redirect to `/onboarding`
+2. Not authenticated → redirect to `/auth`
+3. Insufficient credit → redirect to `/buy-credit`
+4. Already authenticated accessing auth routes → redirect to `/home`
+
+`RouteReevaluationNotifier` (ChangeNotifier) watches auth state + `AppNavigationState` and triggers guard re-evaluation when either changes.
+
+Routes are defined as `CustomRoute` enum in `app_router.dart`. Deeplinks whitelist: `/home`, `/example-feed`, `/profile`, `/buy-credit`.
+
+## Feature Vertical Slice Pattern
+
+Each feature follows this structure (see `example_feed` as reference):
+
+```
+feature/{name}/
+  domain/       → Repository interface + domain models
+  data/         → Repository impl (with cache/retry/connectivity), remote data source, local cache
+  application/  → Riverpod AsyncNotifier controller (build → load, refresh, track)
+  presentation/ → ConsumerWidget page using AppAsyncView
+```
+
+**Repository pattern:** Inject `CachePolicy`, `RetryPolicy`, `ConnectivityService`, `CrashReportingService`. Check cache freshness → check connectivity → retry remote fetch → fallback to stale cache on error → report to crash service.
+
+**Controller pattern:** `@Riverpod(keepAlive: true)` AsyncNotifier. Check `ref.mounted` after every async gap.
+
+**Page pattern:** Use `AppPageScaffold` + `AppAsyncView<T>` for consistent loading/error/empty states.
+
+## Provider Wiring
+
+- `@Riverpod(keepAlive: true)` for long-lived deps: auth, navigation, environment, backend module, runtime services
+- `backendModuleProvider` is overridden in `bootstrap()`, not wired directly
+- Credit access strategy chosen by `CreditAccessProvider` env key: `navigationSignal` (reads 402/403 from Dio), `backend` (Firebase claims), or `revenueCat`
+- Analytics: Mixpanel if token + enabled, otherwise Noop
 
 ## Logging System
 
@@ -38,192 +115,96 @@ _log.e('failed', error: e, stackTrace: st);
 
 Tags: `auth`, `network`, `router`, `onboarding`, `credit`, `analytics`, `ui`, `notification`, `general`
 
-Configure in bootstrap:
+Configure per-tag in bootstrap: `logConfig = AppLogConfig(auth: true, network: false);`
+Master switch: `logConfig = AppLogConfig(enabled: false);`
+
+## Network Layer
+
+`DioApiClient` (implements `ApiClient` from backend_core):
+- Intercepts 401 → attempts token refresh → retries; on failure calls `navigationState.requireLogin()`
+- Intercepts 402/403 → calls `navigationState.requireCreditPurchase()` (when using navigationSignal credit strategy)
+- Auto-traces HTTP requests via `sentry_dio`
+
+## Sentry
+
+Initialized in `bootstrap()` before everything. Works automatically for uncaught exceptions and Dio traces.
+
+- `SentryService.captureException()` — only for **caught** exceptions worth reporting
+- `SentryService.addBreadcrumb()` — before risky operations (payments, file ops)
+- `SentryService.setUser()` / `clearUser()` — after login/logout
+- Don't capture expected errors (validation, 404s, cancellations)
+
+## Notifications
+
+`NotificationService` interface in backend_core → `LocalNotificationService` implementation. Access via `notificationServiceProvider`. Request permission before showing. Use SnackBar/Dialog for in-app events, not notifications.
+
+## UI Widgets
+
+- `AppCachedImage` — use for ALL network images (never `Image.network()`)
+- `AppShimmerBox` / `AppShimmerListTile` — loading skeletons (replace `CircularProgressIndicator`)
+- `AppAsyncView<T>` — standard data/loading/error/empty handler for `AsyncValue`
+- `AppErrorState` / `AppEmptyState` — consistent error/empty UI with retry
+- `AppPageScaffold` — standard page wrapper with AppBar
+- `ProjectPadding` — semantic padding constants (`.all`, `.horizontal`, `.vertical`)
+
+## Testing
+
+Test helpers in `test/helpers/`:
+
 ```dart
-logConfig = AppLogConfig(auth: true, network: false, router: false);
-```
-
-Master switch in release mode: `logConfig = AppLogConfig(enabled: false);`
-
-## Provider Wiring
-
-`BackendModule` is provided via `backendModuleProvider` override in `bootstrap()`. Auth, token refresh, and credit services are created from the module:
-
-```dart
-// auth_providers.dart
-AuthGateway authGateway(Ref ref) =>
-    ref.watch(backendModuleProvider).createAuthGateway();
-```
-
-## Sentry (Crash Reporting & Performance)
-
-Sentry is initialized in `bootstrap()` before everything else. It works automatically — no manual setup needed per feature.
-
-**When to use:**
-- Error handlers already report uncaught exceptions automatically
-- Dio HTTP requests are traced as performance spans automatically via `sentry_dio`
-- Use `SentryService.captureException()` only for **caught** exceptions that should still be reported
-- Use `SentryService.addBreadcrumb()` before risky operations (payment flows, file operations, complex state transitions) to provide context when crashes happen
-- Call `SentryService.setUser()` after login and `SentryService.clearUser()` after logout
-
-**When NOT to use:**
-- Don't capture expected errors (validation failures, 404s, user cancellations)
-- Don't add breadcrumbs for routine operations (every button tap, every navigation)
-
-```dart
-// After successful login:
-SentryService.setUser(id: user.id, email: user.email);
-
-// Before a risky operation:
-SentryService.addBreadcrumb(
-  message: 'Starting payment',
-  category: 'payment',
-  data: {'productId': id, 'amount': amount},
+// Widget tests — pumps app with ProviderScope, theme, localization:
+await tester.pumpApp(
+  const ExampleFeedPage(),
+  analyticsService: FakeAnalyticsService(),
+  overrides: [apiClientProvider.overrideWithValue(FakeApiClient(...))],
 );
 
-// Caught exception that should still be reported:
-try {
-  await riskyOperation();
-} on Exception catch (e, st) {
-  SentryService.captureException(e, stackTrace: st);
-  // show user-friendly error
-}
+// Unit tests — container without widgets:
+final container = createTestProviderContainer(backendModule: MockBackendModule());
 ```
 
-**Config:** Set `SENTRY_DSN` in the env file (see Environment Config below). Empty DSN = Sentry disabled (safe for local dev).
+**Fakes** (`test/helpers/fakes/`): `FakeApiClient` (configurable responses), `FakeAnalyticsService` (records `trackedEvents`), `FakeConnectivityService`, `FakeSecureStorageService` (in-memory), `FakePermissionService`, `FakeCrashReportingService`.
 
-## Local Notifications
-
-`NotificationService` interface in `backend_core`, implemented by `LocalNotificationService`. Access via `notificationServiceProvider`.
-
-**When to use:**
-- Background task completion (download finished, sync complete)
-- Scheduled reminders
-- Local alerts that don't come from a server
-
-**When NOT to use:**
-- Don't show notifications for in-app events while user is already looking at the screen — use SnackBar/Dialog instead
-- Don't show notifications without requesting permission first
-
+**Screen Robots** (`test/helpers/robots/`): Encapsulate finders and actions per page. Example:
 ```dart
-// Request permission (do this once, e.g., in onboarding or first relevant action):
-final granted = await ref.read(notificationServiceProvider).requestPermission();
-
-// Show a notification:
-await ref.read(notificationServiceProvider).show(
-  NotificationMessage(title: 'Download complete', body: 'Your file is ready'),
-);
-
-// Listen to notification taps for navigation:
-ref.listen(notificationServiceProvider, (_, service) {
-  service.onMessageTapped.listen((message) {
-    // Navigate based on message.data
-  });
-});
+final robot = ExampleFeedRobot(tester);
+expect(robot.title, findsOneWidget);
+await robot.tapRefresh();
 ```
 
-## Image Caching & Shimmer Loading
+**Integration tests** in `integration_test/` — smoke flow with MockBackendModule.
 
-**Widgets:** `AppCachedImage`, `AppShimmerBox`, `AppShimmerListTile`
+## Environment Config
 
-**When to use `AppCachedImage`:**
-- Every network image in the app — never use `Image.network()` directly
-- Profile pictures, feed images, product thumbnails, banners
+`.env.example` → copy to `.env.dev` (gitignored). Keys defined in `AppEnvironmentKeys`:
 
-```dart
-AppCachedImage(
-  imageUrl: user.avatarUrl,
-  width: 48,
-  height: 48,
-  borderRadius: BorderRadius.circular(24), // circular avatar
-)
-
-AppCachedImage(
-  imageUrl: item.coverUrl,
-  height: 200, // full-width banner
-)
-```
-
-**When to use `AppShimmerBox` / `AppShimmerListTile`:**
-- Loading states for any content area — replace `CircularProgressIndicator` with shimmer skeletons
-- Use `AppShimmerListTile()` for list loading states
-- Use `AppShimmerBox.card()` for card loading states
-- Use `AppShimmerBox(width: 120, height: 14)` for inline text loading
-
-```dart
-// List loading state:
-asyncValue.when(
-  data: (items) => ListView.builder(...),
-  loading: () => Column(
-    children: List.generate(5, (_) => const AppShimmerListTile()),
-  ),
-  error: (e, st) => AppErrorState(...),
-)
-
-// Card loading:
-isLoading ? const AppShimmerBox.card() : ActualCard(...)
-```
-
-**When NOT to use shimmer:**
-- Very short loading times (<200ms) — shimmer flash is worse than nothing
-- Full-page loading where a single centered spinner is more appropriate (e.g., splash)
-
-## Adding a New Feature
-
-1. Define interface in `backend_core` if it's backend-specific
-2. Implement in each backend package that supports it
-3. Add factory method to `BackendModule`
-4. Wire up provider in the main app
-5. Add logging with appropriate `LogTag`
-
-## Environment Config (API Keys, DSNs)
-
-Per-environment `.env` files with `--dart-define-from-file`:
-
-```
-.env.example    → Template (committed to git)
-.env.dev        → Local development (gitignored)
-.env.staging    → Staging (gitignored)
-.env.prod       → Production (gitignored)
-```
-
-**New project setup:**
-1. Copy `.env.example` to `.env.dev`
-2. Fill in real values for your project
-3. Create `.env.staging` and `.env.prod` when ready
-
-**Available keys** (defined in `AppEnvironmentKeys`):
-
-| Key | Example | Purpose |
-|-----|---------|---------|
-| `APP_ENV` | `dev` / `staging` / `prod` | App flavor |
-| `BACKEND_PROVIDER` | `mock` / `custom` / `firebase` / `supabase` | Backend selection |
-| `CREDIT_ACCESS_PROVIDER` | `navigationSignal` / `backend` / `revenueCat` | Credit strategy |
-| `CUSTOM_API_BASE_URL` | `https://api.example.com` | REST API base URL |
-| `SUPABASE_URL` | `https://xxx.supabase.co` | Supabase project URL |
-| `SUPABASE_ANON_KEY` | `eyJ...` | Supabase anon key |
-| `MIXPANEL_TOKEN` | `abc123` | Mixpanel project token |
-| `ANALYTICS_ENABLED` | `true` / `false` | Enable analytics |
-| `SENTRY_DSN` | `https://xxx@sentry.io/123` | Sentry DSN (empty = disabled) |
-
-**CI/CD:** Generate `.env.prod` from secrets in your CI pipeline before build.
-
-## Key Commands
-
-```bash
-flutter run --dart-define-from-file=.env.dev                          # Run with dev config
-flutter run --dart-define-from-file=.env.staging                      # Run with staging config
-flutter build apk --dart-define-from-file=.env.prod                   # Production build
-flutter run -t lib/main_firebase.dart --dart-define-from-file=.env.dev  # Firebase backend + dev config
-flutter pub get                    # Resolve workspace dependencies
-dart run build_runner build --delete-conflicting-outputs  # Regenerate Riverpod code
-flutter analyze                    # Static analysis (must be 0 issues)
-flutter test                       # Run all tests
-```
+| Key | Purpose |
+|-----|---------|
+| `APP_ENV` | dev / staging / prod |
+| `BACKEND_PROVIDER` | mock / custom / firebase / supabase |
+| `CREDIT_ACCESS_PROVIDER` | navigationSignal / backend / revenueCat |
+| `CUSTOM_API_BASE_URL` | REST API base URL |
+| `SUPABASE_URL` / `SUPABASE_ANON_KEY` | Supabase config |
+| `MIXPANEL_TOKEN` / `ANALYTICS_ENABLED` | Analytics |
+| `SENTRY_DSN` | Sentry (empty = disabled) |
 
 ## Conventions
 
 - Riverpod with code generation (`@riverpod` annotations)
-- `very_good_analysis` lint rules
-- Turkish-first localization (template: `app_tr.arb`)
+- `very_good_analysis` lint rules (excludes `*.g.dart`, `*.freezed.dart`)
+- Turkish-first localization (template: `app_tr.arb`, also `app_en.arb`)
 - auto_route for navigation with `CustomRoute` enum
+- Analytics tracking happens in repositories/controllers, not views
+- `rename.sh` script renames the project across all platform configs (bundle IDs, package names)
+
+## Adding a New Feature
+
+1. Define interface in `backend_core` if backend-specific
+2. Implement in relevant backend packages
+3. Add factory method to `BackendModule`
+4. Create feature vertical slice: domain → data → application → presentation
+5. Wire up Riverpod providers
+6. Add route to `CustomRoute` enum and `app_router.dart`
+7. Add localization strings to `app_tr.arb` + `app_en.arb`
+8. Add logging with appropriate `LogTag`
+9. Write tests: unit (repository), widget (page + robot), update smoke test

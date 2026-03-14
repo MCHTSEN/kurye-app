@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:eipat/core/runtime/connectivity_service.dart';
+import 'package:bursamotokurye/core/runtime/connectivity_service.dart';
 
 class FakeConnectivityService implements ConnectivityService {
   FakeConnectivityService({

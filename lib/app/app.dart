@@ -8,8 +8,8 @@ import '../product/navigation/navigation_providers.dart';
 import 'router/app_router.dart';
 import 'router/observers/route_observer_providers.dart';
 
-class EipatApp extends ConsumerWidget {
-  const EipatApp({super.key});
+class BursamotoKuryeApp extends ConsumerWidget {
+  const BursamotoKuryeApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,7 +22,7 @@ class EipatApp extends ConsumerWidget {
     );
 
     return MaterialApp.router(
-      title: 'eipat',
+      title: 'bursamotokurye',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

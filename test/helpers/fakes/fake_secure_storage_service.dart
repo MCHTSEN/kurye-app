@@ -1,4 +1,4 @@
-import 'package:eipat/core/runtime/secure_storage_service.dart';
+import 'package:bursamotokurye/core/runtime/secure_storage_service.dart';
 
 class FakeSecureStorageService implements SecureStorageService {
   final Map<String, String> _storage = <String, String>{};

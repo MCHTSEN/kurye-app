@@ -1,4 +1,4 @@
-import 'package:eipat/app/router/custom_route.dart';
+import 'package:bursamotokurye/app/router/custom_route.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

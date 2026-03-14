@@ -1,13 +1,13 @@
 import 'package:backend_core/backend_core.dart';
 import 'package:backend_mock/backend_mock.dart';
-import 'package:eipat/app/app.dart';
-import 'package:eipat/core/environment/app_environment.dart';
-import 'package:eipat/core/environment/backend_provider.dart';
-import 'package:eipat/core/environment/credit_access_provider.dart';
-import 'package:eipat/product/auth/auth_providers.dart';
-import 'package:eipat/product/environment/environment_provider.dart';
-import 'package:eipat/product/onboarding/onboarding_providers.dart';
-import 'package:eipat/product/runtime/runtime_providers.dart';
+import 'package:bursamotokurye/app/app.dart';
+import 'package:bursamotokurye/core/environment/app_environment.dart';
+import 'package:bursamotokurye/core/environment/backend_provider.dart';
+import 'package:bursamotokurye/core/environment/credit_access_provider.dart';
+import 'package:bursamotokurye/product/auth/auth_providers.dart';
+import 'package:bursamotokurye/product/environment/environment_provider.dart';
+import 'package:bursamotokurye/product/onboarding/onboarding_providers.dart';
+import 'package:bursamotokurye/product/runtime/runtime_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -52,7 +52,7 @@ void main() {
             FakeOnboardingRepository(),
           ),
         ],
-        child: const EipatApp(),
+        child: const BursamotoKuryeApp(),
       ),
     );
 

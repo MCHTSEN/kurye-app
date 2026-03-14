@@ -47,7 +47,7 @@ Future<void> bootstrap({
         backendModuleProvider.overrideWithValue(module),
       ],
       observers: const [AppProviderObserver()],
-      child: const EipatApp(),
+      child: const BursamotoKuryeApp(),
     ),
   );
 }

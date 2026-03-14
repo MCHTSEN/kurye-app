@@ -1,5 +1,5 @@
-import 'package:eipat/product/onboarding/onboarding_providers.dart';
-import 'package:eipat/product/onboarding/onboarding_repository.dart';
+import 'package:bursamotokurye/product/onboarding/onboarding_providers.dart';
+import 'package:bursamotokurye/product/onboarding/onboarding_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

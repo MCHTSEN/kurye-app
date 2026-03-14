@@ -1,4 +1,4 @@
-package com.example.eipat
+package com.lukeristudio.bursamotokurye
 
 import io.flutter.embedding.android.FlutterActivity
 

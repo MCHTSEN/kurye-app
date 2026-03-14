@@ -5,10 +5,13 @@ Use this checklist when starting a new project from this skeleton.
 ## 1. Rename the project
 
 ```bash
-./rename.sh com.yourcompany.appname "App Display Name"
+./rename.sh myapp com.yourcompany.myapp
 ```
 
-This updates: package name, bundle ID, app display name, and Dart package references.
+- First arg: Dart package name (lowercase, no spaces)
+- Second arg: bundle ID (optional, defaults to `com.example.<name>`)
+
+This updates: package name, bundle ID, app class name (`EipatApp` → `MyappApp`), Dart imports across `lib/`, `test/`, and `integration_test/`, and all platform configs.
 
 ## 2. Choose your backend
 
