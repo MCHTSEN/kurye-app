@@ -55,7 +55,7 @@
   - Verify: `flutter analyze` clean, `flutter test` passes including `test/domain/siparis_test.dart`
   - Done when: Siparis model, repo, Supabase impl, providers, and domain tests all exist and pass
 
-- [ ] **T02: Customer order creation and history pages** `est:45m`
+- [x] **T02: Customer order creation and history pages** `est:45m`
   - Why: Replace both placeholder müşteri pages with real functionality — order form with cascading dropdowns + realtime active list, history page with date filter
   - Files: `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart`, `lib/feature/musteri_siparis/presentation/musteri_gecmis_page.dart`, `test/feature/musteri_siparis/musteri_siparis_page_test.dart`
   - Do: Replace `MusteriSiparisPage` with: form (çıkış/uğrama/uğrama1/not dropdowns loaded by customer's musteriId, not1 text field), submit handler resolving personel_id via `getByUserId(auth.uid)` and calling `SiparisRepository.create()`, active orders StreamBuilder below form using `streamByMusteriId`. Replace `MusteriGecmisPage` with completed orders list + date range picker filter. Write widget test with `FakeSiparisRepository` covering form render, validation, and order creation.
