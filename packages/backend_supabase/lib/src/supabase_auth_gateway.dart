@@ -92,7 +92,8 @@ class SupabaseAuthGateway implements AuthGateway {
     final session = _mapSession(response.session);
 
     if (session == null) {
-      throw StateError('Supabase register did not return a user session.');
+      // Email onayı açıksa Supabase session dönmez.
+      throw EmailConfirmationRequiredException(email);
     }
 
     _log.i('register success: ${session.user.id}');

@@ -12,6 +12,25 @@ void main() {
       expect(CustomRoute.exampleFeed.path, '/example-feed');
       expect(CustomRoute.profile.path, '/profile');
       expect(CustomRoute.buyCredit.path, '/buy-credit');
+
+      // Müşteri rotaları
+      expect(CustomRoute.musteriSiparis.path, '/musteri/siparis');
+      expect(CustomRoute.musteriGecmis.path, '/musteri/gecmis');
+
+      // Operasyon rotaları
+      expect(CustomRoute.operasyonDashboard.path, '/operasyon/dashboard');
+      expect(CustomRoute.operasyonEkran.path, '/operasyon/ekran');
+      expect(CustomRoute.musteriKayit.path, '/operasyon/musteri-kayit');
+      expect(
+        CustomRoute.musteriPersonelKayit.path,
+        '/operasyon/personel-kayit',
+      );
+      expect(CustomRoute.operasyonGecmis.path, '/operasyon/gecmis');
+      expect(CustomRoute.ugramaYonetim.path, '/operasyon/ugrama');
+
+      // Kurye rotaları
+      expect(CustomRoute.kuryeAna.path, '/kurye/ana');
+
       expect(CustomRoute.notFound.path, '*');
     });
 
@@ -24,6 +43,28 @@ void main() {
       expect(CustomRoute.exampleFeed.routeName, 'ExampleFeedRoute');
       expect(CustomRoute.profile.routeName, 'ProfileRoute');
       expect(CustomRoute.buyCredit.routeName, 'BuyCreditRoute');
+
+      // Müşteri
+      expect(CustomRoute.musteriSiparis.routeName, 'MusteriSiparisRoute');
+      expect(CustomRoute.musteriGecmis.routeName, 'MusteriGecmisRoute');
+
+      // Operasyon
+      expect(
+        CustomRoute.operasyonDashboard.routeName,
+        'OperasyonDashboardRoute',
+      );
+      expect(CustomRoute.operasyonEkran.routeName, 'OperasyonEkranRoute');
+      expect(CustomRoute.musteriKayit.routeName, 'MusteriKayitRoute');
+      expect(
+        CustomRoute.musteriPersonelKayit.routeName,
+        'MusteriPersonelKayitRoute',
+      );
+      expect(CustomRoute.operasyonGecmis.routeName, 'OperasyonGecmisRoute');
+      expect(CustomRoute.ugramaYonetim.routeName, 'UgramaYonetimRoute');
+
+      // Kurye
+      expect(CustomRoute.kuryeAna.routeName, 'KuryeAnaRoute');
+
       expect(CustomRoute.notFound.routeName, 'NotFoundRoute');
     });
 
