@@ -9,7 +9,7 @@
 - 🔄 **M001:** Core Dispatch App
 
 ## Recent Decisions
-- D015: Established Supabase `stream()` realtime pattern — `stream(primaryKey: ['id'])` + filter + handleError, autoDispose stream providers
+- None recorded
 
 ## Blockers
 - None
