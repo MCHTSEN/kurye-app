@@ -76,8 +76,8 @@
 - Source: user
 - Primary owning slice: M001/S03
 - Supporting slices: M001/S04
-- Validation: unmapped
-- Notes: If no stops exist for selected customer, prompt to create one
+- Validation: validated
+- Notes: Customer-side validated in S03 with widget tests (form render, validation, submit). Operations-side creation in S04.
 
 ### R008 — Realtime order flow across all roles
 - Class: core-capability
@@ -87,8 +87,8 @@
 - Source: user
 - Primary owning slice: M001/S03
 - Supporting slices: M001/S04, M001/S05, M001/S08
-- Validation: unmapped
-- Notes: Supabase Realtime publication already configured for siparisler table
+- Validation: partial
+- Notes: Supabase stream() pattern established in S03 — customer sees live updates. Cross-role realtime proof continues in S04/S05.
 
 ### R009 — Operations 3-panel dispatch screen
 - Class: primary-user-loop
@@ -142,8 +142,8 @@
 - Source: user
 - Primary owning slice: M001/S03
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Customer cannot modify orders after creation (except cancel?)
+- Validation: validated
+- Notes: Implemented in S03 — active orders with realtime stream, history page with date range filtering. Widget tests cover form + submit flow.
 
 ### R014 — Operations order history with filtering & editing
 - Class: primary-user-loop
@@ -269,13 +269,13 @@
 | R004 | primary-user-loop | active | M001/S02 | none | validated |
 | R005 | primary-user-loop | active | M001/S02 | none | validated |
 | R006 | primary-user-loop | active | M001/S02 | none | validated |
-| R007 | primary-user-loop | active | M001/S03 | M001/S04 | unmapped |
-| R008 | core-capability | active | M001/S03 | M001/S04,S05,S08 | unmapped |
+| R007 | primary-user-loop | active | M001/S03 | M001/S04 | validated |
+| R008 | core-capability | active | M001/S03 | M001/S04,S05,S08 | partial |
 | R009 | primary-user-loop | active | M001/S04 | none | unmapped |
 | R010 | primary-user-loop | active | M001/S04 | none | unmapped |
 | R011 | primary-user-loop | active | M001/S05 | none | unmapped |
 | R012 | primary-user-loop | active | M001/S04 | none | unmapped |
-| R013 | primary-user-loop | active | M001/S03 | none | unmapped |
+| R013 | primary-user-loop | active | M001/S03 | none | validated |
 | R014 | primary-user-loop | active | M001/S06 | none | unmapped |
 | R015 | differentiator | active | M001/S07 | none | unmapped |
 | R016 | primary-user-loop | active | M001/S05 | M001/S04 | unmapped |
@@ -291,5 +291,6 @@
 
 - Active requirements: 18
 - Mapped to slices: 16
-- Validated: 6 (R001, R002, R003, R004, R005, R006)
+- Validated: 8 (R001, R002, R003, R004, R005, R006, R007, R013)
+- Partially validated: 1 (R008)
 - Unmapped active requirements: 0
