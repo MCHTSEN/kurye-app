@@ -2,17 +2,18 @@
 
 **Active Milestone:** M001 — Core Dispatch App
 **Active Slice:** S03 — Order creation & customer tracking
-**Phase:** planning
-**Requirements Status:** 18 active · 0 validated · 4 deferred · 1 out of scope
+**Phase:** executing
+**Current Task:** T01 — Siparis data layer with realtime stream support
+**Requirements Status:** 18 active · 6 validated · 4 deferred · 1 out of scope
 
 ## Milestone Registry
 - 🔄 **M001:** Core Dispatch App
 
 ## Recent Decisions
-- None recorded
+- None recorded for S03 yet
 
 ## Blockers
 - None
 
 ## Next Action
-Plan slice S03 (Order creation & customer tracking).
+Execute T01: Siparis data layer with realtime stream support.
