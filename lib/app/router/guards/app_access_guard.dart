@@ -26,7 +26,7 @@ class AppAccessGuard extends AutoRouteGuard {
       case UserRole.kurye:
         return CustomRoute.kuryeAna.path;
       case null:
-        return CustomRoute.home.path;
+        return CustomRoute.roleSelection.path;
     }
   }
 
@@ -136,39 +136,32 @@ class AppAccessGuard extends AutoRouteGuard {
         }
       }
 
+      final homePath = homePathForRole(role);
+
       // Profil yoksa → rol seçim ekranına yönlendir
-      if (role == null &&
-          targetPath != CustomRoute.roleSelection.path &&
-          targetPath != CustomRoute.home.path) {
+      if (role == null && targetPath != CustomRoute.roleSelection.path) {
         _log.i('No profile, redirecting to role selection');
         await router.replacePath(CustomRoute.roleSelection.path);
         resolver.next(false);
         return;
       }
 
-      // Splash/root/auth/onboarding → rol bazlı ana sayfaya yönlendir
+      // Splash/root/auth/onboarding/home → rol bazlı ana sayfaya
       if (targetPath == CustomRoute.root.path ||
           targetPath == CustomRoute.splash.path ||
           targetPath == CustomRoute.auth.path ||
-          targetPath == CustomRoute.onboarding.path) {
-        if (role == null) {
-          _log.i('No profile, redirecting to role selection');
-          await router.replacePath(CustomRoute.roleSelection.path);
-        } else {
-          final homePath = homePathForRole(role);
-          _log.i('Redirecting authenticated user to $homePath');
-          await router.replacePath(homePath);
-        }
+          targetPath == CustomRoute.onboarding.path ||
+          targetPath == CustomRoute.home.path) {
+        _log.i('Redirecting authenticated user to $homePath');
+        await router.replacePath(homePath);
         resolver.next(false);
         return;
       }
 
-      // /home veya /role-selection'a gelince: rolü varsa kendi sayfasına
+      // Rolü varsa ve role-selection'da → kendi sayfasına
       if (role != null &&
-          (targetPath == CustomRoute.home.path ||
-              targetPath == CustomRoute.roleSelection.path)) {
-        final homePath = homePathForRole(role);
-        _log.i('Redirecting $role user to $homePath');
+          targetPath == CustomRoute.roleSelection.path) {
+        _log.i('Has role, redirecting from role-selection to $homePath');
         await router.replacePath(homePath);
         resolver.next(false);
         return;
