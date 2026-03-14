@@ -42,3 +42,34 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# VS Code launch config (contains secrets)
+.vscode/launch.json
+.bg-shell/
+screenshots/
+
+# ── GSD baseline (auto-generated) ──
+.gsd/activity/
+.gsd/runtime/
+.gsd/worktrees/
+.gsd/auto.lock
+.gsd/metrics.json
+.gsd/STATE.md
+Thumbs.db
+*.swo
+*~
+.vscode/
+*.code-workspace
+!.env.example
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+.venv/
+venv/
+target/
+vendor/
+coverage/
+.cache/
+tmp/

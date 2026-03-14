@@ -11,6 +11,49 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-03-15
+- Scope: Sprint 1 — Moto Kurye temel altyapı (DB şeması, roller, routing)
+- Summary:
+  - Supabase PostgreSQL migration dosyası oluşturuldu (9 tablo, RLS, indexler, realtime, PostGIS).
+  - `UserRole` enum ve `AppUserProfile` domain modeli eklendi (`backend_core`).
+  - `UserProfileRepository` kontratı + Supabase ve Mock implementasyonları eklendi.
+  - `BackendModule` kontratına `createUserProfileRepository()` eklendi; tüm backend'ler güncellendi.
+  - `CurrentUserProfile` Riverpod provider eklendi (login sonrası rol sorgusu).
+  - `CustomRoute` enum'a 9 yeni rol bazlı rota eklendi (müşteri/operasyon/kurye).
+  - `AppAccessGuard` rol bazlı erişim kontrolü ve yönlendirme ile güncellendi.
+  - `AuthController` login sonrası profil invalidation eklendi.
+  - 3 feature placeholder oluşturuldu: `musteri_siparis`, `operasyon`, `kurye` (DOC.md + SCREENS.md + sayfalar).
+  - Proje planı `docs/PROJECT_PLAN.md` olarak dokümante edildi.
+- Files:
+  - `supabase/migrations/001_initial_schema.sql`
+  - `packages/backend_core/lib/src/domain/user_role.dart`
+  - `packages/backend_core/lib/src/domain/app_user_profile.dart`
+  - `packages/backend_core/lib/src/user_profile_repository.dart`
+  - `packages/backend_core/lib/src/backend_module.dart`
+  - `packages/backend_core/lib/backend_core.dart`
+  - `packages/backend_supabase/lib/src/supabase_user_profile_repository.dart`
+  - `packages/backend_supabase/lib/src/supabase_backend_module.dart`
+  - `packages/backend_mock/lib/src/mock_user_profile_repository.dart`
+  - `packages/backend_mock/lib/src/mock_backend_module.dart`
+  - `packages/backend_custom/lib/src/custom_backend_module.dart`
+  - `packages/backend_firebase/lib/src/firebase_backend_module.dart`
+  - `lib/product/user_profile/user_profile_providers.dart`
+  - `lib/app/router/custom_route.dart`
+  - `lib/app/router/app_router.dart`
+  - `lib/app/router/guards/app_access_guard.dart`
+  - `lib/app/app.dart`
+  - `lib/feature/auth/application/auth_controller.dart`
+  - `lib/feature/musteri_siparis/**`
+  - `lib/feature/operasyon/**`
+  - `lib/feature/kurye/**`
+  - `docs/PROJECT_PLAN.md`
+  - `test/domain/user_role_test.dart`
+  - `test/app/router/custom_route_test.dart`
+  - `test/app/router/guard_role_routing_test.dart`
+- Validation:
+  - `flutter analyze` passed (0 issues).
+  - `flutter test` passed (53 tests).
+
 ### 2026-03-08
 - Scope: Feature test policy hardening
 - Summary:

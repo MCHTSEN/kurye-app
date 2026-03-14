@@ -5,9 +5,21 @@ import '../../feature/auth/presentation/auth_page.dart';
 import '../../feature/buy_credit/presentation/buy_credit_page.dart';
 import '../../feature/example_feed/presentation/example_feed_page.dart';
 import '../../feature/home/presentation/home_page.dart';
+import '../../feature/kurye/presentation/kurye_ana_page.dart';
+import '../../feature/musteri_siparis/presentation/musteri_gecmis_page.dart';
+import '../../feature/musteri_siparis/presentation/musteri_siparis_page.dart';
 import '../../feature/not_found/presentation/not_found_page.dart';
 import '../../feature/onboarding/presentation/onboarding_page.dart';
+import '../../feature/operasyon/presentation/kurye_yonetim_page.dart';
+import '../../feature/operasyon/presentation/musteri_kayit_page.dart';
+import '../../feature/operasyon/presentation/musteri_personel_kayit_page.dart';
+import '../../feature/operasyon/presentation/operasyon_dashboard_page.dart';
+import '../../feature/operasyon/presentation/operasyon_ekran_page.dart';
+import '../../feature/operasyon/presentation/operasyon_gecmis_page.dart';
+import '../../feature/operasyon/presentation/rol_onay_page.dart';
+import '../../feature/operasyon/presentation/ugrama_yonetim_page.dart';
 import '../../feature/profile/presentation/profile_page.dart';
+import '../../feature/role_selection/presentation/role_selection_page.dart';
 import '../../feature/splash/presentation/splash_page.dart';
 import 'custom_route.dart';
 import 'guards/app_access_guard.dart';
@@ -51,7 +63,6 @@ RootStackRouter appRouter(Ref ref) {
         path: CustomRoute.exampleFeed.path,
         builder: (context, data) => const ExampleFeedPage(),
       ),
-
       NamedRouteDef(
         name: CustomRoute.profile.routeName,
         path: CustomRoute.profile.path,
@@ -62,6 +73,76 @@ RootStackRouter appRouter(Ref ref) {
         path: CustomRoute.buyCredit.path,
         builder: (context, data) => const BuyCreditPage(),
       ),
+
+      // --- Rol seçimi ---
+      NamedRouteDef(
+        name: CustomRoute.roleSelection.routeName,
+        path: CustomRoute.roleSelection.path,
+        builder: (context, data) => const RoleSelectionPage(),
+      ),
+
+      // --- Müşteri rotaları ---
+      NamedRouteDef(
+        name: CustomRoute.musteriSiparis.routeName,
+        path: CustomRoute.musteriSiparis.path,
+        builder: (context, data) => const MusteriSiparisPage(),
+      ),
+      NamedRouteDef(
+        name: CustomRoute.musteriGecmis.routeName,
+        path: CustomRoute.musteriGecmis.path,
+        builder: (context, data) => const MusteriGecmisPage(),
+      ),
+
+      // --- Operasyon rotaları ---
+      NamedRouteDef(
+        name: CustomRoute.operasyonDashboard.routeName,
+        path: CustomRoute.operasyonDashboard.path,
+        builder: (context, data) => const OperasyonDashboardPage(),
+      ),
+      NamedRouteDef(
+        name: CustomRoute.operasyonEkran.routeName,
+        path: CustomRoute.operasyonEkran.path,
+        builder: (context, data) => const OperasyonEkranPage(),
+      ),
+      NamedRouteDef(
+        name: CustomRoute.musteriKayit.routeName,
+        path: CustomRoute.musteriKayit.path,
+        builder: (context, data) => const MusteriKayitPage(),
+      ),
+      NamedRouteDef(
+        name: CustomRoute.musteriPersonelKayit.routeName,
+        path: CustomRoute.musteriPersonelKayit.path,
+        builder: (context, data) => const MusteriPersonelKayitPage(),
+      ),
+      NamedRouteDef(
+        name: CustomRoute.operasyonGecmis.routeName,
+        path: CustomRoute.operasyonGecmis.path,
+        builder: (context, data) => const OperasyonGecmisPage(),
+      ),
+      NamedRouteDef(
+        name: CustomRoute.ugramaYonetim.routeName,
+        path: CustomRoute.ugramaYonetim.path,
+        builder: (context, data) => const UgramaYonetimPage(),
+      ),
+
+      NamedRouteDef(
+        name: CustomRoute.kuryeYonetim.routeName,
+        path: CustomRoute.kuryeYonetim.path,
+        builder: (context, data) => const KuryeYonetimPage(),
+      ),
+      NamedRouteDef(
+        name: CustomRoute.rolOnay.routeName,
+        path: CustomRoute.rolOnay.path,
+        builder: (context, data) => const RolOnayPage(),
+      ),
+
+      // --- Kurye rotaları ---
+      NamedRouteDef(
+        name: CustomRoute.kuryeAna.routeName,
+        path: CustomRoute.kuryeAna.path,
+        builder: (context, data) => const KuryeAnaPage(),
+      ),
+
       NamedRouteDef(
         name: CustomRoute.notFound.routeName,
         path: CustomRoute.notFound.path,
