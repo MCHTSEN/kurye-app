@@ -35,7 +35,6 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final isLoading = ref.watch(
       authControllerProvider.select((state) => state.isLoading),
     );
@@ -109,10 +108,18 @@ class _AuthPageState extends ConsumerState<AuthPage> {
 
           if (authError != null) ...[
             const SizedBox(height: AppSpacing.sm),
-            Text(
-              authError.toString(),
-              style: TextStyle(color: theme.colorScheme.error),
-            ),
+            if (authError is EmailConfirmationRequiredException)
+              _MessageBanner(
+                icon: Icons.mark_email_read,
+                message: authError.toString(),
+                color: Colors.green,
+              )
+            else
+              _MessageBanner(
+                icon: Icons.error_outline,
+                message: _friendlyError(authError),
+                color: Colors.red,
+              ),
           ],
 
           const SizedBox(height: AppSpacing.lg),
@@ -171,6 +178,39 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     }
   }
 
+  String _friendlyError(Object error) {
+    final msg = error.toString().toLowerCase();
+    if (msg.contains('invalid login credentials') ||
+        msg.contains('invalid_credentials')) {
+      return 'E-posta veya şifre hatalı.';
+    }
+    if (msg.contains('email not confirmed')) {
+      return 'E-posta adresiniz henüz onaylanmamış. '
+          'Gelen kutunuzu kontrol edin.';
+    }
+    if (msg.contains('user not found')) {
+      return 'Bu e-posta ile kayıtlı kullanıcı bulunamadı.';
+    }
+    if (msg.contains('email already registered') ||
+        msg.contains('user already registered')) {
+      return 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.';
+    }
+    if (msg.contains('too many requests') ||
+        msg.contains('rate limit')) {
+      return 'Çok fazla deneme yaptınız. Lütfen biraz bekleyin.';
+    }
+    if (msg.contains('network') ||
+        msg.contains('socket') ||
+        msg.contains('connection')) {
+      return 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.';
+    }
+    if (msg.contains('weak password') ||
+        msg.contains('password')) {
+      return 'Şifre en az 6 karakter olmalıdır.';
+    }
+    return 'Giriş yapılamadı. Lütfen tekrar deneyin.';
+  }
+
   Future<void> _handleGoogleSignIn(AuthController controller) async {
     // TODO(dev): integrate google_sign_in package to get idToken
     // For now, this is a placeholder that shows the button
@@ -216,6 +256,42 @@ class _GoogleSignInButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MessageBanner extends StatelessWidget {
+  const _MessageBanner({
+    required this.icon,
+    required this.message,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String message;
+  final MaterialColor color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.shade50,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.shade300),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color.shade700),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(color: color.shade800),
+            ),
+          ),
+        ],
       ),
     );
   }

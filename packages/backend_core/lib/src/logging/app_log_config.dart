@@ -1,5 +1,6 @@
 enum LogTag {
   auth,
+  data,
   network,
   router,
   onboarding,
@@ -13,6 +14,7 @@ enum LogTag {
 class AppLogConfig {
   AppLogConfig({
     this.auth = true,
+    this.data = true,
     this.network = true,
     this.router = true,
     this.onboarding = true,
@@ -25,6 +27,7 @@ class AppLogConfig {
   });
 
   final bool auth;
+  final bool data;
   final bool network;
   final bool router;
   final bool onboarding;
@@ -41,6 +44,8 @@ class AppLogConfig {
     switch (tag) {
       case LogTag.auth:
         return auth;
+      case LogTag.data:
+        return data;
       case LogTag.network:
         return network;
       case LogTag.router:

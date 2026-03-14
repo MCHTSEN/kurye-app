@@ -1,12 +1,9 @@
-import 'package:auto_route/auto_route.dart' hide CustomRoute;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
-import '../../../l10n/app_localizations.dart';
-import '../../../product/runtime/runtime_providers.dart';
+import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
 import '../../auth/application/auth_controller.dart';
@@ -16,48 +13,43 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
     final isLoading = ref.watch(
       authControllerProvider.select((state) => state.isLoading),
     );
     final authController = ref.read(authControllerProvider.notifier);
-    final exampleFeedEnabled = ref.watch(
-      featureFlagServiceProvider.select(
-        (service) => service.isEnabled('example_feed_enabled'),
-      ),
-    );
+    final profileAsync = ref.watch(currentUserProfileProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.homeTitle)),
+      appBar: AppBar(title: const Text('Moto Kurye')),
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [
-          AppSectionCard(
-            title: l10n.homeSkeletonReady,
-            child: Text(l10n.homeSkeletonDescription),
-          ),
-          if (exampleFeedEnabled) ...[
-            const SizedBox(height: AppSpacing.md),
-            AppPrimaryButton(
-              label: l10n.homeOpenExampleFeed,
-              onPressed: () =>
-                  context.router.pushPath(CustomRoute.exampleFeed.path),
+          profileAsync.when(
+            data: (profile) {
+              if (profile == null) {
+                return const AppSectionCard(
+                  title: 'Hesap Beklemede',
+                  child: Text(
+                    'Hesabınız henüz sisteme tanımlanmamış.\n\n'
+                    'Operasyon personeliniz hesabınıza rol ataması '
+                    'yapana kadar bekleyiniz.',
+                  ),
+                );
+              }
+              return AppSectionCard(
+                title: 'Hoş geldiniz, ${profile.displayName}',
+                child: Text('Rol: ${profile.role.value}'),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => AppSectionCard(
+              title: 'Profil Hatası',
+              child: Text('$e'),
             ),
-          ],
-          const SizedBox(height: AppSpacing.md),
-          AppPrimaryButton(
-            label: l10n.homeGoToProfile,
-            onPressed: () => context.router.pushPath(CustomRoute.profile.path),
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.lg),
           AppPrimaryButton(
-            label: l10n.homeBuyCredit,
-            onPressed: () =>
-                context.router.pushPath(CustomRoute.buyCredit.path),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          AppPrimaryButton(
-            label: l10n.homeSignOut,
+            label: 'Çıkış Yap',
             isLoading: isLoading,
             onPressed: authController.signOut,
           ),
