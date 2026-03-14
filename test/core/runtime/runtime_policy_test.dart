@@ -1,5 +1,5 @@
-import 'package:eipat/core/runtime/cache_policy.dart';
-import 'package:eipat/core/runtime/retry_policy.dart';
+import 'package:bursamotokurye/core/runtime/cache_policy.dart';
+import 'package:bursamotokurye/core/runtime/retry_policy.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

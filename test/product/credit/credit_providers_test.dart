@@ -1,8 +1,8 @@
-import 'package:eipat/core/environment/app_environment.dart';
-import 'package:eipat/core/environment/backend_provider.dart';
-import 'package:eipat/core/environment/credit_access_provider.dart';
-import 'package:eipat/product/credit/credit_providers.dart';
-import 'package:eipat/product/environment/environment_provider.dart';
+import 'package:bursamotokurye/core/environment/app_environment.dart';
+import 'package:bursamotokurye/core/environment/backend_provider.dart';
+import 'package:bursamotokurye/core/environment/credit_access_provider.dart';
+import 'package:bursamotokurye/product/credit/credit_providers.dart';
+import 'package:bursamotokurye/product/environment/environment_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

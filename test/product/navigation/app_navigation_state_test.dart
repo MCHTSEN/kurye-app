@@ -1,4 +1,4 @@
-import 'package:eipat/product/navigation/app_navigation_state.dart';
+import 'package:bursamotokurye/product/navigation/app_navigation_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

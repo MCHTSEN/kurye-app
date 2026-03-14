@@ -1,5 +1,5 @@
-import 'package:eipat/feature/example_feed/presentation/example_feed_page.dart';
-import 'package:eipat/product/network/api_client_provider.dart';
+import 'package:bursamotokurye/feature/example_feed/presentation/example_feed_page.dart';
+import 'package:bursamotokurye/product/network/api_client_provider.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
 
 import '../../helpers/fakes/fake_api_client.dart';
