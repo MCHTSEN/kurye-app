@@ -9,10 +9,10 @@
 - 🔄 **M001:** Core Dispatch App
 
 ## Recent Decisions
-- None recorded
+- D015: Established Supabase `stream()` realtime pattern — `stream(primaryKey: ['id'])` + filter + handleError, autoDispose stream providers
 
 ## Blockers
 - None
 
 ## Next Action
-Execute T01: Siparis data layer with realtime stream support in slice S03.
+Execute T02: Customer order creation and history pages in slice S03.

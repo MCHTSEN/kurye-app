@@ -1,0 +1,109 @@
+import 'package:backend_core/backend_core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class SupabaseSiparisRepository implements SiparisRepository {
+  SupabaseSiparisRepository({required SupabaseClient client})
+      : _client = client;
+
+  final SupabaseClient _client;
+  static final _log = AppLogger('SupabaseSiparisRepo', tag: LogTag.data);
+
+  static const _table = 'siparisler';
+
+  @override
+  Future<Siparis> create(Siparis siparis) async {
+    _log.i('create: musteri=${siparis.musteriId}, '
+        'cikis=${siparis.cikisId}, ugrama=${siparis.ugramaId}');
+    final data = await _client
+        .from(_table)
+        .insert({
+          'musteri_id': siparis.musteriId,
+          'personel_id': siparis.personelId,
+          'kurye_id': siparis.kuryeId,
+          'cikis_id': siparis.cikisId,
+          'ugrama_id': siparis.ugramaId,
+          'ugrama1_id': siparis.ugrama1Id,
+          'not_id': siparis.notId,
+          'not1': siparis.not1,
+          'durum': siparis.durum.value,
+          'ucret': siparis.ucret,
+          'olusturan_id': siparis.olusturanId,
+        })
+        .select()
+        .single();
+    _log.i('created: ${data['id']}');
+    return Siparis.fromJson(data);
+  }
+
+  @override
+  Future<List<Siparis>> getByMusteriId(String musteriId) async {
+    _log.d('getByMusteriId: $musteriId');
+    final data = await _client
+        .from(_table)
+        .select()
+        .eq('musteri_id', musteriId)
+        .order('created_at', ascending: false);
+    return data.map(Siparis.fromJson).toList();
+  }
+
+  @override
+  Future<List<Siparis>> getByDurum(SiparisDurum durum) async {
+    _log.d('getByDurum: ${durum.value}');
+    final data = await _client
+        .from(_table)
+        .select()
+        .eq('durum', durum.value)
+        .order('created_at', ascending: false);
+    return data.map(Siparis.fromJson).toList();
+  }
+
+  @override
+  Future<Siparis> updateDurum(String id, SiparisDurum durum) async {
+    _log.i('updateDurum: $id -> ${durum.value}');
+    final data = await _client
+        .from(_table)
+        .update({'durum': durum.value})
+        .eq('id', id)
+        .select()
+        .single();
+    _log.i('durumUpdated: $id');
+    return Siparis.fromJson(data);
+  }
+
+  @override
+  Stream<List<Siparis>> streamByMusteriId(String musteriId) {
+    _log.d('streamByMusteriId: $musteriId — subscribing');
+    return _client
+        .from(_table)
+        .stream(primaryKey: ['id'])
+        .eq('musteri_id', musteriId)
+        .order('created_at', ascending: false)
+        .map((rows) {
+          _log.d('streamByMusteriId: $musteriId — ${rows.length} rows');
+          return rows.map(Siparis.fromJson).toList();
+        })
+        .handleError((Object error) {
+          _log.e('streamByMusteriId error: $error');
+        });
+  }
+
+  @override
+  Stream<List<Siparis>> streamActive() {
+    _log.d('streamActive — subscribing');
+    return _client
+        .from(_table)
+        .stream(primaryKey: ['id'])
+        .inFilter('durum', [
+          SiparisDurum.kuryeBekliyor.value,
+          SiparisDurum.devamEdiyor.value,
+        ])
+        .order('created_at', ascending: false)
+        .map((rows) {
+          _log.d('streamActive — ${rows.length} rows');
+          return rows.map(Siparis.fromJson).toList();
+        })
+        .handleError((Object error) {
+          _log.e('streamActive error: $error');
+        });
+  }
+}

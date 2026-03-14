@@ -48,7 +48,7 @@
 
 ## Tasks
 
-- [ ] **T01: Siparis data layer with realtime stream support** `est:45m`
+- [x] **T01: Siparis data layer with realtime stream support** `est:45m`
   - Why: Foundation for all order features — domain model, repository contract, Supabase implementation with stream(), providers, and test infrastructure
   - Files: `packages/backend_core/lib/src/domain/siparis.dart`, `packages/backend_core/lib/src/siparis_repository.dart`, `packages/backend_supabase/lib/src/supabase_siparis_repository.dart`, `packages/backend_core/lib/src/musteri_personel_repository.dart`, `packages/backend_supabase/lib/src/supabase_musteri_personel_repository.dart`, `packages/backend_core/lib/src/backend_module.dart`, `packages/backend_supabase/lib/src/supabase_backend_module.dart`, `lib/product/siparis/siparis_providers.dart`, `test/domain/siparis_test.dart`, `test/helpers/fakes/fake_siparis_repository.dart`
   - Do: Create `Siparis` model + `SiparisDurum` enum following existing pattern. Add `SiparisRepository` contract with stream methods. Implement Supabase version using `stream(primaryKey: ['id'])` + `.eq()` filters. Add `getByUserId()` to MusteriPersonelRepository contract + impl. Wire BackendModule + barrel exports. Create Riverpod providers (stream providers must be autoDispose). Build domain model tests + `FakeSiparisRepository`.

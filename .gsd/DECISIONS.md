@@ -20,3 +20,4 @@
 | D012 | M001/S02 | arch | Approval flow musteriId | Extend `approveRequest()` with optional `musteriId` parameter | müşteri_personel role needs `musteri_id` on `app_users` for RLS data access | No |
 | D013 | M001/S02/T01 | convention | LogTag.data | Added `LogTag.data` enum value + config field | Master data CRUD repos need a distinct log tag from `LogTag.auth`. All 4 Supabase repos use `LogTag.data`. | No |
 | D014 | M001/S02/T01 | convention | Named bool in KuryeRepository | `updateOnlineStatus(id, {required bool isOnline})` | Positional booleans flagged by `very_good_analysis` — use named parameter | No |
+| D015 | M001/S03/T01 | pattern | Realtime stream pattern | `stream(primaryKey: ['id'])` + `.eq()`/`.inFilter()` + `handleError` | First Supabase Realtime usage — `stream()` combines initial fetch + live updates, auto-reconnects. Stream providers must be `autoDispose` to prevent channel leaks. Reuse in S04/S05/S08. | No |
