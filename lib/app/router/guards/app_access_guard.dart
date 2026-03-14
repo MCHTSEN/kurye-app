@@ -3,7 +3,6 @@ import 'package:backend_core/backend_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../product/auth/auth_providers.dart';
-import '../../../product/credit/credit_providers.dart';
 import '../../../product/navigation/navigation_providers.dart';
 import '../../../product/onboarding/onboarding_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
@@ -30,28 +29,16 @@ class AppAccessGuard extends AutoRouteGuard {
     }
   }
 
-  /// Bir rotanın belirli bir role ait olup olmadığını kontrol eder.
-  static bool _isMusteriRoute(String path) =>
-      path.startsWith('/musteri');
-
-  static bool _isOperasyonRoute(String path) =>
-      path.startsWith('/operasyon');
-
-  static bool _isKuryeRoute(String path) =>
+  static bool _isRoleRestrictedRoute(String path) =>
+      path.startsWith('/musteri') ||
+      path.startsWith('/operasyon') ||
       path.startsWith('/kurye');
 
-  /// Rotanın rol kısıtlaması var mı kontrol eder.
-  static bool _isRoleRestrictedRoute(String path) =>
-      _isMusteriRoute(path) ||
-      _isOperasyonRoute(path) ||
-      _isKuryeRoute(path);
-
-  /// Kullanıcının bu rotaya erişim hakkı var mı?
   static bool _canAccessRoute(UserRole role, String path) {
-    if (_isMusteriRoute(path)) return role == UserRole.musteriPersonel;
-    if (_isOperasyonRoute(path)) return role == UserRole.operasyon;
-    if (_isKuryeRoute(path)) return role == UserRole.kurye;
-    return true; // Kısıtsız rotalar
+    if (path.startsWith('/musteri')) return role == UserRole.musteriPersonel;
+    if (path.startsWith('/operasyon')) return role == UserRole.operasyon;
+    if (path.startsWith('/kurye')) return role == UserRole.kurye;
+    return true;
   }
 
   @override
@@ -68,122 +55,86 @@ class AppAccessGuard extends AutoRouteGuard {
 
     final targetPath = resolver.route.path;
     _log.d(
-      'onNavigation: target=$targetPath, authenticated=$isAuthenticated, '
+      'guard: target=$targetPath auth=$isAuthenticated '
       'onboarded=$onboardingCompleted',
     );
 
-    // 1. Onboarding kontrolü
+    // 1. Onboarding
     if (!onboardingCompleted && targetPath != CustomRoute.onboarding.path) {
-      _log.i('Redirecting to onboarding (not completed)');
-      await router.replacePath(CustomRoute.onboarding.path);
-      resolver.next(false);
+      _redirect(router, resolver, CustomRoute.onboarding.path, 'onboarding');
       return;
     }
 
-    // 2. Auth kontrolü
+    // 2. Auth
     if (onboardingCompleted &&
         !isAuthenticated &&
         targetPath != CustomRoute.auth.path) {
-      _log.i('Redirecting to auth (not authenticated)');
-      await router.replacePath(CustomRoute.auth.path);
-      resolver.next(false);
+      _redirect(router, resolver, CustomRoute.auth.path, 'auth');
       return;
     }
 
-    // 3. Credit kontrolü
-    final requiresCreditPurchase = await _requiresCreditPurchase(
-      isAuthenticated: isAuthenticated,
-    );
-    if (isAuthenticated &&
-        requiresCreditPurchase &&
-        targetPath != CustomRoute.buyCredit.path) {
-      _log.i('Redirecting to buy credit (insufficient credit)');
-      await router.replacePath(CustomRoute.buyCredit.path);
-      resolver.next(false);
-      return;
-    }
-
-    if (!isAuthenticated && targetPath == CustomRoute.buyCredit.path) {
-      _log.i('Redirecting to auth (buy credit requires auth)');
-      await router.replacePath(CustomRoute.auth.path);
-      resolver.next(false);
-      return;
-    }
-
-    // 4. Authenticated → rol bazlı yönlendirme
+    // 3. Authenticated kullanıcı
     if (isAuthenticated) {
-      // Profil bilgisini al
-      AppUserProfile? profile;
-      try {
-        profile = await _ref.read(currentUserProfileProvider.future);
-      } on Object catch (e) {
-        _log.e('Failed to load user profile', error: e);
-      }
+      // Profili doğrudan repository'den çek (stream bekleme yok)
+      final role = await _getUserRole(session.user.id);
+      final homePath = homePathForRole(role);
 
-      final role = profile?.role;
+      _log.d('guard: role=${role?.value ?? "none"} home=$homePath');
 
-      // Rol kısıtlı rotalara erişim kontrolü
+      // 3a. Rol kısıtlı rotalara erişim kontrolü
       if (_isRoleRestrictedRoute(targetPath)) {
         if (role == null || !_canAccessRoute(role, targetPath)) {
-          final fallback = homePathForRole(role);
-          _log.i(
-            'Role ${role?.value ?? "none"} cannot access $targetPath, '
-            'redirecting to $fallback',
-          );
-          await router.replacePath(fallback);
-          resolver.next(false);
+          _redirect(router, resolver, homePath, 'role-restricted');
           return;
         }
       }
 
-      final homePath = homePathForRole(role);
-
-      // Profil yoksa → rol seçim ekranına yönlendir
+      // 3b. Profil yoksa → rol seçim
       if (role == null && targetPath != CustomRoute.roleSelection.path) {
-        _log.i('No profile, redirecting to role selection');
-        await router.replacePath(CustomRoute.roleSelection.path);
-        resolver.next(false);
+        _redirect(router, resolver, CustomRoute.roleSelection.path, 'no-role');
         return;
       }
 
-      // Splash/root/auth/onboarding/home → rol bazlı ana sayfaya
+      // 3c. Auth/splash/root/home → doğru ana sayfaya
       if (targetPath == CustomRoute.root.path ||
           targetPath == CustomRoute.splash.path ||
           targetPath == CustomRoute.auth.path ||
           targetPath == CustomRoute.onboarding.path ||
           targetPath == CustomRoute.home.path) {
-        _log.i('Redirecting authenticated user to $homePath');
-        await router.replacePath(homePath);
-        resolver.next(false);
+        _redirect(router, resolver, homePath, 'to-home');
         return;
       }
 
-      // Rolü varsa ve role-selection'da → kendi sayfasına
-      if (role != null &&
-          targetPath == CustomRoute.roleSelection.path) {
-        _log.i('Has role, redirecting from role-selection to $homePath');
-        await router.replacePath(homePath);
-        resolver.next(false);
+      // 3d. Rolü var ama hâlâ rol seçimde → ana sayfaya
+      if (role != null && targetPath == CustomRoute.roleSelection.path) {
+        _redirect(router, resolver, homePath, 'has-role');
         return;
       }
     }
 
-    _log.d('Navigation allowed to $targetPath');
+    _log.d('guard: allowed $targetPath');
     resolver.next();
   }
 
-  Future<bool> _requiresCreditPurchase({required bool isAuthenticated}) async {
-    if (!isAuthenticated) {
-      return false;
-    }
-
+  Future<UserRole?> _getUserRole(String userId) async {
     try {
-      final hasSufficientCredit = await _ref
-          .read(creditAccessServiceProvider)
-          .hasSufficientCredit();
-      return !hasSufficientCredit;
-    } on Object {
-      return _ref.read(appNavigationStateProvider).requiresCreditPurchase;
+      final repo = _ref.read(userProfileRepositoryProvider);
+      final profile = await repo.getProfile(userId);
+      return profile?.role;
+    } on Object catch (e) {
+      _log.e('Failed to get user role', error: e);
+      return null;
     }
+  }
+
+  void _redirect(
+    StackRouter router,
+    NavigationResolver resolver,
+    String path,
+    String reason,
+  ) {
+    _log.i('guard: redirect to $path ($reason)');
+    router.replacePath(path);
+    resolver.next(false);
   }
 }

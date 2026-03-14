@@ -26,10 +26,7 @@ class AuthController extends _$AuthController {
     );
     if (!ref.mounted) return;
     state = nextState;
-
-    if (!nextState.hasError) {
-      await _navigateAfterAuth();
-    }
+    if (!nextState.hasError) await _navigateAfterAuth();
   }
 
   Future<void> register({
@@ -47,10 +44,7 @@ class AuthController extends _$AuthController {
     );
     if (!ref.mounted) return;
     state = nextState;
-
-    if (!nextState.hasError) {
-      await _navigateAfterAuth();
-    }
+    if (!nextState.hasError) await _navigateAfterAuth();
   }
 
   Future<void> signInAnonymously() async {
@@ -60,10 +54,7 @@ class AuthController extends _$AuthController {
     );
     if (!ref.mounted) return;
     state = nextState;
-
-    if (!nextState.hasError) {
-      await _navigateAfterAuth();
-    }
+    if (!nextState.hasError) await _navigateAfterAuth();
   }
 
   Future<void> signInWithGoogle({required String idToken}) async {
@@ -73,10 +64,7 @@ class AuthController extends _$AuthController {
     );
     if (!ref.mounted) return;
     state = nextState;
-
-    if (!nextState.hasError) {
-      await _navigateAfterAuth();
-    }
+    if (!nextState.hasError) await _navigateAfterAuth();
   }
 
   Future<void> signOut() async {
@@ -86,28 +74,30 @@ class AuthController extends _$AuthController {
     );
     if (!ref.mounted) return;
     state = nextState;
-
     ref.invalidate(currentUserProfileProvider);
     ref.read(appNavigationStateProvider).requireLogin();
   }
 
-  /// Login başarılı → profil sorgula → doğru sayfaya yönlendir.
   Future<void> _navigateAfterAuth() async {
     ref.invalidate(currentUserProfileProvider);
+    ref.read(appNavigationStateProvider).clearAll();
+
+    // Profili doğrudan repository'den çek
+    final session = await ref.read(authRepositoryProvider).currentSession();
+    if (session == null || !ref.mounted) return;
 
     AppUserProfile? profile;
     try {
-      profile = await ref.read(currentUserProfileProvider.future);
+      final repo = ref.read(userProfileRepositoryProvider);
+      profile = await repo.getProfile(session.user.id);
     } on Object {
-      // profil yoksa null kalır → role selection'a gider
+      // profil yoksa null → role selection
     }
 
     if (!ref.mounted) return;
 
-    ref.read(appNavigationStateProvider).clearAll();
-
     final targetPath = AppAccessGuard.homePathForRole(profile?.role);
     final router = ref.read(appRouterProvider);
-    await router.replacePath(targetPath);
+    router.replacePath(targetPath);
   }
 }
