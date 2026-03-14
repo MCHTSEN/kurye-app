@@ -21,26 +21,48 @@ class BursamotoKuryeApp extends ConsumerWidget {
       appNavigatorObserversBuilderProvider,
     );
 
-    return MaterialApp.router(
-      title: 'bursamotokurye',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      routerConfig: router.config(
-        navigatorObservers: navigatorObserversBuilder,
-        reevaluateListenable: reevaluateListenable,
-        deepLinkBuilder: (deepLink) {
-          if (deepLink.path.startsWith('/home') ||
-              deepLink.path.startsWith('/example-feed') ||
-              deepLink.path.startsWith('/profile') ||
-              deepLink.path.startsWith('/buy-credit')) {
-            return deepLink;
-          }
-          return DeepLink.defaultPath;
-        },
+    return KeyboardDismissWrapper(
+      child: MaterialApp.router(
+        title: 'bursamotokurye',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router.config(
+          navigatorObservers: navigatorObserversBuilder,
+          reevaluateListenable: reevaluateListenable,
+          deepLinkBuilder: (deepLink) {
+            if (deepLink.path.startsWith('/home') ||
+                deepLink.path.startsWith('/example-feed') ||
+                deepLink.path.startsWith('/profile') ||
+                deepLink.path.startsWith('/buy-credit') ||
+                deepLink.path.startsWith('/role-selection') ||
+                deepLink.path.startsWith('/musteri') ||
+                deepLink.path.startsWith('/operasyon') ||
+                deepLink.path.startsWith('/kurye')) {
+              return deepLink;
+            }
+            return DeepLink.defaultPath;
+          },
+        ),
       ),
+    );
+  }
+}
+
+class KeyboardDismissWrapper extends StatelessWidget {
+  const KeyboardDismissWrapper({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: child,
     );
   }
 }

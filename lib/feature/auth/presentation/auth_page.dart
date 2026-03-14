@@ -109,10 +109,32 @@ class _AuthPageState extends ConsumerState<AuthPage> {
 
           if (authError != null) ...[
             const SizedBox(height: AppSpacing.sm),
-            Text(
-              authError.toString(),
-              style: TextStyle(color: theme.colorScheme.error),
-            ),
+            if (authError is EmailConfirmationRequiredException)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade300),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.mark_email_read, color: Colors.green.shade700),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        authError.toString(),
+                        style: TextStyle(color: Colors.green.shade800),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Text(
+                authError.toString(),
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
           ],
 
           const SizedBox(height: AppSpacing.lg),

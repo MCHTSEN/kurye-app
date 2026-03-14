@@ -2,7 +2,9 @@ import 'package:backend_core/backend_core.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_auth_gateway.dart';
+import 'supabase_role_request_repository.dart';
 import 'supabase_token_refresh_service.dart';
+import 'supabase_user_profile_repository.dart';
 
 class SupabaseBackendModule extends BackendModule {
   SupabaseBackendModule({
@@ -41,5 +43,15 @@ class SupabaseBackendModule extends BackendModule {
   @override
   CreditAccessService? createCreditAccessService() {
     return null;
+  }
+
+  @override
+  UserProfileRepository createUserProfileRepository() {
+    return SupabaseUserProfileRepository(client: Supabase.instance.client);
+  }
+
+  @override
+  RoleRequestRepository createRoleRequestRepository() {
+    return SupabaseRoleRequestRepository(client: Supabase.instance.client);
   }
 }
