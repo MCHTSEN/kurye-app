@@ -1,0 +1,14 @@
+name: backend_custom
+description: Custom API (Dio) backend implementation for eipat.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+
+resolution: workspace
+
+dependencies:
+  backend_core:
+    path: ../backend_core
+  dio: ^5.9.2

@@ -1,0 +1,15 @@
+name: backend_firebase
+description: Firebase backend implementation for eipat.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.0
+
+resolution: workspace
+
+dependencies:
+  backend_core:
+    path: ../backend_core
+  firebase_auth: ^6.1.1
+  firebase_core: ^4.5.0
