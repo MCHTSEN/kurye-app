@@ -46,3 +46,4 @@ app.*.map.json
 # VS Code launch config (contains secrets)
 .vscode/launch.json
 .bg-shell/
+screenshots/
