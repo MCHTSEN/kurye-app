@@ -37,7 +37,7 @@
   curl -s "${SUPABASE_URL}/rest/v1/<table>?select=*" -H "apikey: ${SERVICE_KEY}" -H "Authorization: Bearer ${SERVICE_KEY}"
   ```
 
-## 3. context7 (Library Documentation)
+## 3. context7 (Library Documentation)  
 
 - **Server:** `context7`
 - **Tools:** `resolve-library-id`, `query-docs`
