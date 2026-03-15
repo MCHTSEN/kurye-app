@@ -20,6 +20,15 @@ abstract class SiparisRepository {
   /// `updated_at` payload'a dahil edilmez — BEFORE UPDATE trigger halleder.
   Future<Siparis> update(String id, Map<String, dynamic> fields);
 
+  /// Tamamlanmış ve iptal edilmiş siparişleri filtreleyerek getirir (geçmiş).
+  Future<List<Siparis>> getHistory({
+    DateTime? startDate,
+    DateTime? endDate,
+    String? musteriId,
+    String? cikisId,
+    String? ugramaId,
+  });
+
   /// Otomatik fiyatlandırma için en son tamamlanmış eşleşen siparişi bulur.
   Future<Siparis?> getRecentPricing({
     required String musteriId,

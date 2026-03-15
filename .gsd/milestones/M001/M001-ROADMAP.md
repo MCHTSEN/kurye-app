@@ -70,7 +70,7 @@ This milestone is complete only when all are true:
 - [x] **S05: Courier workflow** `risk:medium` `depends:[S04]`
   > After this: Courier can go active/passive, see assigned orders, punch timestamps at each stop. Order lifecycle complete from courier perspective.
 
-- [ ] **S06: Order history & editing** `risk:low` `depends:[S04]`
+- [x] **S06: Order history & editing** `risk:low` `depends:[S04]`
   > After this: Operations can view past orders in table format, filter by date/customer/route, edit orders, see running revenue totals.
 
 - [ ] **S07: Analytics dashboard** `risk:low` `depends:[S04]`

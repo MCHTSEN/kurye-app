@@ -39,3 +39,22 @@ Future<List<Siparis>> siparisListByMusteri(Ref ref, String musteriId) async {
   final repo = ref.watch(siparisRepositoryProvider);
   return repo.getByMusteriId(musteriId);
 }
+
+@riverpod
+Future<List<Siparis>> siparisHistory(
+  Ref ref, {
+  DateTime? startDate,
+  DateTime? endDate,
+  String? musteriId,
+  String? cikisId,
+  String? ugramaId,
+}) async {
+  final repo = ref.watch(siparisRepositoryProvider);
+  return repo.getHistory(
+    startDate: startDate,
+    endDate: endDate,
+    musteriId: musteriId,
+    cikisId: cikisId,
+    ugramaId: ugramaId,
+  );
+}

@@ -324,3 +324,124 @@ final class SiparisListByMusteriFamily extends $Family
   @override
   String toString() => r'siparisListByMusteriProvider';
 }
+
+@ProviderFor(siparisHistory)
+const siparisHistoryProvider = SiparisHistoryFamily._();
+
+final class SiparisHistoryProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Siparis>>,
+          List<Siparis>,
+          FutureOr<List<Siparis>>
+        >
+    with $FutureModifier<List<Siparis>>, $FutureProvider<List<Siparis>> {
+  const SiparisHistoryProvider._({
+    required SiparisHistoryFamily super.from,
+    required ({
+      DateTime? startDate,
+      DateTime? endDate,
+      String? musteriId,
+      String? cikisId,
+      String? ugramaId,
+    })
+    super.argument,
+  }) : super(
+         retry: null,
+         name: r'siparisHistoryProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$siparisHistoryHash();
+
+  @override
+  String toString() {
+    return r'siparisHistoryProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<Siparis>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<Siparis>> create(Ref ref) {
+    final argument =
+        this.argument
+            as ({
+              DateTime? startDate,
+              DateTime? endDate,
+              String? musteriId,
+              String? cikisId,
+              String? ugramaId,
+            });
+    return siparisHistory(
+      ref,
+      startDate: argument.startDate,
+      endDate: argument.endDate,
+      musteriId: argument.musteriId,
+      cikisId: argument.cikisId,
+      ugramaId: argument.ugramaId,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SiparisHistoryProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$siparisHistoryHash() => r'fc875483f9ff375fb6710fc0298a7a2ad07c0dac';
+
+final class SiparisHistoryFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<List<Siparis>>,
+          ({
+            DateTime? startDate,
+            DateTime? endDate,
+            String? musteriId,
+            String? cikisId,
+            String? ugramaId,
+          })
+        > {
+  const SiparisHistoryFamily._()
+    : super(
+        retry: null,
+        name: r'siparisHistoryProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  SiparisHistoryProvider call({
+    DateTime? startDate,
+    DateTime? endDate,
+    String? musteriId,
+    String? cikisId,
+    String? ugramaId,
+  }) => SiparisHistoryProvider._(
+    argument: (
+      startDate: startDate,
+      endDate: endDate,
+      musteriId: musteriId,
+      cikisId: cikisId,
+      ugramaId: ugramaId,
+    ),
+    from: this,
+  );
+
+  @override
+  String toString() => r'siparisHistoryProvider';
+}

@@ -208,8 +208,8 @@
 - Source: user
 - Primary owning slice: M001/S06
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Editing updates the order record, not creates a new one
+- Validation: validated
+- Notes: Editing updates the order record, not creates a new one. Widget tests cover table rendering with name resolution, filtering, tap-to-edit, save/refresh, revenue total. İptal sets durum only — no delete.
 
 ### R015 — Analytics dashboard
 
@@ -340,7 +340,7 @@
 | R011 | primary-user-loop | active | M001/S05 | none | validated |
 | R012 | primary-user-loop | active | M001/S04 | none | validated |
 | R013 | primary-user-loop | active | M001/S03 | none | validated |
-| R014 | primary-user-loop | active | M001/S06 | none | unmapped |
+| R014 | primary-user-loop | active | M001/S06 | none | validated |
 | R015 | differentiator | active | M001/S07 | none | unmapped |
 | R016 | primary-user-loop | active | M001/S05 | M001/S04 | validated |
 | R017 | launchability | active | M001/S08 | none | unmapped |
@@ -355,6 +355,6 @@
 
 - Active requirements: 18
 - Mapped to slices: 16
-- Validated: 14 (R001, R002, R003, R004, R005, R006, R007, R009, R010, R011, R012, R013, R016, R018)
+- Validated: 15 (R001, R002, R003, R004, R005, R006, R007, R009, R010, R011, R012, R013, R014, R016, R018)
 - Partially validated: 1 (R008)
 - Unmapped active requirements: 0
