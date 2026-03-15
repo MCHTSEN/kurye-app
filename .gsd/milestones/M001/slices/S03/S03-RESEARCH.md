@@ -4,143 +4,73 @@
 
 ## Summary
 
-S03 introduces the `Siparis` domain model, `SiparisRepository` contract and Supabase implementation, and replaces two placeholder müşteri pages with real order creation + active order tracking. The customer creates orders with cascading dropdowns (select müşteri's uğramalar), and operations sees new orders arrive via Supabase Realtime. This is the first slice to use Supabase Realtime — the stream pattern needs to be established here for reuse in S04/S05/S08.
+This slice is substantially pre-built. The domain model (`Siparis`, `SiparisDurum`), abstract repository (`SiparisRepository` with CRUD + realtime streams), Supabase implementation (`SupabaseSiparisRepository`), Riverpod providers (repository, stream-by-müşteri, stream-active, list-by-müşteri), and even the customer-facing UI pages (`MusteriSiparisPage` with cascading dropdowns and active order list, `MusteriGecmisPage` with date filtering) are all implemented and tested. 76 tests pass including 7 sipariş-specific tests (domain model roundtrip + widget tests). The `BackendModule` factory method and `SupabaseBackendModule` override are wired. Routes are registered. The `FakeSiparisRepository` with stream support exists for widget testing.
 
-The data layer follows the same pattern as S02 (domain model → abstract repo → Supabase impl → BackendModule factory → Riverpod providers). The main new challenge is the Realtime subscription: Supabase's `stream()` API combines initial Postgrest fetch with Realtime changes into a single `Stream<List<Map>>` — this is cleaner than manual channel management and handles reconnection automatically. RLS policies already correctly scope customer access.
-
-One gap: `MusteriPersonelRepository` lacks a `getByUserId()` method. The customer order form needs to resolve the current user → their `musteri_personelleri` record → get `personel_id` for the order. This method must be added.
+The remaining work is small but important: (1) fix 3 deprecated `value:` → `initialValue:` warnings on `DropdownButtonFormField`, (2) add customer-side navigation between sipariş and geçmiş pages (currently no way to reach `MusteriGecmisPage`), (3) verify realtime works end-to-end against live Supabase (the core risk for this slice), and (4) ensure test coverage meets the feature validation bar (the existing widget tests are solid but a `MusteriGecmisPage` widget test is missing).
 
 ## Recommendation
 
-1. **Domain model first** — `Siparis` model + `SiparisDurum` enum following the existing plain-Dart pattern. No `siparis_log` model yet (that's S04's concern).
-2. **Repository contract** — `SiparisRepository` with `create()`, `getByMusteriId()`, `getByDurum()`, `streamByMusteriId()`, `streamActive()`, and `updateDurum()`. Add `getByUserId()` to `MusteriPersonelRepository`.
-3. **Supabase implementation** — Use `stream()` API with `.eq()` filter for realtime scoped lists. Use explicit column selection (like ugrama) to avoid any future Geography column issues, though siparisler has none currently.
-4. **Customer page** — Replace placeholder `MusteriSiparisPage` with order creation form (cascading dropdowns: musteri auto-selected from profile, stops loaded by musteriId) + active orders list below using `streamByMusteriId`. Replace `MusteriGecmisPage` with completed orders filtered by date.
-5. **Realtime verification** — Prove that when customer inserts an order, operasyon's stream picks it up without refresh.
+Treat this as a **polish + verification** slice rather than a build-from-scratch slice. The main risk — Supabase Realtime pushing order changes to the customer screen — needs live verification on the iOS simulator with two role sessions. The code is already structured correctly (`stream(primaryKey: ['id']).eq('musteri_id', ...)` and `stream(primaryKey: ['id']).inFilter('durum', [...])`), but the stream API combining Postgrest initial fetch + Realtime subscription needs proof against real data.
 
-Use `stream(primaryKey: ['id'])` for realtime data — it combines initial fetch + live updates. The `inFilter('durum', [...])` filter can scope to active statuses only.
+Tasks should be:
+1. **T01: Fix deprecations & add customer navigation** — Fix `value:` → `initialValue:` on dropdowns, add BottomNavigationBar or drawer to müşteri pages for sipariş ↔ geçmiş navigation.
+2. **T02: MusteriGecmisPage widget test + realtime verification** — Add widget test for geçmiş page, then do live integration test on simulator: create order as müşteri, verify it appears in active list via realtime stream, verify operasyon sees it via `streamActive()`.
 
 ## Don't Hand-Roll
 
 | Problem | Existing Solution | Why Use It |
 |---------|------------------|------------|
-| Realtime + initial data | Supabase `stream()` API | Handles reconnection, initial fetch, and delta merging automatically — no manual channel management |
-| Cascading dropdown state | Riverpod `ugramaListByMusteriProvider(musteriId)` | Already exists from S02, triggers reload when musteriId changes |
-| Customer scoping | `AppUserProfile.musteriId` | Auth profile already carries the customer's company ID — no extra lookup needed |
-| RLS enforcement | Existing Supabase RLS policies | `musteri_personel_siparisler_insert` and `_select` policies already scope correctly |
-| Form pattern | `MusteriKayitPage` pattern from S02 | ConsumerStatefulWidget with form key, controllers, submit handler, list below |
-| Logging | `AppLogger(tag: LogTag.data)` | Established in S02 for all data repositories |
+| Sipariş domain model | `packages/backend_core/lib/src/domain/siparis.dart` | Already complete with fromJson/toJson, all DB fields mapped |
+| Sipariş CRUD + streams | `packages/backend_supabase/lib/src/supabase_siparis_repository.dart` | Full implementation: create, getByMusteriId, getByDurum, updateDurum, streamByMusteriId, streamActive |
+| Riverpod providers | `lib/product/siparis/siparis_providers.dart` | Repository + 3 derived providers (stream-by-müşteri, stream-active, list-by-müşteri) |
+| Customer order form | `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart` | Complete: cascading dropdowns from uğrama list, form validation, submit, active orders display |
+| Customer history | `lib/feature/musteri_siparis/presentation/musteri_gecmis_page.dart` | Complete: date range picker, completed order list, uğrama name resolution |
+| Widget test fakes | `test/helpers/fakes/fake_siparis_repository.dart` | In-memory store with stream support, emitForMusteri/emitActive for test scenarios |
+| Other fakes | `fake_ugrama_repository.dart`, `fake_musteri_personel_repository.dart` | Already used by existing widget tests |
 
 ## Existing Code and Patterns
 
-- `packages/backend_core/lib/src/domain/musteri.dart` — Domain model pattern: plain Dart class with `fromJson`/`toJson`, nullable fields, default values
-- `packages/backend_core/lib/src/musteri_repository.dart` — Abstract repository contract pattern: Future-based CRUD methods
-- `packages/backend_supabase/lib/src/supabase_musteri_repository.dart` — Supabase CRUD impl pattern: `_client`, `_log`, `_table` constant, `.insert().select().single()` for create, `.update().eq().select().single()` for update
-- `packages/backend_supabase/lib/src/supabase_ugrama_repository.dart` — Explicit column selection pattern (avoid Geography hex) — siparisler doesn't need this now but sets precedent
-- `packages/backend_core/lib/src/backend_module.dart` — Factory method pattern: `createXxxRepository() => null` in base, override in Supabase module
-- `lib/product/musteri/musteri_providers.dart` — Provider pattern: keepAlive for repo, autoDispose for data lists
-- `lib/product/ugrama/ugrama_providers.dart` — Family provider pattern: `ugramaListByMusteri(ref, musteriId)` for filtered queries
-- `lib/feature/operasyon/presentation/musteri_kayit_page.dart` — Full CRUD page pattern to follow for form structure
-- `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart` — Placeholder to be replaced (uses `AppSectionCard`, `ProjectPadding`, `currentUserProfileProvider`)
-- `lib/feature/musteri_siparis/presentation/musteri_gecmis_page.dart` — Placeholder to be replaced
-- `lib/app/router/custom_route.dart` — Routes `musteriSiparis` and `musteriGecmis` already registered
-- `lib/app/router/app_router.dart` — Routes already wired to existing placeholder pages
-- `test/helpers/fakes/fake_musteri_repository.dart` — In-memory fake pattern for testing
+- `packages/backend_core/lib/src/siparis_repository.dart` — Abstract contract with 4 CRUD methods + 2 stream methods. S04 will likely need `update()` for general field updates (not just durum), but that's S04 scope.
+- `packages/backend_supabase/lib/src/supabase_siparis_repository.dart` — Uses `_client.from(_table).stream(primaryKey: ['id'])` for realtime. The `streamActive()` uses `.inFilter('durum', [...])` which is the correct Supabase Realtime filter API. Has `_log` with `LogTag.data`. Omits `updated_at` from create payload (has BEFORE UPDATE trigger). Note: does NOT omit `updated_at` from update — but `updateDurum()` only sends `{'durum': durum.value}` so it's fine.
+- `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart` — Follows S02's `ConsumerStatefulWidget` pattern. Uses `_formKey`, `_selectedXxxId` state vars for dropdowns, `_clearForm()` after submit. Resolves `personel_id` via `musteriPersonelRepository.getByUserId()`. Shows active orders below form via `siparisStreamByMusteriProvider`, filtered client-side to kuryeBekliyor + devamEdiyor.
+- `lib/feature/musteri_siparis/presentation/musteri_gecmis_page.dart` — Uses `siparisListByMusteriProvider` (one-shot fetch, not stream). Filters to `tamamlandi` only. Date range picker for filtering. No navigation back to sipariş page.
+- `lib/app/router/guards/app_access_guard.dart` — müşteri_personel users are routed to `musteriSiparis` as home. Route access enforced by path prefix (`/musteri/*` → musteriPersonel only).
+- `test/feature/musteri_siparis/musteri_siparis_page_test.dart` — 4 widget tests: renders form fields, validation rejects empty required, successful submit creates order, error when no musteriId. Uses `pumpApp` with provider overrides.
+- `test/helpers/widgets/test_app.dart` — Standard `pumpApp` extension with mock backend, fake analytics, fake storage. Uses `ProviderScope.overrides`.
 
 ## Constraints
 
-- **RLS: Customer can only INSERT orders for their own `musteri_id`** — The insert payload must have `musteri_id` matching the user's `app_users.musteri_id`. Enforced by `musteri_personel_siparisler_insert` policy.
-- **RLS: Customer cannot UPDATE orders** — No update policy exists for müşteri_personel role on siparisler. Per spec 1-3: "Bundan sonraki durumlara müdahale edemesin."
-- **`olusturan_id` must be `auth.uid()`** — The column references `app_users(id)` which equals the Supabase Auth UID.
-- **`personel_id` resolution** — Need to look up `musteri_personelleri` where `user_id = auth.uid()` to get the current user's personel record ID. No existing repo method for this.
-- **`not_id` references `ugramalar`** — The "Not" dropdown also loads from ugramalar for the selected customer (same source as Çıkış/Uğrama/Uğrama1).
-- **`siparisler` has BEFORE UPDATE trigger** — Must omit `updated_at` from update payloads (same pattern as musteriler/kuryeler).
-- **Realtime already configured** — `ALTER PUBLICATION supabase_realtime ADD TABLE siparisler` is in the migration. No additional DB config needed.
-- **`siparis_durum` enum in DB** — Values: `kurye_bekliyor`, `devam_ediyor`, `tamamlandi`, `iptal`. Domain model enum must match exactly.
-- **`ucret` is NUMERIC(10,2)** — Map to `double?` in Dart (comes back as `num` from JSON).
-- **Supabase stream() RLS interaction** — The `stream()` API uses Postgrest for initial fetch (respects RLS) and Realtime for changes (Realtime broadcasts all changes, but `stream()` filters client-side by the specified filters). For customer scoping, use `.eq('musteri_id', musteriId)` filter.
+- **RLS on siparisler** — müşteri_personel can only SELECT where `musteri_id` matches their `app_users.musteri_id`, and INSERT with the same check. This means the customer can only see/create orders for their own company. The `olusturan_id` field is SET NULL on delete, not enforced by RLS.
+- **`siparisler` has BEFORE UPDATE trigger** — `updated_at` is auto-set. Update payloads should not include `updated_at`.
+- **Supabase Realtime publication** — `siparisler` is already in `supabase_realtime` publication. No migration needed.
+- **`not_id` references `ugramalar`** — The "Not" dropdown is an uğrama reference, not a free-text note category. The existing implementation correctly uses the same uğrama dropdown items for all 4 dropdown fields (Çıkış, Uğrama, Uğrama1, Not).
+- **`DropdownButtonFormField.value` deprecated** — Flutter SDK deprecated `value:` in favor of `initialValue:` after v3.33.0. The existing code triggers 3 `deprecated_member_use` info diagnostics. These should be fixed but may require testing — `initialValue` behaves slightly differently with form state.
+- **No bottom navigation for müşteri** — The customer currently lands on `MusteriSiparisPage` with no way to navigate to `MusteriGecmisPage`. Needs either a BottomNavigationBar, drawer, or AppBar action button.
+- **`streamByMusteriId` returns ALL orders for the müşteri** — The active orders section in `MusteriSiparisPage` filters client-side to `kuryeBekliyor + devamEdiyor`. This is correct but means completed/cancelled orders are also fetched and discarded on the client.
 
 ## Common Pitfalls
 
-- **Realtime doesn't respect RLS by default** — Supabase Realtime broadcasts INSERT/UPDATE/DELETE to all channel subscribers. The `stream()` API handles this by maintaining a client-side list and filtering. But if using raw `onPostgresChanges()`, you'd get all changes regardless of RLS. Stick with `stream()` + filter.
-- **Stream disposal** — Riverpod `StreamProvider` auto-cancels when no widgets are listening, which handles Realtime channel cleanup. But `keepAlive` stream providers would leak — use `autoDispose` for all stream providers.
-- **Customer personel without musteri_id** — If `AppUserProfile.musteriId` is null for a customer user, the order form breaks. This shouldn't happen if approval flow (S02 RolOnayPage) works correctly, but add a guard.
-- **Cascading dropdown reset** — When the customer is auto-selected (from profile), uğramalar load immediately. But if the customer changes (operasyon flow), dependent dropdowns must reset. Customer page has fixed müşteri so this is simpler.
-- **`stream()` filter limitations** — The `stream()` API only supports simple equality/comparison filters. For "active orders" (durum IN [kurye_bekliyor, devam_ediyor]), use `.inFilter('durum', ['kurye_bekliyor', 'devam_ediyor'])`.
-- **Timestamp fields** — `cikis_saat`, `ugrama_saat`, `ugrama1_saat`, `atanma_saat`, `bitis_saat` are all nullable TIMESTAMPTZ. Map to `DateTime?`. These are set by courier (S05) and operations (S04), not by the customer.
+- **`initialValue` vs `value` on DropdownButtonFormField** — `initialValue` is set once when the form field is created. If you need to programmatically change the selected value (e.g., `_clearForm()`), you need to use a `FormField` key or `_formKey.currentState?.reset()`. The existing code uses `setState()` to update `_selectedXxxId` and passes it as `value:` — switching to `initialValue:` requires verifying that form reset still works correctly.
+- **Supabase Realtime stream vs channel** — The `stream()` method on `SupabaseQueryBuilder` combines an initial Postgrest fetch with a Realtime subscription. It returns `Stream<List<Map<String, dynamic>>>` — the full current state after each change, not just the diff. This is correct for the current usage (rebuild full list on any change). The alternative `channel().onPostgresChanges()` gives individual change events — not needed here.
+- **RLS blocking realtime** — Supabase Realtime respects RLS policies. The `stream()` method's initial fetch goes through RLS, and the realtime subscription also filters by RLS. This means a müşteri_personel user will only receive realtime events for their own company's orders. No additional client-side filtering needed for RLS — but the client-side durum filter is still needed.
 
 ## Open Risks
 
-- **Realtime latency with RLS** — First time using Supabase Realtime in this app. If stream() performance is poor or reconnection is flaky on iOS, it could block S03 verification. Mitigation: test early with a simple stream before building the full UI.
-- **Customer personel_id resolution** — Need to add `getByUserId(String userId)` to `MusteriPersonelRepository`. If the customer user's personel record doesn't exist or doesn't have `user_id` set, the order form can't resolve personel_id. Need to handle gracefully (allow null personel_id or show error).
-- **Stream provider invalidation** — When a new order is created via REST, the `stream()` should pick it up automatically via Realtime. But if Realtime is delayed, the UI might not update instantly. Need to verify this works reliably.
-- **`not_id` naming confusion** — In the DB schema, `not_id` references `ugramalar` — it's a dropdown that selects an ugrama as a "note destination". The spec names it "Not (Dropdown)" which is non-obvious. Document this clearly in the domain model.
-
-## Schema Reference
-
-```sql
-CREATE TYPE siparis_durum AS ENUM (
-  'kurye_bekliyor',
-  'devam_ediyor',
-  'tamamlandi',
-  'iptal'
-);
-
-CREATE TABLE siparisler (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  musteri_id UUID NOT NULL REFERENCES musteriler(id),
-  personel_id UUID REFERENCES musteri_personelleri(id),
-  kurye_id UUID REFERENCES kuryeler(id),
-  cikis_id UUID NOT NULL REFERENCES ugramalar(id),
-  ugrama_id UUID NOT NULL REFERENCES ugramalar(id),
-  ugrama1_id UUID REFERENCES ugramalar(id),           -- optional
-  not_id UUID REFERENCES ugramalar(id),                -- "Not" dropdown, ugrama ref
-  not1 TEXT,                                            -- free text note
-  durum siparis_durum NOT NULL DEFAULT 'kurye_bekliyor',
-  ucret NUMERIC(10,2),
-  cikis_saat TIMESTAMPTZ,
-  ugrama_saat TIMESTAMPTZ,
-  ugrama1_saat TIMESTAMPTZ,
-  atanma_saat TIMESTAMPTZ,
-  bitis_saat TIMESTAMPTZ,
-  olusturan_id UUID REFERENCES app_users(id),
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
-);
--- BEFORE UPDATE trigger: auto-updates updated_at
--- Indexes: durum, musteri_id, kurye_id, created_at DESC
--- Realtime: published via supabase_realtime
--- RLS: operasyon full, customer select+insert (own musteri_id), kurye select+update (own kurye_id)
-```
-
-## Deliverables Map
-
-| Deliverable | Requirement | Notes |
-|-------------|-------------|-------|
-| `Siparis` domain model | R007 | All columns except Geography-related |
-| `SiparisDurum` enum | R007, R008 | 4 values matching DB enum |
-| `SiparisRepository` contract | R007, R008, R013 | create, getByMusteriId, getByDurum, streamByMusteriId, streamActive, updateDurum |
-| `SupabaseSiparisRepository` | R007, R008, R013 | Supabase impl with `stream()` for realtime |
-| BackendModule + barrel exports | R007 | Factory method + exports |
-| Riverpod providers (repo, stream, list) | R007, R008, R013 | autoDispose stream providers for realtime |
-| `MusteriPersonelRepository.getByUserId()` | R007 | Needed to resolve current user → personel_id |
-| `MusteriSiparisPage` (order form + active list) | R007, R008, R013 | Replace placeholder with cascading dropdowns + realtime active order list |
-| `MusteriGecmisPage` (history with date filter) | R013 | Replace placeholder with completed order list + date filtering |
+- **Realtime subscription reliability** — The `stream()` API combines Postgrest + Realtime. If the WebSocket disconnects or the Realtime service lags, the customer may not see order status changes promptly. The Supabase Flutter SDK handles reconnection automatically, but this needs live verification. This is the core risk for the milestone's proof strategy ("retire in S03 by proving customer order appears on ops screen without refresh").
+- **`DropdownButtonFormField.value` deprecation fix** — May subtly change form behavior. The fix is low-risk but needs careful testing since the form relies on `setState` + `_clearForm()` interaction with dropdown state.
+- **`not_id` field semantics** — The "Not" dropdown uses the same uğrama list as Çıkış/Uğrama/Uğrama1. This seems intentional from the DB schema (it references `ugramalar`), but the spec says "Not (dropdown)" without clarifying what values it should contain. Current implementation is consistent with the DB schema.
 
 ## Skills Discovered
 
 | Technology | Skill | Status |
 |------------|-------|--------|
-| Supabase | `supabase/agent-skills@supabase-postgres-best-practices` (34K installs) | available — not installed. Postgres-focused, may help with RLS/query optimization. |
-| Flutter | `jeffallan/claude-skills@flutter-expert` (4.9K installs) | available — not installed. General Flutter skill. |
-| Flutter Riverpod | `juparave/dotfiles@flutter-riverpod-expert` (332 installs) | available — not installed. Low install count. |
-| Mobile Design | `mobile-design` | installed |
-| Senior Mobile | `senior-mobile` | installed |
-| QA Testing Mobile | `qa-testing-mobile` | installed |
+| Supabase | `supabase/agent-skills@supabase-postgres-best-practices` (34K installs) | available — `npx skills add supabase/agent-skills@supabase-postgres-best-practices` |
+| Flutter | `flutter/skills@flutter-layout` (1.2K installs) | available — not directly relevant to this slice |
+| Flutter (Riverpod) | — | none found for Riverpod specifically |
+| Mobile design | `mobile-design` | installed (in `<available_skills>`) |
 
 ## Sources
 
-- Supabase `stream()` API: combines Postgrest initial fetch + Realtime into one `Stream<List<Map>>`, supports `.eq()`, `.inFilter()` etc. (source: [Supabase Dart Reference](https://supabase.com/docs/reference/dart/or))
-- Supabase `onPostgresChanges()`: raw channel subscription, doesn't filter by RLS — prefer `stream()` (source: [Supabase Dart Reference](https://supabase.com/docs/reference/dart/auth-getuseridentities))
-- Spec: moto-kurye.md sections 1-1 through 1-5 define customer order creation and tracking requirements
-- Spec: moto-kurye.md section 2-2-a defines operasyon order creation panel with same dropdown pattern
+- Supabase Realtime `stream()` API supports `eq`, `inFilter`, and other filters on the stream builder — confirmed via Context7 docs (source: supabase.com/docs/reference/dart)
+- `stream()` emits initial data and subsequent changes as `Stream<List<Map<String, dynamic>>>` using combined Postgrest + Realtime — not just diffs (source: supabase.com/docs/reference/dart)
+- `DropdownButtonFormField.value` deprecated after Flutter v3.33.0-1.0.pre in favor of `initialValue` (source: flutter analyze output)
