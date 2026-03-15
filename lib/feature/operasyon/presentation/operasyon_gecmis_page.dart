@@ -15,6 +15,7 @@ import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/searchable_dropdown.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
+import '../../../product/navigation/logout_helper.dart';
 
 final _log = Logger();
 
@@ -260,6 +261,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       navItems: operasyonNavItems,
       headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
+      onLogout: logoutCallback(ref),
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [

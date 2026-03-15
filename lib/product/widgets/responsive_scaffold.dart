@@ -32,6 +32,7 @@ class ResponsiveScaffold extends StatelessWidget {
     this.headerSubtitle,
     this.actions,
     this.floatingActionButton,
+    this.onLogout,
   });
 
   final String title;
@@ -42,6 +43,10 @@ class ResponsiveScaffold extends StatelessWidget {
   final String? headerSubtitle;
   final List<Widget>? actions;
   final Widget? floatingActionButton;
+
+  /// Optional callback for logout. When provided, a logout button is shown
+  /// at the bottom of the drawer and navigation rail.
+  final VoidCallback? onLogout;
 
   int get _selectedIndex {
     final idx = navItems.indexWhere((n) => n.route == currentRoute);
@@ -146,6 +151,17 @@ class ResponsiveScaffold extends StatelessWidget {
                 _onNavigate(context, i);
               },
             ),
+          if (onLogout != null) ...[
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Çıkış Yap'),
+              onTap: () {
+                Navigator.pop(context);
+                onLogout!();
+              },
+            ),
+          ],
         ],
       ),
     );

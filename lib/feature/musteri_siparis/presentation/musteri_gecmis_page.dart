@@ -12,6 +12,7 @@ import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
+import '../../../product/navigation/logout_helper.dart';
 
 class MusteriGecmisPage extends ConsumerStatefulWidget {
   const MusteriGecmisPage({super.key});
@@ -50,6 +51,7 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
       navItems: musteriNavItems,
       headerTitle: 'Moto Kurye',
       headerSubtitle: 'Müşteri',
+      onLogout: logoutCallback(ref),
       body: profileAsync.when(
         data: (profile) {
           if (profile == null || profile.musteriId == null) {

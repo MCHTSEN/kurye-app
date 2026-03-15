@@ -14,6 +14,7 @@ import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/role_request/role_request_providers.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 import '../../../product/widgets/searchable_dropdown.dart';
+import '../../../product/navigation/logout_helper.dart';
 
 class RolOnayPage extends ConsumerStatefulWidget {
   const RolOnayPage({super.key});
@@ -35,6 +36,7 @@ class _RolOnayPageState extends ConsumerState<RolOnayPage> {
       navItems: operasyonNavItems,
       headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
+      onLogout: logoutCallback(ref),
       body: pendingAsync.when(
         data: (requests) {
           if (requests.isEmpty) {

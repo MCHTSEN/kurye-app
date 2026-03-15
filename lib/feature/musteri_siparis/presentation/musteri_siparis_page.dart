@@ -15,6 +15,7 @@ import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/searchable_dropdown.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
+import '../../../product/navigation/logout_helper.dart';
 
 class MusteriSiparisPage extends ConsumerStatefulWidget {
   const MusteriSiparisPage({super.key});
@@ -126,6 +127,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
       navItems: musteriNavItems,
       headerTitle: 'Moto Kurye',
       headerSubtitle: 'Müşteri',
+      onLogout: logoutCallback(ref),
       body: profileAsync.when(
         data: (profile) {
           if (profile == null || profile.musteriId == null) {

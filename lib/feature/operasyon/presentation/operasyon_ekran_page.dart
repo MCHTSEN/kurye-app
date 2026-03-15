@@ -21,6 +21,7 @@ import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/searchable_dropdown.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
+import '../../../product/navigation/logout_helper.dart';
 
 final _log = Logger();
 
@@ -319,6 +320,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       navItems: operasyonNavItems,
       headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
+      onLogout: logoutCallback(ref),
       body: profileAsync.when(
         data: (profile) {
           if (profile == null) {
