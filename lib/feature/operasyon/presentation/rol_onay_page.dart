@@ -186,8 +186,10 @@ class _RequestCard extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: 8,
+              runSpacing: 8,
               children: [
                 OutlinedButton.icon(
                   onPressed: onReject,
@@ -197,7 +199,6 @@ class _RequestCard extends ConsumerWidget {
                     foregroundColor: Colors.red,
                   ),
                 ),
-                const SizedBox(width: 8),
                 FilledButton.icon(
                   onPressed: onApprove,
                   icon: const Icon(Icons.check, size: 18),
