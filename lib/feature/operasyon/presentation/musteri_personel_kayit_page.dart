@@ -130,15 +130,13 @@ class _MusteriPersonelKayitPageState
         padding: ProjectPadding.all.normal,
         children: [
           AppSectionCard(
-            title:
-                _editingId != null ? 'Personel Düzenle' : 'Yeni Personel',
+            title: _editingId != null ? 'Personel Düzenle' : 'Yeni Personel',
             child: Form(
               key: _formKey,
               child: Column(
                 children: [
                   musteriAsync.when(
-                    data: (musteriler) =>
-                        SearchableDropdown<String>(
+                    data: (musteriler) => SearchableDropdown<String>(
                       value: _selectedMusteriId,
                       label: 'Müşteri *',
                       placeholder: 'Müşteri Seç',
@@ -148,10 +146,8 @@ class _MusteriPersonelKayitPageState
                             (m) => (value: m.id, label: m.firmaKisaAd),
                           )
                           .toList(),
-                      onChanged: (v) =>
-                          setState(() => _selectedMusteriId = v),
-                      validator: (v) =>
-                          v == null ? 'Müşteri seçiniz' : null,
+                      onChanged: (v) => setState(() => _selectedMusteriId = v),
+                      validator: (v) => v == null ? 'Müşteri seçiniz' : null,
                     ),
                     loading: () => const LinearProgressIndicator(),
                     error: (e, _) => Text('Müşteri yüklenemedi: $e'),
@@ -160,9 +156,8 @@ class _MusteriPersonelKayitPageState
                   TextFormField(
                     controller: _adController,
                     decoration: const InputDecoration(labelText: 'Ad *'),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'Zorunlu alan'
-                        : null,
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Zorunlu alan' : null,
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   TextFormField(
@@ -226,8 +221,9 @@ class _MusteriPersonelKayitPageState
                                 trailing: Icon(
                                   Icons.circle,
                                   size: 12,
-                                  color:
-                                      p.isActive ? AppColors.secondary : AppColors.textMuted,
+                                  color: p.isActive
+                                      ? AppColors.secondary
+                                      : AppColors.textMuted,
                                 ),
                                 onTap: () => _populateForm(p),
                               ),

@@ -50,8 +50,11 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     super.initState();
     final now = DateTime.now();
     _dateRange = DateTimeRange(
-      start: DateTime(now.year, now.month, now.day)
-          .subtract(const Duration(days: 30)),
+      start: DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(const Duration(days: 30)),
       end: DateTime(now.year, now.month, now.day),
     );
   }
@@ -77,8 +80,11 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     final now = DateTime.now();
     setState(() {
       _dateRange = DateTimeRange(
-        start: DateTime(now.year, now.month, now.day)
-            .subtract(const Duration(days: 30)),
+        start: DateTime(
+          now.year,
+          now.month,
+          now.day,
+        ).subtract(const Duration(days: 30)),
         end: DateTime(now.year, now.month, now.day),
       );
       _filterMusteriId = null;
@@ -109,8 +115,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       _editCikisId = order.cikisId;
       _editUgramaId = order.ugramaId;
       _editDurum = order.durum.value;
-      _editUcretController.text =
-          order.ucret != null ? order.ucret!.toStringAsFixed(2) : '';
+      _editUcretController.text = order.ucret != null
+          ? order.ucret!.toStringAsFixed(2)
+          : '';
       _editNot1Controller.text = order.not1 ?? '';
     });
   }
@@ -307,9 +314,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
         key: const Key('revenue_total'),
         '${total.toStringAsFixed(2)} TL',
         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
-            ),
+          fontWeight: FontWeight.bold,
+          color: AppColors.primary,
+        ),
       ),
     );
   }
@@ -320,10 +327,12 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     AsyncValue<List<Musteri>> musteriListAsync,
     AsyncValue<List<Ugrama>> ugramaListAsync,
   ) {
-    final musteriler =
-        musteriListAsync is AsyncData<List<Musteri>> ? musteriListAsync.value : <Musteri>[];
-    final ugramalar =
-        ugramaListAsync is AsyncData<List<Ugrama>> ? ugramaListAsync.value : <Ugrama>[];
+    final musteriler = musteriListAsync is AsyncData<List<Musteri>>
+        ? musteriListAsync.value
+        : <Musteri>[];
+    final ugramalar = ugramaListAsync is AsyncData<List<Ugrama>>
+        ? ugramaListAsync.value
+        : <Ugrama>[];
 
     // All stops shown — operasyon sees the full ugrama pool.
     // Müşteri-based stop filtering will use the köprü table (S02).
@@ -441,10 +450,12 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     AsyncValue<List<Musteri>> musteriListAsync,
     AsyncValue<List<Ugrama>> ugramaListAsync,
   ) {
-    final musteriler =
-        musteriListAsync is AsyncData<List<Musteri>> ? musteriListAsync.value : <Musteri>[];
-    final ugramalar =
-        ugramaListAsync is AsyncData<List<Ugrama>> ? ugramaListAsync.value : <Ugrama>[];
+    final musteriler = musteriListAsync is AsyncData<List<Musteri>>
+        ? musteriListAsync.value
+        : <Musteri>[];
+    final ugramalar = ugramaListAsync is AsyncData<List<Ugrama>>
+        ? ugramaListAsync.value
+        : <Ugrama>[];
 
     // All stops shown — operasyon sees the full ugrama pool.
     final filteredStops = ugramalar;
@@ -564,22 +575,28 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                   selected: isSelected,
                   onSelectChanged: (_) => _selectOrder(s),
                   cells: [
-                    DataCell(Text(
-                      s.createdAt != null ? _formatDate(s.createdAt!) : '-',
-                    )),
+                    DataCell(
+                      Text(
+                        s.createdAt != null ? _formatDate(s.createdAt!) : '-',
+                      ),
+                    ),
                     DataCell(Text(musteriMap[s.musteriId] ?? s.musteriId)),
                     DataCell(Text(ugramaMap[s.cikisId] ?? s.cikisId)),
                     DataCell(Text(ugramaMap[s.ugramaId] ?? s.ugramaId)),
-                    DataCell(Text(
-                      s.kuryeId != null
-                          ? (kuryeMap[s.kuryeId!] ?? s.kuryeId!)
-                          : '-',
-                    )),
-                    DataCell(Text(
-                      s.ucret != null
-                          ? '₺${s.ucret!.toStringAsFixed(2)}'
-                          : '-',
-                    )),
+                    DataCell(
+                      Text(
+                        s.kuryeId != null
+                            ? (kuryeMap[s.kuryeId!] ?? s.kuryeId!)
+                            : '-',
+                      ),
+                    ),
+                    DataCell(
+                      Text(
+                        s.ucret != null
+                            ? '₺${s.ucret!.toStringAsFixed(2)}'
+                            : '-',
+                      ),
+                    ),
                     DataCell(Text(s.durum.value)),
                   ],
                 );

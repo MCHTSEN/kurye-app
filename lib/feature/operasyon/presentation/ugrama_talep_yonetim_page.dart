@@ -245,7 +245,11 @@ class _TalepCardState extends ConsumerState<_TalepCard> {
               const SizedBox(height: AppSpacing.xxs),
               Row(
                 children: [
-                  const Icon(Icons.location_on, size: 16, color: AppColors.textMuted),
+                  const Icon(
+                    Icons.location_on,
+                    size: 16,
+                    color: AppColors.textMuted,
+                  ),
                   const SizedBox(width: 4),
                   Expanded(child: Text(talep.adres!)),
                 ],
@@ -255,7 +259,10 @@ class _TalepCardState extends ConsumerState<_TalepCard> {
               const SizedBox(height: AppSpacing.xxs),
               Text(
                 _formatDate(talep.createdAt!),
-                style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textMuted,
+                ),
               ),
             ],
             const SizedBox(height: AppSpacing.sm),

@@ -14,8 +14,9 @@ const _operasyonProfile = AppUserProfile(
 
 void main() {
   group('OperasyonAyarlarPage', () {
-    testWidgets('renders account summary and secondary navigation items',
-        (tester) async {
+    testWidgets('renders account summary and secondary navigation items', (
+      tester,
+    ) async {
       await tester.pumpApp(
         const OperasyonAyarlarPage(),
         overrides: [

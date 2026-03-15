@@ -98,7 +98,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
   Future<void> _onCreateOrder(String userId) async {
     final hasDropdownErrors =
-        _selectedMusteriId == null || _selectedCikisId == null || _selectedUgramaId == null;
+        _selectedMusteriId == null ||
+        _selectedCikisId == null ||
+        _selectedUgramaId == null;
 
     if (!_formKey.currentState!.validate() || hasDropdownErrors) {
       return;
@@ -114,7 +116,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         ugramaId: _selectedUgramaId!,
         ugrama1Id: _selectedUgrama1Id,
         notId: _selectedNotId,
-        not1: _not1Controller.text.trim().isNotEmpty ? _not1Controller.text.trim() : null,
+        not1: _not1Controller.text.trim().isNotEmpty
+            ? _not1Controller.text.trim()
+            : null,
         olusturanId: userId,
       );
 
@@ -442,8 +446,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     Map<String, String> personelMap,
   })
   _resolveDispatchData(List<Siparis> allOrders) {
-    final waiting = allOrders.where((s) => s.durum == SiparisDurum.kuryeBekliyor).toList();
-    final active = allOrders.where((s) => s.durum == SiparisDurum.devamEdiyor).toList();
+    final waiting = allOrders
+        .where((s) => s.durum == SiparisDurum.kuryeBekliyor)
+        .toList();
+    final active = allOrders
+        .where((s) => s.durum == SiparisDurum.devamEdiyor)
+        .toList();
 
     // Build name-resolution maps (D027 pattern).
     final ugramaListAsync = ref.watch(ugramaListProvider);
@@ -554,7 +562,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       icon: Icons.add_rounded,
       accentColor: AppColors.primary,
       child: musteriListAsync.when(
-        data: (musteriler) => _buildOrderForm(musteriler: musteriler, userId: userId),
+        data: (musteriler) =>
+            _buildOrderForm(musteriler: musteriler, userId: userId),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => const Text('Müşteriler alınamadı.'),
       ),
@@ -565,7 +574,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     required List<Musteri> musteriler,
     required String userId,
   }) {
-    final musteriItems = musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList();
+    final musteriItems = musteriler
+        .map((m) => (value: m.id, label: m.firmaKisaAd))
+        .toList();
 
     return Form(
       key: _formKey,
@@ -612,11 +623,15 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }
 
   Widget _buildStopDropdowns() {
-    final ugramaAsync = ref.watch(ugramaListByMusteriProvider(_selectedMusteriId!));
+    final ugramaAsync = ref.watch(
+      ugramaListByMusteriProvider(_selectedMusteriId!),
+    );
 
     return ugramaAsync.when(
       data: (ugramalar) {
-        final items = ugramalar.map((u) => (value: u.id, label: u.ugramaAdi)).toList();
+        final items = ugramalar
+            .map((u) => (value: u.id, label: u.ugramaAdi))
+            .toList();
 
         return Column(
           children: [
@@ -708,9 +723,14 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
             ...waiting.map(
               (s) {
                 final musteriAd = musteriMap[s.musteriId] ?? s.musteriId;
-                final personelAd = s.personelId != null ? personelMap[s.personelId!] : null;
+                final personelAd = s.personelId != null
+                    ? personelMap[s.personelId!]
+                    : null;
                 final subtitle = [
-                  if (personelAd != null) '$musteriAd / $personelAd' else musteriAd,
+                  if (personelAd != null)
+                    '$musteriAd / $personelAd'
+                  else
+                    musteriAd,
                   if (s.not1 != null) s.not1!,
                 ].join(' — ');
 
@@ -724,7 +744,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                         : Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? AppColors.secondary : Colors.white.withValues(alpha: 0.1),
+                      color: isSelected
+                          ? AppColors.secondary
+                          : Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                   child: CheckboxListTile(
@@ -733,7 +755,11 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                       _routeLabel(s, ugramaMap: ugramaMap),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
-                    subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    subtitle: Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     value: isSelected,
                     onChanged: (checked) {
                       setState(() {
@@ -744,7 +770,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                         }
                       });
                     },
-                    checkboxShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    checkboxShape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                     activeColor: AppColors.secondary,
                     checkColor: AppColors.textPrimary,
                   ),
@@ -763,7 +791,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     label: 'Kurye Ata',
                     placeholder: 'Kurye Seç',
                     searchPlaceholder: 'Kurye ara...',
-                    items: activeKuryeler.map((k) => (value: k.id, label: k.ad)).toList(),
+                    items: activeKuryeler
+                        .map((k) => (value: k.id, label: k.ad))
+                        .toList(),
                     onChanged: (v) => setState(() => _selectedKuryeId = v),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -771,7 +801,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed:
-                          _waitingSelected.isNotEmpty && _selectedKuryeId != null && !_isAssigning
+                          _waitingSelected.isNotEmpty &&
+                              _selectedKuryeId != null &&
+                              !_isAssigning
                           ? () => _onAssign(
                               userId: userId,
                               waitingOrders: waiting,
@@ -781,7 +813,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                         backgroundColor: AppColors.secondary,
                         foregroundColor: AppColors.textPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
                       child: _isAssigning
@@ -793,7 +827,10 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                                 color: AppColors.textPrimary,
                               ),
                             )
-                          : const Text('KURYE ATA', style: TextStyle(fontWeight: FontWeight.w800)),
+                          : const Text(
+                              'KURYE ATA',
+                              style: TextStyle(fontWeight: FontWeight.w800),
+                            ),
                     ),
                   ),
                 ],
@@ -848,7 +885,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                         : Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.1),
+                      color: isSelected
+                          ? AppColors.primary
+                          : Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                   child: CheckboxListTile(
@@ -870,7 +909,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                         }
                       });
                     },
-                    checkboxShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    checkboxShape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                     activeColor: AppColors.primary,
                   ),
                 );
@@ -890,7 +931,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 elevation: 4,
                 shadowColor: AppColors.primary.withValues(alpha: 0.4),
               ),
@@ -898,9 +941,15 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                   ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
-                  : const Text('TESLİMATI BİTİR', style: TextStyle(fontWeight: FontWeight.w800)),
+                  : const Text(
+                      'TESLİMATI BİTİR',
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
             ),
           ),
         ],
@@ -1031,10 +1080,16 @@ class _PremiumCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: (accentColor ?? AppColors.primary).withValues(alpha: 0.1),
+                        color: (accentColor ?? AppColors.primary).withValues(
+                          alpha: 0.1,
+                        ),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(icon, color: accentColor ?? AppColors.primary, size: 24),
+                      child: Icon(
+                        icon,
+                        color: accentColor ?? AppColors.primary,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 16),
                   ],

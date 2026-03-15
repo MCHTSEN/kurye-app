@@ -87,16 +87,16 @@ class _RolOnayPageState extends ConsumerState<RolOnayPage> {
   }
 
   Future<void> _approve(RoleRequest request) async {
-    final isMusteriPersonel =
-        request.requestedRole == UserRole.musteriPersonel;
+    final isMusteriPersonel = request.requestedRole == UserRole.musteriPersonel;
     final musteriId = _musteriSelections[request.id];
 
     if (isMusteriPersonel && (musteriId == null || musteriId.isEmpty)) {
       ShadToaster.of(context).show(
         const ShadToast.destructive(
           title: Text('Hata'),
-          description:
-              Text('Müşteri personeli onayı için müşteri seçimi zorunlu.'),
+          description: Text(
+            'Müşteri personeli onayı için müşteri seçimi zorunlu.',
+          ),
         ),
       );
       return;
@@ -191,8 +191,7 @@ class _RequestCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ShadTheme.of(context);
-    final isMusteriPersonel =
-        request.requestedRole == UserRole.musteriPersonel;
+    final isMusteriPersonel = request.requestedRole == UserRole.musteriPersonel;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),

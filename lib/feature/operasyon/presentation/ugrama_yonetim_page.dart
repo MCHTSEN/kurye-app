@@ -165,8 +165,8 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
             Text(
               'Müşteri Ataması',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(height: AppSpacing.xxs),
             musteriAsync.when(
@@ -306,7 +306,10 @@ class _UgramaListTile extends ConsumerWidget {
                   children: chipLabels
                       .map(
                         (label) => Chip(
-                          label: Text(label, style: const TextStyle(fontSize: 11)),
+                          label: Text(
+                            label,
+                            style: const TextStyle(fontSize: 11),
+                          ),
                           materialTapTargetSize:
                               MaterialTapTargetSize.shrinkWrap,
                           visualDensity: VisualDensity.compact,

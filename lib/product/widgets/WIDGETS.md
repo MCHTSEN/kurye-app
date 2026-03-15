@@ -17,6 +17,11 @@ Defines reusable widget contracts used across features.
   - Reusable retryable error block
 - `AppPageScaffold`
   - Standard page shell with title, padding, and scroll behavior
+- `ResponsiveScaffold`
+  - Adaptive page shell
+  - Mobile: `AppBar` + optional drawer
+  - Tablet/Desktop: `NavigationRail` + body
+  - Supports disabling the mobile drawer for shell-based flows
 
 ## Usage Rules
 - Use shared widgets before creating new duplicates.
@@ -24,6 +29,8 @@ Defines reusable widget contracts used across features.
 - If contract changes, update this file before refactoring feature screens.
 - Base screen/section paddings should use `ProjectPadding` tokens.
 - Screen analytics is handled centrally by router observer, not by widget wrappers.
+- Feature shells may own the mobile bottom navigation while still reusing
+  `ResponsiveScaffold` for the inner page chrome.
 
 ## Last Updated
-- 2026-03-08
+- 2026-03-16
