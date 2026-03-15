@@ -14,25 +14,28 @@ The core dispatch loop: customer creates order → operations assigns courier �
 
 ## Current State
 
-S01–S07 complete (7 of 8 slices in M001). All core functionality is built:
+M001 complete — all 8 slices done. All 18 active requirements validated. 123 tests passing, 0 analysis errors.
+
+What's built:
 - Supabase DB with 10 tables deployed + siparis_log audit table
 - Auth with Supabase, role-based routing via AppAccessGuard
 - Role request/approval flow with müşteri assignment for personel role
 - 6 domain models (Musteri, Ugrama, MusteriPersonel, Kurye, Siparis, SiparisLog) with repositories and Supabase implementations
 - 4 master-detail CRUD pages for operasyon (müşteri, uğrama, personel, kurye management)
-- Customer order creation form with 4 cascading dropdowns + active orders realtime list
-- Customer history page with date range filtering
+- Customer order creation form with 4 cascading dropdowns + active orders realtime list + history page with date filtering
 - 3-panel operations dispatch screen: order creation, kurye bekleyenler (waiting queue), devam edenler (in-progress)
 - Courier assignment flow with checkbox selection + courier dropdown
 - Order finish flow with auto-pricing from historical orders + manual pricing fallback dialog
 - SiparisLog audit trail on every status transition
 - Courier main screen with active/passive toggle, realtime order list, and çıkış/uğrama/uğrama1 timestamp punching
-- Operations order history page with Excel-like DataTable, multi-dimension filters (date/müşteri/çıkış/uğrama), tap-to-edit panel, and running revenue total
+- Operations order history page with Excel-like DataTable, multi-dimension filters, tap-to-edit panel, and running revenue total
 - Analytics dashboard with live revenue metrics (3mo/1mo/1wk + daily avg), courier performance stats, active courier count
-- Supabase Realtime stream pattern: single stream feeds panels, split client-side by status (ops + courier)
-- 114 tests passing, 0 analysis errors
+- Sound alerts on new dispatch orders via OrderAlertService (audioplayers)
+- Human-readable name resolution on all screens (stops and courier names replace UUIDs)
+- Cross-role integration test proving full order lifecycle
+- Supabase Realtime stream pattern: single stream feeds panels, split client-side by status
 
-Next: S08 (Cross-role integration & polish) — sound alerts, end-to-end verification, edge case handling. Final slice of M001.
+Remaining before production: UAT on iOS simulator (manual cross-role test), then M002 for deferred features (location tracking, map tracking, auto-assignment, web responsive).
 
 ## Architecture / Key Patterns
 
@@ -44,7 +47,8 @@ Next: S08 (Cross-role integration & polish) — sound alerts, end-to-end verific
 - **CRUD pattern**: Master-detail pages (form top, list bottom, tap to edit) with ConsumerStatefulWidget
 - **Realtime**: Supabase `stream(primaryKey: ['id'])` + filter + handleError, autoDispose providers
 - **Analytics**: Pure computation via DashboardStats.compute() factory, per-card ConsumerWidget with independent .when()
-- **Logging**: AppLogger with LogTag.data for CRUD/stream operations, LogTag.auth for auth
+- **Sound alerts**: OrderAlertService with constructor injection, _knownWaitingIds bootstrap pattern
+- **Name resolution**: D027 pattern — build maps from list providers, look up by ID, fall back to raw UUID
 - **Entry point**: `lib/main_supabase.dart` with `--dart-define-from-file=.env`
 
 ## Capability Contract
@@ -53,4 +57,4 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 ## Milestone Sequence
 
-- [ ] M001: Core dispatch app — All 3 roles functional with order lifecycle, CRUD, analytics, and realtime sync (7/8 slices done)
+- [x] M001: Core dispatch app — All 3 roles functional with order lifecycle, CRUD, analytics, and realtime sync (8/8 slices done, all 18 requirements validated)

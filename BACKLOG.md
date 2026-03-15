@@ -248,3 +248,22 @@ Project audit log for major changes.
   - `flutter analyze` passed (0 errors, 0 warnings).
   - `flutter test` passed (86 tests).
   - `flutter build ios --simulator` passed.
+
+---
+
+### 2026-03-15 — S08: Cross-role integration & polish (M001 final slice)
+- Scope: `product/services`, `feature/operasyon`, `feature/kurye`, `test/integration`
+- Summary: Added OrderAlertService (audioplayers) for sound alerts on new dispatch orders. Applied D027 name resolution to dispatch and courier screens (stops + courier names replace UUIDs). Created 5-test cross-role integration suite proving full order lifecycle. M001 milestone complete — all 18 requirements validated, 123 tests passing.
+- Files:
+  - `pubspec.yaml` (audioplayers + assets)
+  - `assets/sounds/new_order.wav` (new)
+  - `lib/product/services/order_alert_service.dart` (new)
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart` (alert + names)
+  - `lib/feature/kurye/presentation/kurye_ana_page.dart` (name resolution)
+  - `test/helpers/fakes/fake_order_alert_service.dart` (new)
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart` (3 new tests)
+  - `test/feature/kurye/kurye_ana_page_test.dart` (2 new tests)
+  - `test/integration/cross_role_lifecycle_test.dart` (new, 5 tests)
+- Validation:
+  - `flutter analyze` passed (0 errors, 0 warnings).
+  - `flutter test` passed (123 tests).

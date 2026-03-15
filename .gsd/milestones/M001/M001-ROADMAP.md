@@ -76,7 +76,7 @@ This milestone is complete only when all are true:
 - [x] **S07: Analytics dashboard** `risk:low` `depends:[S04]`
   > After this: Operations dashboard shows revenue totals (3mo/1mo/1wk), daily average, courier job counts, and active couriers today.
 
-- [ ] **S08: Cross-role integration & polish** `risk:low` `depends:[S03,S04,S05,S06,S07]`
+- [x] **S08: Cross-role integration & polish** `risk:low` `depends:[S03,S04,S05,S06,S07]`
   > After this: Full end-to-end flow verified across all 3 roles with sound alerts, order logging, and edge case handling. All acceptance scenarios pass.
 
 ## Boundary Map
