@@ -120,8 +120,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
       await ref.read(siparisRepositoryProvider).create(siparis);
 
-      // Reset form.
+      // Reset form — clear everything including müşteri.
       setState(() {
+        _selectedMusteriId = null;
         _selectedCikisId = null;
         _selectedUgramaId = null;
         _selectedUgrama1Id = null;
@@ -179,6 +180,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           ),
         );
       }
+
+      // Force provider refresh so assigned orders move immediately.
+      ref.invalidate(siparisStreamActiveProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -262,6 +266,10 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           ),
         );
       }
+
+      // Force provider refresh so the UI doesn't wait for the next
+      // Supabase Realtime event — completed orders disappear immediately.
+      ref.invalidate(siparisStreamActiveProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
