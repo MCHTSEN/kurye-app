@@ -9,14 +9,14 @@ import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
+import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
-import '../../../product/widgets/searchable_dropdown.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
-import '../../../product/navigation/logout_helper.dart';
+import '../../../product/widgets/searchable_dropdown.dart';
 
 final _log = Logger();
 
@@ -260,7 +260,6 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       title: 'Geçmiş Siparişler',
       currentRoute: CustomRoute.operasyonGecmis,
       navItems: operasyonNavItems,
-      headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
       body: ListView(

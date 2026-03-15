@@ -77,7 +77,7 @@ class SupabaseSiparisRepository implements SiparisRepository {
         .from(_table)
         .stream(primaryKey: ['id'])
         .eq('musteri_id', musteriId)
-        .order('created_at', ascending: false)
+        .order('created_at')
         .map((rows) {
           _log.d('streamByMusteriId: $musteriId — ${rows.length} rows');
           return rows.map(Siparis.fromJson).toList();
@@ -170,7 +170,7 @@ class SupabaseSiparisRepository implements SiparisRepository {
         .from(_table)
         .stream(primaryKey: ['id'])
         .eq('kurye_id', kuryeId)
-        .order('created_at', ascending: false)
+        .order('created_at')
         .map((rows) {
           _log.d('streamByKuryeId: $kuryeId — ${rows.length} rows');
           return rows.map(Siparis.fromJson).toList();
@@ -190,7 +190,7 @@ class SupabaseSiparisRepository implements SiparisRepository {
           SiparisDurum.kuryeBekliyor.value,
           SiparisDurum.devamEdiyor.value,
         ])
-        .order('created_at', ascending: false)
+        .order('created_at')
         .map((rows) {
           _log.d('streamActive — ${rows.length} rows');
           return rows.map(Siparis.fromJson).toList();

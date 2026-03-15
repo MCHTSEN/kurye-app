@@ -10,11 +10,11 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
+import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/role_request/role_request_providers.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 import '../../../product/widgets/searchable_dropdown.dart';
-import '../../../product/navigation/logout_helper.dart';
 
 class RolOnayPage extends ConsumerStatefulWidget {
   const RolOnayPage({super.key});
@@ -34,7 +34,6 @@ class _RolOnayPageState extends ConsumerState<RolOnayPage> {
       title: 'Rol Onayları',
       currentRoute: CustomRoute.rolOnay,
       navItems: operasyonNavItems,
-      headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
       body: pendingAsync.when(
@@ -223,6 +222,29 @@ class _RequestCard extends ConsumerWidget {
             ),
           ],
         ),
+        footer: Wrap(
+          alignment: WrapAlignment.end,
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ShadButton.outline(
+              onPressed: onReject,
+              leading: const Padding(
+                padding: EdgeInsets.only(right: 4),
+                child: Icon(Icons.close, size: 16),
+              ),
+              child: const Text('Reddet'),
+            ),
+            ShadButton(
+              onPressed: onApprove,
+              leading: const Padding(
+                padding: EdgeInsets.only(right: 4),
+                child: Icon(Icons.check, size: 16),
+              ),
+              child: const Text('Onayla'),
+            ),
+          ],
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Column(
@@ -246,29 +268,6 @@ class _RequestCard extends ConsumerWidget {
               ],
             ],
           ),
-        ),
-        footer: Wrap(
-          alignment: WrapAlignment.end,
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            ShadButton.outline(
-              onPressed: onReject,
-              leading: const Padding(
-                padding: EdgeInsets.only(right: 4),
-                child: Icon(Icons.close, size: 16),
-              ),
-              child: const Text('Reddet'),
-            ),
-            ShadButton(
-              onPressed: onApprove,
-              leading: const Padding(
-                padding: EdgeInsets.only(right: 4),
-                child: Icon(Icons.check, size: 16),
-              ),
-              child: const Text('Onayla'),
-            ),
-          ],
         ),
       ),
     );
@@ -356,14 +355,6 @@ class _RejectReasonDialogState extends State<_RejectReasonDialog> {
     return ShadDialog(
       title: const Text('Red Sebebi'),
       description: const Text('Opsiyonel — boş bırakabilirsiniz'),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        child: ShadInput(
-          controller: _controller,
-          placeholder: const Text('Sebep (opsiyonel)'),
-          maxLines: 3,
-        ),
-      ),
       actions: [
         ShadButton.outline(
           onPressed: () => Navigator.pop(context),
@@ -374,6 +365,14 @@ class _RejectReasonDialogState extends State<_RejectReasonDialog> {
           child: const Text('Reddet'),
         ),
       ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: ShadInput(
+          controller: _controller,
+          placeholder: const Text('Sebep (opsiyonel)'),
+          maxLines: 3,
+        ),
+      ),
     );
   }
 }

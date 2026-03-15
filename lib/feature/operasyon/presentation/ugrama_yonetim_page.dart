@@ -127,7 +127,6 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
       title: 'Uğrama Yönetimi',
       currentRoute: CustomRoute.ugramaYonetim,
       navItems: operasyonNavItems,
-      headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
       body: ListView(
@@ -170,7 +169,7 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
             ),
             const SizedBox(height: AppSpacing.xxs),
             musteriAsync.when(
-              data: (musteriler) => _buildMusteriChips(musteriler),
+              data: _buildMusteriChips,
               loading: () => const LinearProgressIndicator(),
               error: (e, _) => Text('Müşteri yüklenemedi: $e'),
             ),
@@ -327,7 +326,7 @@ class _UgramaListTile extends ConsumerWidget {
         title: Text(ugrama.ugramaAdi),
         subtitle: const LinearProgressIndicator(),
       ),
-      error: (_, __) => ListTile(
+      error: (_, _) => ListTile(
         title: Text(ugrama.ugramaAdi),
         subtitle: const Text('Müşteri bilgisi yüklenemedi'),
         onTap: () => onTap([]),

@@ -30,7 +30,7 @@ class KuryeAnaPage extends ConsumerWidget {
             kurye != null ? kurye.ad : 'Kurye Paneli',
           ),
           loading: () => const Text('Kurye Paneli'),
-          error: (_, __) => const Text('Kurye Paneli'),
+          error: (_, _) => const Text('Kurye Paneli'),
         ),
         actions: [
           IconButton(

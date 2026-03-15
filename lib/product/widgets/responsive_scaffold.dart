@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart' hide CustomRoute;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../app/router/custom_route.dart';
 import '../../core/theme/app_colors.dart';
@@ -125,7 +124,7 @@ class ResponsiveScaffold extends StatelessWidget {
                           children: [
                             Text(
                               headerTitle,
-                              style: GoogleFonts.inter(
+                              style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.textPrimary,
@@ -134,7 +133,7 @@ class ResponsiveScaffold extends StatelessWidget {
                             if (headerSubtitle != null)
                               Text(
                                 headerSubtitle!,
-                                style: GoogleFonts.inter(
+                                style: const TextStyle(
                                   fontSize: 12,
                                   color: AppColors.textMuted,
                                 ),
@@ -233,7 +232,7 @@ class ResponsiveScaffold extends StatelessWidget {
                   child: Center(
                     child: Text(
                       initials,
-                      style: GoogleFonts.inter(
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
@@ -244,7 +243,7 @@ class ResponsiveScaffold extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   headerTitle,
-                  style: GoogleFonts.inter(
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -253,7 +252,7 @@ class ResponsiveScaffold extends StatelessWidget {
                 if (subtitle != null)
                   Text(
                     subtitle,
-                    style: GoogleFonts.inter(
+                    style: TextStyle(
                       fontSize: 13,
                       color: Colors.white.withValues(alpha: 0.8),
                     ),
@@ -336,7 +335,7 @@ class _DrawerNavTile extends StatelessWidget {
                 const SizedBox(width: 14),
                 Text(
                   label,
-                  style: GoogleFonts.inter(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     color: isSelected

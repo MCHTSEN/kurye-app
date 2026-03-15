@@ -6,6 +6,7 @@ import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
@@ -13,7 +14,6 @@ import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
-import '../../../product/navigation/logout_helper.dart';
 
 class MusteriGecmisPage extends ConsumerStatefulWidget {
   const MusteriGecmisPage({super.key});
@@ -50,7 +50,6 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
       title: 'Geçmiş Siparişler',
       currentRoute: CustomRoute.musteriGecmis,
       navItems: musteriNavItems,
-      headerTitle: 'Moto Kurye',
       headerSubtitle: 'Müşteri',
       onLogout: logoutCallback(ref),
       body: profileAsync.when(
