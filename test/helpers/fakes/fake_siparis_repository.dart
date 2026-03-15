@@ -137,6 +137,46 @@ class FakeSiparisRepository implements SiparisRepository {
     }
   }
 
+  @override
+  Future<Siparis> update(String id, Map<String, dynamic> fields) async {
+    final existing = store[id];
+    if (existing == null) {
+      throw StateError('Siparis not found: $id');
+    }
+    // Apply partial fields on top of existing JSON, then reconstruct.
+    final json = existing.toJson();
+    json.addAll(fields);
+    // Simulate server setting updated_at.
+    json['updated_at'] = DateTime.now().toIso8601String();
+    final updated = Siparis.fromJson(json);
+    store[id] = updated;
+    _notifyStreams();
+    return updated;
+  }
+
+  @override
+  Future<Siparis?> getRecentPricing({
+    required String musteriId,
+    required String cikisId,
+    required String ugramaId,
+  }) async {
+    final matches = store.values
+        .where(
+          (s) =>
+              s.musteriId == musteriId &&
+              s.cikisId == cikisId &&
+              s.ugramaId == ugramaId &&
+              s.durum == SiparisDurum.tamamlandi,
+        )
+        .toList()
+      ..sort((a, b) {
+        final aTime = a.createdAt ?? DateTime(1970);
+        final bTime = b.createdAt ?? DateTime(1970);
+        return bTime.compareTo(aTime);
+      });
+    return matches.isEmpty ? null : matches.first;
+  }
+
   /// Emit arbitrary data to a stream — for test scenarios.
   void emitForMusteri(String musteriId, List<Siparis> data) {
     final key = 'musteri_$musteriId';

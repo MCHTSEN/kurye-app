@@ -6,6 +6,7 @@ import 'supabase_kurye_repository.dart';
 import 'supabase_musteri_personel_repository.dart';
 import 'supabase_musteri_repository.dart';
 import 'supabase_role_request_repository.dart';
+import 'supabase_siparis_log_repository.dart';
 import 'supabase_siparis_repository.dart';
 import 'supabase_token_refresh_service.dart';
 import 'supabase_ugrama_repository.dart';
@@ -83,5 +84,10 @@ class SupabaseBackendModule extends BackendModule {
   @override
   SiparisRepository createSiparisRepository() {
     return SupabaseSiparisRepository(client: Supabase.instance.client);
+  }
+
+  @override
+  SiparisLogRepository createSiparisLogRepository() {
+    return SupabaseSiparisLogRepository(client: Supabase.instance.client);
   }
 }

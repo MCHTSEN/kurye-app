@@ -234,3 +234,17 @@ Project audit log for major changes.
 - Validation:
   - `flutter analyze` passed.
   - `flutter test` passed (`13 tests`).
+
+---
+
+### 2026-03-15 — S04/T02: 3-panel dispatch screen with assignment and finish flows
+- Scope: `feature/operasyon`
+- Summary: Replaced placeholder OperasyonEkranPage with real 3-panel dispatch screen — order creation (müşteri dropdown → cascading stops), kurye bekleyenler (checkbox + assign), devam edenler (checkbox + finish with auto-pricing/manual fallback). SiparisLog created on every transition. Created FakeSiparisLogRepository.
+- Files:
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart` (replaced)
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart` (new, 5 tests)
+  - `test/helpers/fakes/fake_siparis_log_repository.dart` (new)
+- Validation:
+  - `flutter analyze` passed (0 errors, 0 warnings).
+  - `flutter test` passed (86 tests).
+  - `flutter build ios --simulator` passed.

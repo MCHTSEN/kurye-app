@@ -12,4 +12,15 @@ abstract class SiparisRepository {
 
   /// Aktif siparişleri realtime izler (kurye_bekliyor + devam_ediyor).
   Stream<List<Siparis>> streamActive();
+
+  /// Belirtilen alanları günceller (partial update).
+  /// `updated_at` payload'a dahil edilmez — BEFORE UPDATE trigger halleder.
+  Future<Siparis> update(String id, Map<String, dynamic> fields);
+
+  /// Otomatik fiyatlandırma için en son tamamlanmış eşleşen siparişi bulur.
+  Future<Siparis?> getRecentPricing({
+    required String musteriId,
+    required String cikisId,
+    required String ugramaId,
+  });
 }
