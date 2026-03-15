@@ -25,9 +25,10 @@ class OperasyonDashboardPage extends ConsumerWidget {
     return ResponsiveScaffold(
       title: 'Dashboard',
       currentRoute: CustomRoute.operasyonDashboard,
-      navItems: operasyonNavItems,
+      navItems: operasyonDesktopNavItems,
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: false,
       body: profileAsync.when(
         data: (profile) {
           final name = profile?.displayName ?? 'Operasyon';

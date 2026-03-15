@@ -98,6 +98,18 @@ abstract final class AppEvents {
         properties: {'path': path},
       );
 
+  static AnalyticsEvent operasyonTabSelected(String tabName) =>
+      AnalyticsEvent(
+        name: 'operasyon_tab_selected',
+        properties: {'tab_name': tabName},
+      );
+
+  static AnalyticsEvent operasyonSettingsItemSelected(String itemName) =>
+      AnalyticsEvent(
+        name: 'operasyon_settings_item_selected',
+        properties: {'item_name': itemName},
+      );
+
   // ── Promo ─────────────────────────────────────────────
   static AnalyticsEvent promoRedeemed(String code) =>
       AnalyticsEvent(

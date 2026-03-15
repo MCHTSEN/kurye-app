@@ -14,9 +14,11 @@ import '../../feature/onboarding/presentation/onboarding_page.dart';
 import '../../feature/operasyon/presentation/kurye_yonetim_page.dart';
 import '../../feature/operasyon/presentation/musteri_kayit_page.dart';
 import '../../feature/operasyon/presentation/musteri_personel_kayit_page.dart';
+import '../../feature/operasyon/presentation/operasyon_ayarlar_page.dart';
 import '../../feature/operasyon/presentation/operasyon_dashboard_page.dart';
 import '../../feature/operasyon/presentation/operasyon_ekran_page.dart';
 import '../../feature/operasyon/presentation/operasyon_gecmis_page.dart';
+import '../../feature/operasyon/presentation/operasyon_shell_page.dart';
 import '../../feature/operasyon/presentation/rol_onay_page.dart';
 import '../../feature/operasyon/presentation/ugrama_talep_yonetim_page.dart';
 import '../../feature/operasyon/presentation/ugrama_yonetim_page.dart';
@@ -27,6 +29,17 @@ import 'custom_route.dart';
 import 'guards/app_access_guard.dart';
 
 part 'app_router.g.dart';
+
+const _operasyonAyarlarHomeRouteName = 'OperasyonAyarlarHomeRoute';
+
+String _nestedPath(String fullPath, String parentPath) {
+  final prefix = '$parentPath/';
+  if (!fullPath.startsWith(prefix)) {
+    return fullPath;
+  }
+
+  return fullPath.substring(prefix.length);
+}
 
 @Riverpod(keepAlive: true)
 RootStackRouter appRouter(Ref ref) {
@@ -102,50 +115,99 @@ RootStackRouter appRouter(Ref ref) {
 
       // --- Operasyon rotaları ---
       NamedRouteDef(
-        name: CustomRoute.operasyonDashboard.routeName,
-        path: CustomRoute.operasyonDashboard.path,
-        builder: (context, data) => const OperasyonDashboardPage(),
-      ),
-      NamedRouteDef(
-        name: CustomRoute.operasyonEkran.routeName,
-        path: CustomRoute.operasyonEkran.path,
-        builder: (context, data) => const OperasyonEkranPage(),
-      ),
-      NamedRouteDef(
-        name: CustomRoute.musteriKayit.routeName,
-        path: CustomRoute.musteriKayit.path,
-        builder: (context, data) => const MusteriKayitPage(),
-      ),
-      NamedRouteDef(
-        name: CustomRoute.musteriPersonelKayit.routeName,
-        path: CustomRoute.musteriPersonelKayit.path,
-        builder: (context, data) => const MusteriPersonelKayitPage(),
-      ),
-      NamedRouteDef(
-        name: CustomRoute.operasyonGecmis.routeName,
-        path: CustomRoute.operasyonGecmis.path,
-        builder: (context, data) => const OperasyonGecmisPage(),
-      ),
-      NamedRouteDef(
-        name: CustomRoute.ugramaYonetim.routeName,
-        path: CustomRoute.ugramaYonetim.path,
-        builder: (context, data) => const UgramaYonetimPage(),
-      ),
-      NamedRouteDef(
-        name: CustomRoute.ugramaTalepYonetim.routeName,
-        path: CustomRoute.ugramaTalepYonetim.path,
-        builder: (context, data) => const UgramaTalepYonetimPage(),
-      ),
-
-      NamedRouteDef(
-        name: CustomRoute.kuryeYonetim.routeName,
-        path: CustomRoute.kuryeYonetim.path,
-        builder: (context, data) => const KuryeYonetimPage(),
-      ),
-      NamedRouteDef(
-        name: CustomRoute.rolOnay.routeName,
-        path: CustomRoute.rolOnay.path,
-        builder: (context, data) => const RolOnayPage(),
+        name: CustomRoute.operasyonShell.routeName,
+        path: CustomRoute.operasyonShell.path,
+        builder: (context, data) => const OperasyonShellPage(),
+        children: [
+          NamedRouteDef(
+            name: CustomRoute.operasyonDashboard.routeName,
+            path: _nestedPath(
+              CustomRoute.operasyonDashboard.path,
+              CustomRoute.operasyonShell.path,
+            ),
+            initial: true,
+            builder: (context, data) => const OperasyonDashboardPage(),
+          ),
+          NamedRouteDef(
+            name: CustomRoute.operasyonEkran.routeName,
+            path: _nestedPath(
+              CustomRoute.operasyonEkran.path,
+              CustomRoute.operasyonShell.path,
+            ),
+            builder: (context, data) => const OperasyonEkranPage(),
+          ),
+          NamedRouteDef(
+            name: CustomRoute.ugramaYonetim.routeName,
+            path: _nestedPath(
+              CustomRoute.ugramaYonetim.path,
+              CustomRoute.operasyonShell.path,
+            ),
+            builder: (context, data) => const UgramaYonetimPage(),
+          ),
+          NamedRouteDef.shell(
+            name: CustomRoute.operasyonAyarlar.routeName,
+            path: _nestedPath(
+              CustomRoute.operasyonAyarlar.path,
+              CustomRoute.operasyonShell.path,
+            ),
+            children: [
+              NamedRouteDef(
+                name: _operasyonAyarlarHomeRouteName,
+                path: '',
+                initial: true,
+                builder: (context, data) => const OperasyonAyarlarPage(),
+              ),
+              NamedRouteDef(
+                name: CustomRoute.musteriKayit.routeName,
+                path: _nestedPath(
+                  CustomRoute.musteriKayit.path,
+                  CustomRoute.operasyonAyarlar.path,
+                ),
+                builder: (context, data) => const MusteriKayitPage(),
+              ),
+              NamedRouteDef(
+                name: CustomRoute.musteriPersonelKayit.routeName,
+                path: _nestedPath(
+                  CustomRoute.musteriPersonelKayit.path,
+                  CustomRoute.operasyonAyarlar.path,
+                ),
+                builder: (context, data) => const MusteriPersonelKayitPage(),
+              ),
+              NamedRouteDef(
+                name: CustomRoute.operasyonGecmis.routeName,
+                path: _nestedPath(
+                  CustomRoute.operasyonGecmis.path,
+                  CustomRoute.operasyonAyarlar.path,
+                ),
+                builder: (context, data) => const OperasyonGecmisPage(),
+              ),
+              NamedRouteDef(
+                name: CustomRoute.ugramaTalepYonetim.routeName,
+                path: _nestedPath(
+                  CustomRoute.ugramaTalepYonetim.path,
+                  CustomRoute.operasyonAyarlar.path,
+                ),
+                builder: (context, data) => const UgramaTalepYonetimPage(),
+              ),
+              NamedRouteDef(
+                name: CustomRoute.kuryeYonetim.routeName,
+                path: _nestedPath(
+                  CustomRoute.kuryeYonetim.path,
+                  CustomRoute.operasyonAyarlar.path,
+                ),
+                builder: (context, data) => const KuryeYonetimPage(),
+              ),
+              NamedRouteDef(
+                name: CustomRoute.rolOnay.routeName,
+                path: _nestedPath(
+                  CustomRoute.rolOnay.path,
+                  CustomRoute.operasyonAyarlar.path,
+                ),
+                builder: (context, data) => const RolOnayPage(),
+              ),
+            ],
+          ),
+        ],
       ),
 
       // --- Kurye rotaları ---

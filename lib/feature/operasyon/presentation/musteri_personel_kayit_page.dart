@@ -122,9 +122,10 @@ class _MusteriPersonelKayitPageState
     return ResponsiveScaffold(
       title: 'Personel Kayıt',
       currentRoute: CustomRoute.musteriPersonelKayit,
-      navItems: operasyonNavItems,
+      navItems: operasyonDesktopNavItems,
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: false,
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [

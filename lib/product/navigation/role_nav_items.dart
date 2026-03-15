@@ -4,7 +4,7 @@ import '../../app/router/custom_route.dart';
 import '../widgets/responsive_scaffold.dart';
 
 /// Navigation items for operasyon role.
-const operasyonNavItems = <NavItem>[
+const operasyonDesktopNavItems = <NavItem>[
   NavItem(
     icon: Icons.dashboard,
     label: 'Dashboard',
@@ -29,6 +29,66 @@ const operasyonNavItems = <NavItem>[
     icon: Icons.location_on,
     label: 'Uğrama Yönetimi',
     route: CustomRoute.ugramaYonetim,
+  ),
+  NavItem(
+    icon: Icons.playlist_add_check,
+    label: 'Uğrama Talepleri',
+    route: CustomRoute.ugramaTalepYonetim,
+  ),
+  NavItem(
+    icon: Icons.two_wheeler,
+    label: 'Kurye Yönetimi',
+    route: CustomRoute.kuryeYonetim,
+  ),
+  NavItem(
+    icon: Icons.how_to_reg,
+    label: 'Rol Onayları',
+    route: CustomRoute.rolOnay,
+  ),
+  NavItem(
+    icon: Icons.history,
+    label: 'Geçmiş Siparişler',
+    route: CustomRoute.operasyonGecmis,
+  ),
+];
+
+const List<NavItem> operasyonNavItems = operasyonDesktopNavItems;
+
+/// Primary mobile tabs for operasyon role.
+const operasyonPrimaryMobileNavItems = <NavItem>[
+  NavItem(
+    icon: Icons.dashboard_rounded,
+    label: 'Dashboard',
+    route: CustomRoute.operasyonDashboard,
+  ),
+  NavItem(
+    icon: Icons.assignment_rounded,
+    label: 'Operasyon',
+    route: CustomRoute.operasyonEkran,
+  ),
+  NavItem(
+    icon: Icons.location_on_rounded,
+    label: 'Uğrama',
+    route: CustomRoute.ugramaYonetim,
+  ),
+  NavItem(
+    icon: Icons.settings_rounded,
+    label: 'Ayarlar',
+    route: CustomRoute.operasyonAyarlar,
+  ),
+];
+
+/// Secondary settings destinations grouped under the operasyon settings tab.
+const operasyonSettingsNavItems = <NavItem>[
+  NavItem(
+    icon: Icons.business,
+    label: 'Müşteri Kayıt',
+    route: CustomRoute.musteriKayit,
+  ),
+  NavItem(
+    icon: Icons.people,
+    label: 'Personel Kayıt',
+    route: CustomRoute.musteriPersonelKayit,
   ),
   NavItem(
     icon: Icons.playlist_add_check,

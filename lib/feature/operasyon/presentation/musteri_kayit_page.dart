@@ -134,9 +134,10 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
     return ResponsiveScaffold(
       title: 'Müşteri Kayıt',
       currentRoute: CustomRoute.musteriKayit,
-      navItems: operasyonNavItems,
+      navItems: operasyonDesktopNavItems,
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: false,
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [

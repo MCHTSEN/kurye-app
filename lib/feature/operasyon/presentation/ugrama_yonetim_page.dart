@@ -126,9 +126,10 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
     return ResponsiveScaffold(
       title: 'Uğrama Yönetimi',
       currentRoute: CustomRoute.ugramaYonetim,
-      navItems: operasyonNavItems,
+      navItems: operasyonDesktopNavItems,
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: false,
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [

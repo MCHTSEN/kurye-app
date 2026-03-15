@@ -33,9 +33,10 @@ class _RolOnayPageState extends ConsumerState<RolOnayPage> {
     return ResponsiveScaffold(
       title: 'Rol Onayları',
       currentRoute: CustomRoute.rolOnay,
-      navItems: operasyonNavItems,
+      navItems: operasyonDesktopNavItems,
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: false,
       body: pendingAsync.when(
         data: (requests) {
           if (requests.isEmpty) {
