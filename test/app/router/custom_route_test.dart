@@ -18,15 +18,26 @@ void main() {
       expect(CustomRoute.musteriGecmis.path, '/musteri/gecmis');
 
       // Operasyon rotaları
+      expect(CustomRoute.operasyonShell.path, '/operasyon');
       expect(CustomRoute.operasyonDashboard.path, '/operasyon/dashboard');
       expect(CustomRoute.operasyonEkran.path, '/operasyon/ekran');
-      expect(CustomRoute.musteriKayit.path, '/operasyon/musteri-kayit');
+      expect(CustomRoute.operasyonAyarlar.path, '/operasyon/ayarlar');
+      expect(
+        CustomRoute.musteriKayit.path,
+        '/operasyon/ayarlar/musteri-kayit',
+      );
       expect(
         CustomRoute.musteriPersonelKayit.path,
-        '/operasyon/personel-kayit',
+        '/operasyon/ayarlar/personel-kayit',
       );
-      expect(CustomRoute.operasyonGecmis.path, '/operasyon/gecmis');
+      expect(CustomRoute.operasyonGecmis.path, '/operasyon/ayarlar/gecmis');
       expect(CustomRoute.ugramaYonetim.path, '/operasyon/ugrama');
+      expect(
+        CustomRoute.ugramaTalepYonetim.path,
+        '/operasyon/ayarlar/ugrama-talep',
+      );
+      expect(CustomRoute.kuryeYonetim.path, '/operasyon/ayarlar/kurye');
+      expect(CustomRoute.rolOnay.path, '/operasyon/ayarlar/rol-onay');
 
       // Kurye rotaları
       expect(CustomRoute.kuryeAna.path, '/kurye/ana');
@@ -49,11 +60,16 @@ void main() {
       expect(CustomRoute.musteriGecmis.routeName, 'MusteriGecmisRoute');
 
       // Operasyon
+      expect(CustomRoute.operasyonShell.routeName, 'OperasyonShellRoute');
       expect(
         CustomRoute.operasyonDashboard.routeName,
         'OperasyonDashboardRoute',
       );
       expect(CustomRoute.operasyonEkran.routeName, 'OperasyonEkranRoute');
+      expect(
+        CustomRoute.operasyonAyarlar.routeName,
+        'OperasyonAyarlarRoute',
+      );
       expect(CustomRoute.musteriKayit.routeName, 'MusteriKayitRoute');
       expect(
         CustomRoute.musteriPersonelKayit.routeName,

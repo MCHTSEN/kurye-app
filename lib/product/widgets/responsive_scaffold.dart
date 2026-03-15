@@ -27,19 +27,20 @@ class ResponsiveScaffold extends StatelessWidget {
     required this.title,
     required this.body,
     required this.navItems,
-    required this.currentRoute,
+    this.currentRoute,
     super.key,
     this.headerTitle = 'Moto Kurye',
     this.headerSubtitle,
     this.actions,
     this.floatingActionButton,
     this.onLogout,
+    this.showMobileDrawer = true,
   });
 
   final String title;
   final Widget body;
   final List<NavItem> navItems;
-  final CustomRoute currentRoute;
+  final CustomRoute? currentRoute;
   final String headerTitle;
   final String? headerSubtitle;
   final List<Widget>? actions;
@@ -48,10 +49,15 @@ class ResponsiveScaffold extends StatelessWidget {
   /// Optional callback for logout. When provided, a logout button is shown
   /// at the bottom of the drawer and navigation rail.
   final VoidCallback? onLogout;
+  final bool showMobileDrawer;
 
-  int get _selectedIndex {
-    final idx = navItems.indexWhere((n) => n.route == currentRoute);
-    return idx >= 0 ? idx : 0;
+  int? get _selectedIndex {
+    final current = currentRoute;
+    if (current == null) {
+      return null;
+    }
+    final idx = navItems.indexWhere((n) => n.route == current);
+    return idx >= 0 ? idx : null;
   }
 
   void _onNavigate(BuildContext context, int index) {
@@ -79,7 +85,7 @@ class ResponsiveScaffold extends StatelessWidget {
         title: Text(title),
         actions: actions,
       ),
-      drawer: _buildDrawer(context),
+      drawer: showMobileDrawer ? _buildDrawer(context) : null,
       body: body,
       floatingActionButton: floatingActionButton,
     );

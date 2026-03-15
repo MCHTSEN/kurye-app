@@ -111,9 +111,10 @@ class _KuryeYonetimPageState extends ConsumerState<KuryeYonetimPage> {
     return ResponsiveScaffold(
       title: 'Kurye Yönetimi',
       currentRoute: CustomRoute.kuryeYonetim,
-      navItems: operasyonNavItems,
+      navItems: operasyonDesktopNavItems,
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: false,
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [

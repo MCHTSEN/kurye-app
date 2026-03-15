@@ -33,9 +33,10 @@ class UgramaTalepYonetimPage extends ConsumerWidget {
     return ResponsiveScaffold(
       title: 'Uğrama Talepleri',
       currentRoute: CustomRoute.ugramaTalepYonetim,
-      navItems: operasyonNavItems,
+      navItems: operasyonDesktopNavItems,
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: false,
       body: taleplerAsync.when(
         data: (talepler) {
           if (talepler.isEmpty) {

@@ -259,9 +259,10 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     return ResponsiveScaffold(
       title: 'Geçmiş Siparişler',
       currentRoute: CustomRoute.operasyonGecmis,
-      navItems: operasyonNavItems,
+      navItems: operasyonDesktopNavItems,
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: false,
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [

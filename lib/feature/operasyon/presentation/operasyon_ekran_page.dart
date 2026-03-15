@@ -316,9 +316,10 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     return ResponsiveScaffold(
       title: 'Operasyon Ekranı',
       currentRoute: CustomRoute.operasyonEkran,
-      navItems: operasyonNavItems,
+      navItems: operasyonDesktopNavItems,
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: false,
       body: Stack(
         children: [
           const _BackgroundEffect(),

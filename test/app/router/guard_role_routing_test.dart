@@ -11,10 +11,10 @@ void main() {
       );
     });
 
-    test('operasyon maps to /operasyon/dashboard', () {
+    test('operasyon maps to /operasyon', () {
       expect(
         AppAccessGuard.homePathForRole(UserRole.operasyon),
-        '/operasyon/dashboard',
+        '/operasyon',
       );
     });
 

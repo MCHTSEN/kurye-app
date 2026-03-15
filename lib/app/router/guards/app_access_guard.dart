@@ -21,7 +21,7 @@ class AppAccessGuard extends AutoRouteGuard {
       case UserRole.musteriPersonel:
         return CustomRoute.musteriSiparis.path;
       case UserRole.operasyon:
-        return CustomRoute.operasyonDashboard.path;
+        return CustomRoute.operasyonShell.path;
       case UserRole.kurye:
         return CustomRoute.kuryeAna.path;
       case null:
