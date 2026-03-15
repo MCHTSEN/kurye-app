@@ -10,6 +10,7 @@ import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
+import '../../../product/navigation/logout_helper.dart';
 
 class MusteriKayitPage extends ConsumerStatefulWidget {
   const MusteriKayitPage({super.key});
@@ -135,6 +136,7 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
       navItems: operasyonNavItems,
       headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
+      onLogout: logoutCallback(ref),
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [

@@ -10,6 +10,7 @@ import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
+import '../../../product/navigation/logout_helper.dart';
 
 class KuryeYonetimPage extends ConsumerStatefulWidget {
   const KuryeYonetimPage({super.key});
@@ -112,6 +113,7 @@ class _KuryeYonetimPageState extends ConsumerState<KuryeYonetimPage> {
       navItems: operasyonNavItems,
       headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
+      onLogout: logoutCallback(ref),
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [

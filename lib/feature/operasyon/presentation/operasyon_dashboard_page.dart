@@ -9,6 +9,7 @@ import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
+import '../../../product/navigation/logout_helper.dart';
 import '../domain/dashboard_stats.dart';
 import '../providers/dashboard_providers.dart';
 
@@ -25,6 +26,7 @@ class OperasyonDashboardPage extends ConsumerWidget {
       navItems: operasyonNavItems,
       headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
+      onLogout: logoutCallback(ref),
       body: profileAsync.when(
         data: (profile) {
           final name = profile?.displayName ?? 'Operasyon';

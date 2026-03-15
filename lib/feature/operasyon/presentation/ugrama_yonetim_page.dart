@@ -12,6 +12,7 @@ import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 import '../../../product/widgets/searchable_dropdown.dart';
+import '../../../product/navigation/logout_helper.dart';
 
 class UgramaYonetimPage extends ConsumerStatefulWidget {
   const UgramaYonetimPage({super.key});
@@ -112,6 +113,7 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
       navItems: operasyonNavItems,
       headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
+      onLogout: logoutCallback(ref),
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [
