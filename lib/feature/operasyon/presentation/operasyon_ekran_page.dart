@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
+import '../../../product/services/order_alert_service.dart';
 import '../../../product/siparis/siparis_log_providers.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
@@ -17,7 +20,10 @@ import '../../../product/widgets/app_section_card.dart';
 final _log = Logger();
 
 class OperasyonEkranPage extends ConsumerStatefulWidget {
-  const OperasyonEkranPage({super.key});
+  const OperasyonEkranPage({super.key, this.alertService});
+
+  /// Optional injectable alert service. When null a real instance is created.
+  final OrderAlertService? alertService;
 
   @override
   ConsumerState<OperasyonEkranPage> createState() =>
@@ -44,9 +50,29 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   final _activeSelected = <String>{};
   bool _isFinishing = false;
 
+  // — Sound alert state —
+  late final OrderAlertService _alertService;
+  bool _ownsAlertService = false;
+  final _knownWaitingIds = <String>{};
+  bool _initialLoadDone = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.alertService != null) {
+      _alertService = widget.alertService!;
+    } else {
+      _alertService = OrderAlertService();
+      _ownsAlertService = true;
+    }
+  }
+
   @override
   void dispose() {
     _not1Controller.dispose();
+    if (_ownsAlertService) {
+      unawaited(_alertService.dispose());
+    }
     super.dispose();
   }
 
@@ -315,9 +341,27 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   Widget _buildBody(AppUserProfile profile) {
     final streamAsync = ref.watch(siparisStreamActiveProvider);
 
-    // Clear selections when stream emits new data.
+    // Clear selections and detect new waiting orders for sound alert.
     ref.listen(siparisStreamActiveProvider, (prev, next) {
       if (next is AsyncData<List<Siparis>>) {
+        final currentWaitingIds = next.value
+            .where((s) => s.durum == SiparisDurum.kuryeBekliyor)
+            .map((s) => s.id)
+            .toSet();
+
+        if (_initialLoadDone) {
+          // Fire alert only for genuinely new IDs.
+          final newIds = currentWaitingIds.difference(_knownWaitingIds);
+          if (newIds.isNotEmpty) {
+            unawaited(_alertService.playNewOrderAlert());
+          }
+        }
+
+        _knownWaitingIds
+          ..clear()
+          ..addAll(currentWaitingIds);
+        _initialLoadDone = true;
+
         setState(() {
           _waitingSelected.clear();
           _activeSelected.clear();
@@ -350,11 +394,34 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         .where((s) => s.durum == SiparisDurum.devamEdiyor)
         .toList();
 
+    // Build name-resolution maps (D027 pattern).
+    final ugramaListAsync = ref.watch(ugramaListProvider);
+    final kuryeListAsync = ref.watch(kuryeListProvider);
+
+    final ugramaMap = <String, String>{};
+    if (ugramaListAsync case AsyncData(value: final ugramalar)) {
+      for (final u in ugramalar) {
+        ugramaMap[u.id] = u.ugramaAdi;
+      }
+    }
+
+    final kuryeMap = <String, String>{};
+    if (kuryeListAsync case AsyncData(value: final kuryeler)) {
+      for (final k in kuryeler) {
+        kuryeMap[k.id] = k.ad;
+      }
+    }
+
     return Column(
       children: [
-        _buildWaitingPanel(waiting, userId),
+        _buildWaitingPanel(waiting, userId, ugramaMap: ugramaMap),
         const SizedBox(height: AppSpacing.md),
-        _buildActivePanel(active, userId),
+        _buildActivePanel(
+          active,
+          userId,
+          ugramaMap: ugramaMap,
+          kuryeMap: kuryeMap,
+        ),
       ],
     );
   }
@@ -492,7 +559,11 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
   // ──────────── Panel 2: Kurye Bekleyenler ────────────
 
-  Widget _buildWaitingPanel(List<Siparis> waiting, String userId) {
+  Widget _buildWaitingPanel(
+    List<Siparis> waiting,
+    String userId, {
+    required Map<String, String> ugramaMap,
+  }) {
     final kuryeListAsync = ref.watch(kuryeListProvider);
 
     return AppSectionCard(
@@ -508,7 +579,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
             ...waiting.map(
               (s) => CheckboxListTile(
                 key: Key('waiting_${s.id}'),
-                title: Text(_routeLabel(s)),
+                title: Text(_routeLabel(s, ugramaMap: ugramaMap)),
                 subtitle: s.not1 != null ? Text(s.not1!) : null,
                 value: _waitingSelected.contains(s.id),
                 onChanged: (checked) {
@@ -571,7 +642,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
   // ──────────── Panel 3: Devam Edenler ────────────
 
-  Widget _buildActivePanel(List<Siparis> active, String userId) {
+  Widget _buildActivePanel(
+    List<Siparis> active,
+    String userId, {
+    required Map<String, String> ugramaMap,
+    required Map<String, String> kuryeMap,
+  }) {
     return AppSectionCard(
       title: 'Devam Edenler (${active.length})',
       child: Column(
@@ -585,8 +661,10 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
             ...active.map(
               (s) => CheckboxListTile(
                 key: Key('active_${s.id}'),
-                title: Text(_routeLabel(s)),
-                subtitle: Text('Kurye: ${s.kuryeId ?? '-'}'),
+                title: Text(_routeLabel(s, ugramaMap: ugramaMap)),
+                subtitle: Text(
+                  'Kurye: ${kuryeMap[s.kuryeId] ?? s.kuryeId ?? '-'}',
+                ),
                 value: _activeSelected.contains(s.id),
                 onChanged: (checked) {
                   setState(() {
@@ -618,5 +696,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
   // ──────────── Helpers ────────────
 
-  String _routeLabel(Siparis s) => '${s.cikisId} → ${s.ugramaId}';
+  String _routeLabel(
+    Siparis s, {
+    required Map<String, String> ugramaMap,
+  }) {
+    final cikis = ugramaMap[s.cikisId] ?? s.cikisId;
+    final ugrama = ugramaMap[s.ugramaId] ?? s.ugramaId;
+    return '$cikis → $ugrama';
+  }
 }

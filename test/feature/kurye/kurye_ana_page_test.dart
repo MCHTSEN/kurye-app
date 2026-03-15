@@ -2,12 +2,14 @@ import 'package:backend_core/backend_core.dart';
 import 'package:bursamotokurye/feature/kurye/presentation/kurye_ana_page.dart';
 import 'package:bursamotokurye/product/kurye/kurye_providers.dart';
 import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
+import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../helpers/fakes/fake_kurye_repository.dart';
 import '../../helpers/fakes/fake_siparis_repository.dart';
+import '../../helpers/fakes/fake_ugrama_repository.dart';
 import '../../helpers/widgets/test_app.dart';
 
 const _testKuryeId = 'kurye-test-1';
@@ -20,14 +22,22 @@ const _testKurye = Kurye(
   isOnline: false,
 );
 
+final _testUgramalar = [
+  const Ugrama(id: 'cikis-a', musteriId: 'musteri-1', ugramaAdi: 'Depo A'),
+  const Ugrama(id: 'ugrama-b', musteriId: 'musteri-1', ugramaAdi: 'Şube B'),
+  const Ugrama(id: 'ugrama-c', musteriId: 'musteri-1', ugramaAdi: 'Şube C'),
+];
+
 void main() {
   group('KuryeAnaPage', () {
     late FakeKuryeRepository fakeKuryeRepo;
     late FakeSiparisRepository fakeSiparisRepo;
+    late FakeUgramaRepository fakeUgramaRepo;
 
     setUp(() {
       fakeKuryeRepo = FakeKuryeRepository(seed: [_testKurye]);
       fakeSiparisRepo = FakeSiparisRepository();
+      fakeUgramaRepo = FakeUgramaRepository(seed: _testUgramalar);
     });
 
     Future<void> pumpPage(
@@ -45,6 +55,7 @@ void main() {
           currentKuryeProvider.overrideWith((_) => kuryeValue.value),
           kuryeRepositoryProvider.overrideWithValue(fakeKuryeRepo),
           siparisRepositoryProvider.overrideWithValue(fakeSiparisRepo),
+          ugramaRepositoryProvider.overrideWithValue(fakeUgramaRepo),
         ],
       );
       await tester.pumpAndSettle();
@@ -105,11 +116,11 @@ void main() {
 
         await pumpPage(tester);
 
-        // Active order route info should be visible.
-        expect(find.text('cikis-a → ugrama-b → ugrama-c'), findsOneWidget);
+        // Active order route info should show resolved names.
+        expect(find.text('Depo A → Şube B → Şube C'), findsOneWidget);
         // Section title shows count (1 active).
         expect(find.text('Siparişlerim (1)'), findsOneWidget);
-        // Completed order should not appear.
+        // Completed order should not appear (raw IDs not in ugrama seed).
         expect(find.text('cikis-x → ugrama-y'), findsNothing);
       },
     );
@@ -201,6 +212,25 @@ void main() {
         expect(find.text('Kurye kaydı bulunamadı'), findsOneWidget);
         // No crash, no spinner.
         expect(find.byType(CircularProgressIndicator), findsNothing);
+      },
+    );
+
+    testWidgets(
+      '(g) unknown stop IDs fall back to raw UUID strings',
+      (tester) async {
+        fakeSiparisRepo.store['s-unk'] = const Siparis(
+          id: 's-unk',
+          musteriId: 'musteri-1',
+          kuryeId: _testKuryeId,
+          cikisId: 'unknown-x',
+          ugramaId: 'unknown-y',
+          durum: SiparisDurum.devamEdiyor,
+        );
+
+        await pumpPage(tester);
+
+        // Should fall back to raw IDs.
+        expect(find.text('unknown-x → unknown-y'), findsOneWidget);
       },
     );
   });

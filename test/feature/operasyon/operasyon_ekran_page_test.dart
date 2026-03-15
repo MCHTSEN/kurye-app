@@ -2,6 +2,7 @@ import 'package:backend_core/backend_core.dart';
 import 'package:bursamotokurye/feature/operasyon/presentation/operasyon_ekran_page.dart';
 import 'package:bursamotokurye/product/kurye/kurye_providers.dart';
 import 'package:bursamotokurye/product/musteri/musteri_providers.dart';
+import 'package:bursamotokurye/product/services/order_alert_service.dart';
 import 'package:bursamotokurye/product/siparis/siparis_log_providers.dart';
 import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
 import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
@@ -13,6 +14,7 @@ import '../../helpers/fakes/fake_kurye_repository.dart';
 import '../../helpers/fakes/fake_musteri_repository.dart';
 import '../../helpers/fakes/fake_siparis_log_repository.dart';
 import '../../helpers/fakes/fake_siparis_repository.dart';
+import '../../helpers/fakes/fake_order_alert_service.dart';
 import '../../helpers/fakes/fake_ugrama_repository.dart';
 import '../../helpers/widgets/test_app.dart';
 
@@ -68,9 +70,12 @@ void main() {
       fakeKuryeRepo = FakeKuryeRepository(seed: _testKuryeler);
     });
 
-    Future<void> pumpPage(WidgetTester tester) async {
+    Future<void> pumpPage(
+      WidgetTester tester, {
+      OrderAlertService? alertService,
+    }) async {
       await tester.pumpApp(
-        const OperasyonEkranPage(),
+        OperasyonEkranPage(alertService: alertService),
         overrides: [
           currentUserProfileProvider.overrideWithBuild(
             (ref, notifier) => _testProfile,
@@ -126,7 +131,8 @@ void main() {
       );
 
       expect(find.textContaining('Kurye Bekleyenler (1)'), findsOneWidget);
-      expect(find.text('ugrama-1 → ugrama-2'), findsOneWidget);
+      // Name resolution: ugrama-1 → 'Merkez Ofis', ugrama-2 → 'Şube A'
+      expect(find.text('Merkez Ofis → Şube A'), findsOneWidget);
     });
 
     testWidgets(
@@ -319,6 +325,128 @@ void main() {
             .length,
         1,
       );
+    });
+
+    testWidgets(
+        '(f) sound alert fires only on genuinely new kurye_bekliyor orders',
+        (tester) async {
+      final fakeAlert = FakeOrderAlertService();
+
+      // Seed one existing waiting order.
+      fakeSiparisRepo.store['s1'] = const Siparis(
+        id: 's1',
+        musteriId: 'musteri-1',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+        durum: SiparisDurum.kuryeBekliyor,
+      );
+
+      await pumpPage(tester, alertService: fakeAlert);
+
+      // Initial load — should NOT trigger alert.
+      expect(fakeAlert.alertCallCount, 0);
+
+      // Emit a second list with one NEW waiting order added.
+      fakeSiparisRepo.emitActive([
+        const Siparis(
+          id: 's1',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+          durum: SiparisDurum.kuryeBekliyor,
+        ),
+        const Siparis(
+          id: 's-new',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-2',
+          ugramaId: 'ugrama-3',
+          durum: SiparisDurum.kuryeBekliyor,
+        ),
+      ]);
+      await tester.pumpAndSettle();
+
+      // Alert should fire once for the new order.
+      expect(fakeAlert.alertCallCount, 1);
+
+      // Emit same list again — no new IDs, no alert.
+      fakeSiparisRepo.emitActive([
+        const Siparis(
+          id: 's1',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+          durum: SiparisDurum.kuryeBekliyor,
+        ),
+        const Siparis(
+          id: 's-new',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-2',
+          ugramaId: 'ugrama-3',
+          durum: SiparisDurum.kuryeBekliyor,
+        ),
+      ]);
+      await tester.pumpAndSettle();
+
+      // Should still be 1 — no new IDs appeared.
+      expect(fakeAlert.alertCallCount, 1);
+    });
+
+    testWidgets(
+        '(g) active panel shows resolved stop and courier names',
+        (tester) async {
+      // Seed an in-progress order with known IDs.
+      fakeSiparisRepo.store['s-act'] = const Siparis(
+        id: 's-act',
+        musteriId: 'musteri-1',
+        cikisId: 'ugrama-1', // → Merkez Ofis
+        ugramaId: 'ugrama-3', // → Şube B
+        kuryeId: 'kurye-1', // → Ali Kurye
+        durum: SiparisDurum.devamEdiyor,
+      );
+
+      await pumpPage(tester);
+
+      // Scroll to active panel.
+      await tester.dragUntilVisible(
+        find.textContaining('Devam Edenler'),
+        find.byType(ListView).first,
+        const Offset(0, -200),
+      );
+
+      // Route label should show resolved stop names.
+      expect(find.text('Merkez Ofis → Şube B'), findsOneWidget);
+      // Subtitle should show resolved courier name.
+      expect(find.text('Kurye: Ali Kurye'), findsOneWidget);
+    });
+
+    testWidgets(
+        '(h) unknown IDs fall back to raw UUID strings',
+        (tester) async {
+      // Seed an order with IDs that are NOT in our test ugrama/kurye sets.
+      fakeSiparisRepo.store['s-unknown'] = const Siparis(
+        id: 's-unknown',
+        musteriId: 'musteri-1',
+        cikisId: 'unknown-stop-x',
+        ugramaId: 'unknown-stop-y',
+        kuryeId: 'unknown-courier-z',
+        durum: SiparisDurum.devamEdiyor,
+      );
+
+      await pumpPage(tester);
+
+      // Scroll to active panel.
+      await tester.dragUntilVisible(
+        find.textContaining('Devam Edenler'),
+        find.byType(ListView).first,
+        const Offset(0, -200),
+      );
+
+      // Fallback: raw IDs should appear.
+      expect(
+        find.text('unknown-stop-x → unknown-stop-y'),
+        findsOneWidget,
+      );
+      expect(find.text('Kurye: unknown-courier-z'), findsOneWidget);
     });
   });
 }

@@ -136,8 +136,8 @@
 - Source: user
 - Primary owning slice: M001/S03
 - Supporting slices: M001/S04, M001/S05, M001/S08
-- Validation: partial
-- Notes: Supabase stream() pattern established in S03 — customer sees live updates. S04 adds ops-side realtime panels fed from siparisStreamActiveProvider. Cross-role proof deferred to S08.
+- Validation: validated
+- Notes: Supabase stream() pattern established in S03 — customer sees live updates. S04 adds ops-side realtime panels fed from siparisStreamActiveProvider. S08 integration test proves full cross-role lifecycle: create→assign→deliver→complete with stream reactivity and courier isolation.
 
 ### R009 — Operations 3-panel dispatch screen
 
@@ -244,8 +244,8 @@
 - Source: inferred
 - Primary owning slice: M001/S08
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Use audioplayers or just_audio package
+- Validation: validated
+- Notes: Implemented in S08 with OrderAlertService (audioplayers). Compares prev/next kurye_bekliyor ID sets — fires alert only on genuinely new arrivals, not existing order state changes. Widget test verifies trigger behavior.
 
 ### R018 — Order status log tracking
 
@@ -334,7 +334,7 @@
 | R005 | primary-user-loop | active | M001/S02 | none | validated |
 | R006 | primary-user-loop | active | M001/S02 | none | validated |
 | R007 | primary-user-loop | active | M001/S03 | M001/S04 | validated |
-| R008 | core-capability | active | M001/S03 | M001/S04,S05,S08 | partial |
+| R008 | core-capability | active | M001/S03 | M001/S04,S05,S08 | validated |
 | R009 | primary-user-loop | active | M001/S04 | none | validated |
 | R010 | primary-user-loop | active | M001/S04 | none | validated |
 | R011 | primary-user-loop | active | M001/S05 | none | validated |
@@ -343,7 +343,7 @@
 | R014 | primary-user-loop | active | M001/S06 | none | validated |
 | R015 | differentiator | active | M001/S07 | none | validated |
 | R016 | primary-user-loop | active | M001/S05 | M001/S04 | validated |
-| R017 | launchability | active | M001/S08 | none | unmapped |
+| R017 | launchability | active | M001/S08 | none | validated |
 | R018 | continuity | active | M001/S04 | none | validated |
 | R019 | differentiator | deferred | none | none | unmapped |
 | R020 | differentiator | deferred | none | none | unmapped |
@@ -354,7 +354,7 @@
 ## Coverage Summary
 
 - Active requirements: 18
-- Mapped to slices: 16
-- Validated: 16 (R001, R002, R003, R004, R005, R006, R007, R009, R010, R011, R012, R013, R014, R015, R016, R018)
-- Partially validated: 1 (R008)
+- Mapped to slices: 18
+- Validated: 18 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R012, R013, R014, R015, R016, R017, R018)
+- Partially validated: 0
 - Unmapped active requirements: 0

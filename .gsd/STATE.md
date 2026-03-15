@@ -1,12 +1,12 @@
 # GSD State
 
 **Active Milestone:** M001 — Core Dispatch App
-**Active Slice:** S08 — Cross-role integration & polish
-**Phase:** planning
+**Active Slice:** None
+**Phase:** complete
 **Requirements Status:** 0 active · 0 validated · 4 deferred · 1 out of scope
 
 ## Milestone Registry
-- 🔄 **M001:** Core Dispatch App
+- ✅ **M001:** Core Dispatch App
 
 ## Recent Decisions
 - None recorded
@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Plan slice S08 (Cross-role integration & polish).
+All milestones complete.

@@ -7,6 +7,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/siparis/siparis_providers.dart';
+import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
 
 /// Courier main screen — active/passive toggle + assigned order list
@@ -47,12 +48,21 @@ class _KuryeBody extends ConsumerWidget {
     final ordersAsync =
         ref.watch(siparisStreamByKuryeProvider(kurye.id));
 
+    // Build ugrama name map (D027 pattern).
+    final ugramaListAsync = ref.watch(ugramaListProvider);
+    final ugramaMap = <String, String>{};
+    if (ugramaListAsync case AsyncData(value: final ugramalar)) {
+      for (final u in ugramalar) {
+        ugramaMap[u.id] = u.ugramaAdi;
+      }
+    }
+
     return ListView(
       padding: ProjectPadding.all.normal,
       children: [
         _OnlineToggleCard(kurye: kurye),
         const SizedBox(height: AppSpacing.md),
-        _OrderListSection(ordersAsync: ordersAsync),
+        _OrderListSection(ordersAsync: ordersAsync, ugramaMap: ugramaMap),
       ],
     );
   }
@@ -128,9 +138,13 @@ class _OnlineToggleCardState extends ConsumerState<_OnlineToggleCard> {
 
 /// Order list section showing `devam_ediyor` orders.
 class _OrderListSection extends StatelessWidget {
-  const _OrderListSection({required this.ordersAsync});
+  const _OrderListSection({
+    required this.ordersAsync,
+    required this.ugramaMap,
+  });
 
   final AsyncValue<List<Siparis>> ordersAsync;
+  final Map<String, String> ugramaMap;
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +161,7 @@ class _OrderListSection extends StatelessWidget {
               : Column(
                   children: [
                     for (final order in activeOrders) ...[
-                      _OrderCard(order: order),
+                      _OrderCard(order: order, ugramaMap: ugramaMap),
                       if (order != activeOrders.last)
                         const Divider(height: AppSpacing.lg),
                     ],
@@ -166,19 +180,26 @@ class _OrderListSection extends StatelessWidget {
 
 /// Individual order card with route info and timestamp buttons.
 class _OrderCard extends ConsumerWidget {
-  const _OrderCard({required this.order});
+  const _OrderCard({required this.order, required this.ugramaMap});
 
   final Siparis order;
+  final Map<String, String> ugramaMap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final cikis = ugramaMap[order.cikisId] ?? order.cikisId;
+    final ugrama = ugramaMap[order.ugramaId] ?? order.ugramaId;
+    final ugrama1 = order.ugrama1Id != null
+        ? ugramaMap[order.ugrama1Id] ?? order.ugrama1Id
+        : null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Route info.
         Text(
-          '${order.cikisId} → ${order.ugramaId}'
-          '${order.ugrama1Id != null ? ' → ${order.ugrama1Id}' : ''}',
+          '$cikis → $ugrama'
+          '${ugrama1 != null ? ' → $ugrama1' : ''}',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w500,
               ),
