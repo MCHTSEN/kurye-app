@@ -127,9 +127,8 @@ class _KuryeYonetimPageState extends ConsumerState<KuryeYonetimPage> {
                   TextFormField(
                     controller: _adController,
                     decoration: const InputDecoration(labelText: 'Ad *'),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'Zorunlu alan'
-                        : null,
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Zorunlu alan' : null,
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   TextFormField(
@@ -188,9 +187,7 @@ class _KuryeYonetimPageState extends ConsumerState<KuryeYonetimPage> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    k.isOnline
-                                        ? Icons.wifi
-                                        : Icons.wifi_off,
+                                    k.isOnline ? Icons.wifi : Icons.wifi_off,
                                     size: 16,
                                     color: k.isOnline
                                         ? AppColors.secondary

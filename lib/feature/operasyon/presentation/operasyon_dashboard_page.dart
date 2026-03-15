@@ -194,7 +194,10 @@ class _WelcomeHeader extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.secondary,
                   borderRadius: BorderRadius.circular(30),
@@ -692,7 +695,11 @@ class _AktifKuryelerContent extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.location_off_rounded, size: 32, color: AppColors.textMuted),
+            const Icon(
+              Icons.location_off_rounded,
+              size: 32,
+              color: AppColors.textMuted,
+            ),
             const SizedBox(height: 8),
             Text(
               'Aktif kurye yok',
@@ -750,7 +757,9 @@ class _AktifKuryelerContent extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.border.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppColors.border.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               children: [
@@ -776,7 +785,8 @@ class _PulseDot extends StatefulWidget {
   State<_PulseDot> createState() => _PulseDotState();
 }
 
-class _PulseDotState extends State<_PulseDot> with SingleTickerProviderStateMixin {
+class _PulseDotState extends State<_PulseDot>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -878,7 +888,11 @@ class _CardError extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(LucideIcons.circleAlert, size: 16, color: AppColors.primaryDark),
+          const Icon(
+            LucideIcons.circleAlert,
+            size: 16,
+            color: AppColors.primaryDark,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

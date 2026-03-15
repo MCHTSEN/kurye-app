@@ -114,7 +114,8 @@ Future<void> _pumpShell(
       ],
       child: MaterialApp.router(
         routerConfig: router.config(
-          deepLinkBuilder: (_) => DeepLink.path(CustomRoute.operasyonShell.path),
+          deepLinkBuilder: (_) =>
+              DeepLink.path(CustomRoute.operasyonShell.path),
         ),
       ),
     ),

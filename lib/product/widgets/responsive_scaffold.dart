@@ -220,7 +220,9 @@ class ResponsiveScaffold extends StatelessWidget {
               left: 20,
               right: 20,
             ),
-            decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+            decoration: const BoxDecoration(
+              gradient: AppColors.primaryGradient,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

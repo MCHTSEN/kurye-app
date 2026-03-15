@@ -149,17 +149,18 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
                 children: [
                   TextFormField(
                     controller: _firmaKisaAdController,
-                    decoration:
-                        const InputDecoration(labelText: 'Firma Kısa Ad *'),
-                    validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'Zorunlu alan'
-                        : null,
+                    decoration: const InputDecoration(
+                      labelText: 'Firma Kısa Ad *',
+                    ),
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? 'Zorunlu alan' : null,
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   TextFormField(
                     controller: _firmaTamAdController,
-                    decoration:
-                        const InputDecoration(labelText: 'Firma Tam Ad'),
+                    decoration: const InputDecoration(
+                      labelText: 'Firma Tam Ad',
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   TextFormField(
@@ -223,8 +224,9 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
                               trailing: Icon(
                                 Icons.circle,
                                 size: 12,
-                                color:
-                                    m.isActive ? AppColors.secondary : AppColors.textMuted,
+                                color: m.isActive
+                                    ? AppColors.secondary
+                                    : AppColors.textMuted,
                               ),
                               onTap: () => _populateForm(m),
                             ),

@@ -11,6 +11,38 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-03-16
+- Scope: Operasyon mobile bottom navigation shell
+- Summary:
+  - Operasyon rolü için mobil drawer akışı `AutoTabsScaffold` tab shell yapısına taşındı.
+  - Yeni `/operasyon` shell route ve `/operasyon/ayarlar` hub route eklendi.
+  - Düşük frekanslı operasyon sayfaları ayarlar stack'i altına alındı.
+  - `ResponsiveScaffold` mobil drawer'ı kapatılabilir hale getirildi.
+  - Operasyon tab ve ayarlar seçimleri için analytics eventleri eklendi.
+  - Operasyon shell ve ayarlar hub için widget testleri eklendi.
+- Files:
+  - `lib/app/router/custom_route.dart`
+  - `lib/app/router/app_router.dart`
+  - `lib/app/router/guards/app_access_guard.dart`
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_shell_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_ayarlar_page.dart`
+  - `lib/feature/operasyon/presentation/*.dart`
+  - `lib/product/navigation/role_nav_items.dart`
+  - `lib/product/widgets/responsive_scaffold.dart`
+  - `lib/product/widgets/WIDGETS.md`
+  - `packages/backend_core/lib/src/domain/app_events.dart`
+  - `test/app/router/*.dart`
+  - `test/feature/operasyon/operasyon_shell_page_test.dart`
+  - `test/feature/operasyon/operasyon_ayarlar_page_test.dart`
+  - `integration_test/operasyon_navigation_smoke_test.dart`
+- Validation:
+  - `flutter analyze` failed due pre-existing repo info-level issues; no new analyzer errors from this change.
+  - `flutter test test/app/router/custom_route_test.dart test/app/router/guard_role_routing_test.dart test/feature/operasyon/operasyon_shell_page_test.dart test/feature/operasyon/operasyon_ayarlar_page_test.dart` passed.
+  - `flutter test integration_test/operasyon_navigation_smoke_test.dart` passed.
+  - `flutter test` failed on existing `test/feature/example_feed/example_feed_page_golden_test.dart` golden mismatch.
+
 ### 2026-03-15
 - Scope: Sprint 1 — Moto Kurye temel altyapı (DB şeması, roller, routing)
 - Summary:
