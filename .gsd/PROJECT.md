@@ -14,7 +14,7 @@ The core dispatch loop: customer creates order → operations assigns courier �
 
 ## Current State
 
-S01 (auth), S02 (master data CRUD), S03 (order creation & tracking), S04 (operations dispatch), S05 (courier workflow), and S06 (order history & editing) are complete:
+S01–S07 complete (7 of 8 slices in M001). All core functionality is built:
 - Supabase DB with 10 tables deployed + siparis_log audit table
 - Auth with Supabase, role-based routing via AppAccessGuard
 - Role request/approval flow with müşteri assignment for personel role
@@ -28,10 +28,11 @@ S01 (auth), S02 (master data CRUD), S03 (order creation & tracking), S04 (operat
 - SiparisLog audit trail on every status transition
 - Courier main screen with active/passive toggle, realtime order list, and çıkış/uğrama/uğrama1 timestamp punching
 - Operations order history page with Excel-like DataTable, multi-dimension filters (date/müşteri/çıkış/uğrama), tap-to-edit panel, and running revenue total
+- Analytics dashboard with live revenue metrics (3mo/1mo/1wk + daily avg), courier performance stats, active courier count
 - Supabase Realtime stream pattern: single stream feeds panels, split client-side by status (ops + courier)
-- 97 tests passing, 0 analysis errors
+- 114 tests passing, 0 analysis errors
 
-Next: S07 (Analytics dashboard) — revenue metrics, courier performance stats, active couriers today.
+Next: S08 (Cross-role integration & polish) — sound alerts, end-to-end verification, edge case handling. Final slice of M001.
 
 ## Architecture / Key Patterns
 
@@ -42,6 +43,7 @@ Next: S07 (Analytics dashboard) — revenue metrics, courier performance stats, 
 - **DB access**: Supabase client via `SupabaseBackendModule`, service_role key for admin ops
 - **CRUD pattern**: Master-detail pages (form top, list bottom, tap to edit) with ConsumerStatefulWidget
 - **Realtime**: Supabase `stream(primaryKey: ['id'])` + filter + handleError, autoDispose providers
+- **Analytics**: Pure computation via DashboardStats.compute() factory, per-card ConsumerWidget with independent .when()
 - **Logging**: AppLogger with LogTag.data for CRUD/stream operations, LogTag.auth for auth
 - **Entry point**: `lib/main_supabase.dart` with `--dart-define-from-file=.env`
 
@@ -51,4 +53,4 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 
 ## Milestone Sequence
 
-- [ ] M001: Core dispatch app — All 3 roles functional with order lifecycle, CRUD, analytics, and realtime sync
+- [ ] M001: Core dispatch app — All 3 roles functional with order lifecycle, CRUD, analytics, and realtime sync (7/8 slices done)

@@ -220,8 +220,8 @@
 - Source: user
 - Primary owning slice: M001/S07
 - Supporting slices: none
-- Validation: unmapped
-- Notes: May use Supabase RPC functions for aggregations
+- Validation: validated
+- Notes: Implemented via DashboardStats.compute() pure factory + dashboardStatsProvider. 10 unit tests + 7 widget tests. No RPC functions needed — client-side computation from getHistory() data.
 
 ### R016 — Courier active/passive toggle
 
@@ -341,7 +341,7 @@
 | R012 | primary-user-loop | active | M001/S04 | none | validated |
 | R013 | primary-user-loop | active | M001/S03 | none | validated |
 | R014 | primary-user-loop | active | M001/S06 | none | validated |
-| R015 | differentiator | active | M001/S07 | none | unmapped |
+| R015 | differentiator | active | M001/S07 | none | validated |
 | R016 | primary-user-loop | active | M001/S05 | M001/S04 | validated |
 | R017 | launchability | active | M001/S08 | none | unmapped |
 | R018 | continuity | active | M001/S04 | none | validated |
@@ -355,6 +355,6 @@
 
 - Active requirements: 18
 - Mapped to slices: 16
-- Validated: 15 (R001, R002, R003, R004, R005, R006, R007, R009, R010, R011, R012, R013, R014, R016, R018)
+- Validated: 16 (R001, R002, R003, R004, R005, R006, R007, R009, R010, R011, R012, R013, R014, R015, R016, R018)
 - Partially validated: 1 (R008)
 - Unmapped active requirements: 0
