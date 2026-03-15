@@ -298,13 +298,13 @@
 
 | ID | Test | Status | Recording |
 |----|------|--------|-----------|
-| T01 | Login Valid | ⬜ | |
-| T02 | Login Invalid | ⬜ | |
-| T03 | Login Empty | ⬜ | |
-| T04 | Logout & Re-login | ⬜ | |
-| T05 | Ops Dashboard | ⬜ | |
-| T06 | Ops Navigation | ⬜ | |
-| T07 | Ops Create Order | ⬜ | |
+| T01 | Login Valid | ✅ PASS | T01-T04-auth-tests.mp4 |
+| T02 | Login Invalid | ✅ PASS | T01-T04-auth-tests.mp4 |
+| T03 | Login Empty | ⏭️ SKIP | (covered by widget tests) |
+| T04 | Logout & Re-login | ✅ PASS | T01-T04-auth-tests.mp4 |
+| T05 | Ops Dashboard | ✅ PASS | T05-T06-ops-dashboard-navigation.mp4 |
+| T06 | Ops Navigation | ✅ PASS | T05-T06-ops-dashboard-navigation.mp4 |
+| T07 | Ops Create Order | ✅ PASS | T07-ops-create-order.mp4 |
 | T08 | Ops Form Validation | ⬜ | |
 | T09 | Ops Form Reset | ⬜ | |
 | T10 | Ops Assign Courier | ⬜ | |
