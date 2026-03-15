@@ -6,6 +6,7 @@ import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
 import 'package:bursamotokurye/product/user_profile/user_profile_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../helpers/fakes/fake_musteri_personel_repository.dart';
 import '../../helpers/fakes/fake_siparis_repository.dart';
@@ -97,7 +98,7 @@ void main() {
 
       // Submit button (AppPrimaryButton)
       expect(
-        find.widgetWithText(ElevatedButton, 'Sipariş Oluştur'),
+        find.widgetWithText(ShadButton, 'Sipariş Oluştur'),
         findsOneWidget,
       );
 
@@ -115,14 +116,14 @@ void main() {
 
       // Scroll to the submit button first.
       await tester.dragUntilVisible(
-        find.widgetWithText(ElevatedButton, 'Sipariş Oluştur'),
+        find.widgetWithText(ShadButton, 'Sipariş Oluştur'),
         find.byType(ListView).first,
         const Offset(0, -200),
       );
 
       // Tap submit without selecting required dropdowns.
       await tester.tap(
-        find.widgetWithText(ElevatedButton, 'Sipariş Oluştur'),
+        find.widgetWithText(ShadButton, 'Sipariş Oluştur'),
       );
       await tester.pumpAndSettle();
 
@@ -164,14 +165,14 @@ void main() {
 
       // Scroll to submit button.
       await tester.dragUntilVisible(
-        find.widgetWithText(ElevatedButton, 'Sipariş Oluştur'),
+        find.widgetWithText(ShadButton, 'Sipariş Oluştur'),
         find.byType(ListView).first,
         const Offset(0, -200),
       );
 
       // Submit.
       await tester.tap(
-        find.widgetWithText(ElevatedButton, 'Sipariş Oluştur'),
+        find.widgetWithText(ShadButton, 'Sipariş Oluştur'),
       );
       await tester.pumpAndSettle();
 

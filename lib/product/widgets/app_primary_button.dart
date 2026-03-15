@@ -1,41 +1,35 @@
 import 'package:flutter/material.dart';
-
-import '../../core/constants/app_radius.dart';
-import '../../core/constants/app_spacing.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 class AppPrimaryButton extends StatelessWidget {
   const AppPrimaryButton({
     required this.label,
     required this.onPressed,
     this.isLoading = false,
+    this.icon,
     super.key,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final bool isLoading;
+  final Widget? icon;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
+      child: ShadButton(
+        enabled: !isLoading,
         onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.medium),
-          ),
-          padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.sm,
-          ),
-        ),
-        child: isLoading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
+        leading: isLoading
+            ? const SizedBox.square(
+                dimension: 16,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : Text(label),
+            : icon,
+        size: ShadButtonSize.lg,
+        child: Text(label),
       ),
     );
   }

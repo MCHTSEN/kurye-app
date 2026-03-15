@@ -95,10 +95,9 @@ class ResponsiveScaffold extends StatelessWidget {
                       children: [
                         Text(
                           headerTitle,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.bold),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         if (headerSubtitle != null)
                           Text(

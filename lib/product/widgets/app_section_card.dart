@@ -1,32 +1,38 @@
 import 'package:flutter/material.dart';
-
-import '../../core/constants/app_spacing.dart';
-import '../../core/constants/project_padding.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 class AppSectionCard extends StatelessWidget {
   const AppSectionCard({
     required this.title,
     required this.child,
+    this.description,
+    this.footer,
+    this.trailing,
     super.key,
   });
 
   final String title;
   final Widget child;
+  final String? description;
+  final Widget? footer;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: ProjectPadding.all.normal,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: AppSpacing.sm),
-            child,
-          ],
-        ),
+    final theme = ShadTheme.of(context);
+
+    return ShadCard(
+      title: Row(
+        children: [
+          Expanded(
+            child: Text(title, style: theme.textTheme.h4),
+          ),
+          if (trailing != null) trailing!,
+        ],
       ),
+      description: description != null ? Text(description!) : null,
+      footer: footer,
+      child: child,
     );
   }
 }
