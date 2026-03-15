@@ -34,8 +34,11 @@ class MyRoleRequest extends _$MyRoleRequest {
 }
 
 /// Beklemedeki tüm talepler (operasyon ekranı için).
+/// Uses one-shot fetch instead of realtime stream because Supabase Realtime
+/// streams evaluate RLS with limited auth context, causing empty results
+/// for custom `get_my_role()` policies.
 @riverpod
-Stream<List<RoleRequest>> pendingRoleRequests(Ref ref) {
+Future<List<RoleRequest>> pendingRoleRequests(Ref ref) {
   final repo = ref.watch(roleRequestRepositoryProvider);
-  return repo.watchPendingRequests();
+  return repo.getPendingRequests();
 }

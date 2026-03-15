@@ -109,23 +109,32 @@ abstract class _$MyRoleRequest extends $AsyncNotifier<RoleRequest?> {
 }
 
 /// Beklemedeki tüm talepler (operasyon ekranı için).
+/// Uses one-shot fetch instead of realtime stream because Supabase Realtime
+/// streams evaluate RLS with limited auth context, causing empty results
+/// for custom `get_my_role()` policies.
 
 @ProviderFor(pendingRoleRequests)
 const pendingRoleRequestsProvider = PendingRoleRequestsProvider._();
 
 /// Beklemedeki tüm talepler (operasyon ekranı için).
+/// Uses one-shot fetch instead of realtime stream because Supabase Realtime
+/// streams evaluate RLS with limited auth context, causing empty results
+/// for custom `get_my_role()` policies.
 
 final class PendingRoleRequestsProvider
     extends
         $FunctionalProvider<
           AsyncValue<List<RoleRequest>>,
           List<RoleRequest>,
-          Stream<List<RoleRequest>>
+          FutureOr<List<RoleRequest>>
         >
     with
         $FutureModifier<List<RoleRequest>>,
-        $StreamProvider<List<RoleRequest>> {
+        $FutureProvider<List<RoleRequest>> {
   /// Beklemedeki tüm talepler (operasyon ekranı için).
+  /// Uses one-shot fetch instead of realtime stream because Supabase Realtime
+  /// streams evaluate RLS with limited auth context, causing empty results
+  /// for custom `get_my_role()` policies.
   const PendingRoleRequestsProvider._()
     : super(
         from: null,
@@ -142,15 +151,15 @@ final class PendingRoleRequestsProvider
 
   @$internal
   @override
-  $StreamProviderElement<List<RoleRequest>> $createElement(
+  $FutureProviderElement<List<RoleRequest>> $createElement(
     $ProviderPointer pointer,
-  ) => $StreamProviderElement(pointer);
+  ) => $FutureProviderElement(pointer);
 
   @override
-  Stream<List<RoleRequest>> create(Ref ref) {
+  FutureOr<List<RoleRequest>> create(Ref ref) {
     return pendingRoleRequests(ref);
   }
 }
 
 String _$pendingRoleRequestsHash() =>
-    r'64c8668d7275d962046bee1f44aeabf5e6d7f0a1';
+    r'54cc15727ff5bfc63aee953d475e22e5049dc579';
