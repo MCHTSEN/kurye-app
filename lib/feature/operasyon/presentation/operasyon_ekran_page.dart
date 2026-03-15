@@ -290,41 +290,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }
 
   Future<double?> _showManualPricingDialog() async {
-    final controller = TextEditingController();
     final result = await showDialog<double>(
       context: context,
       builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Ücret Giriniz'),
-          content: TextField(
-            key: const Key('manual_price_field'),
-            controller: controller,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            decoration: const InputDecoration(
-              labelText: 'Ücret (₺)',
-              hintText: '0.00',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('İptal'),
-            ),
-            TextButton(
-              key: const Key('manual_price_confirm'),
-              onPressed: () {
-                final parsed = double.tryParse(controller.text);
-                if (parsed != null && parsed > 0) {
-                  Navigator.of(ctx).pop(parsed);
-                }
-              },
-              child: const Text('Onayla'),
-            ),
-          ],
-        );
+        return _ManualPricingDialog(key: const Key('manual_price_dialog'));
       },
     );
-    controller.dispose();
     return result;
   }
 
@@ -801,5 +772,63 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final cikis = ugramaMap[s.cikisId] ?? s.cikisId;
     final ugrama = ugramaMap[s.ugramaId] ?? s.ugramaId;
     return '$cikis → $ugrama';
+  }
+}
+
+/// Stateful dialog that owns its own [TextEditingController] so it is
+/// disposed together with the dialog widget, avoiding use-after-dispose
+/// errors during the dismiss animation.
+class _ManualPricingDialog extends StatefulWidget {
+  const _ManualPricingDialog({super.key});
+
+  @override
+  State<_ManualPricingDialog> createState() => _ManualPricingDialogState();
+}
+
+class _ManualPricingDialogState extends State<_ManualPricingDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Ücret Giriniz'),
+      content: TextField(
+        key: const Key('manual_price_field'),
+        controller: _controller,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        decoration: const InputDecoration(
+          labelText: 'Ücret (₺)',
+          hintText: '0.00',
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('İptal'),
+        ),
+        TextButton(
+          key: const Key('manual_price_confirm'),
+          onPressed: () {
+            final parsed = double.tryParse(_controller.text);
+            if (parsed != null && parsed > 0) {
+              Navigator.of(context).pop(parsed);
+            }
+          },
+          child: const Text('Onayla'),
+        ),
+      ],
+    );
   }
 }
