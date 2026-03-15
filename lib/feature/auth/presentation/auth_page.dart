@@ -6,8 +6,6 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../core/constants/app_spacing.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../product/auth/auth_providers.dart';
-import '../../../product/environment/environment_provider.dart';
 import '../application/auth_controller.dart';
 
 class AuthPage extends ConsumerStatefulWidget {
@@ -21,7 +19,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
-  bool _isRegisterMode = false;
+  final bool _isRegisterMode = false;
   bool _showPassword = false;
 
   @override
@@ -42,8 +40,6 @@ class _AuthPageState extends ConsumerState<AuthPage> {
       authControllerProvider.select((state) => state.error),
     );
     final authController = ref.read(authControllerProvider.notifier);
-    final environment = ref.watch(appEnvironmentProvider);
-    final supportedSocial = ref.watch(supportedSocialLoginsProvider);
     final theme = ShadTheme.of(context);
 
     return Scaffold(
@@ -67,12 +63,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                   style: theme.textTheme.h2,
                 ),
                 const SizedBox(height: AppSpacing.xxs),
-                Text(
-                  l10n.authDescription,
-                  style: theme.textTheme.muted,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.xl),
+                const SizedBox(height: AppSpacing.lg),
 
                 // Auth Card
                 ShadCard(
@@ -80,41 +71,11 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                     _isRegisterMode ? l10n.authRegister : l10n.authTitle,
                     style: theme.textTheme.h4,
                   ),
-                  description: Text(
-                    'Backend: ${environment.backendProvider.name}',
-                  ),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Social login
-                        if (supportedSocial
-                            .contains(SocialLoginMethod.google)) ...[
-                          ShadButton.outline(
-                            onPressed:
-                                isLoading
-                                    ? null
-                                    : () => _handleGoogleSignIn(
-                                      authController,
-                                    ),
-                            leading: const Padding(
-                              padding: EdgeInsets.only(right: 8),
-                              child: Text(
-                                'G',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            size: ShadButtonSize.lg,
-                            child: Text(l10n.authSignInWithGoogle),
-                          ),
-                          const SizedBox(height: AppSpacing.lg),
-                          _buildDivider(l10n.authOrDivider, theme),
-                          const SizedBox(height: AppSpacing.lg),
-                        ],
 
                         // Register: name field
                         if (_isRegisterMode) ...[
@@ -209,35 +170,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                   ),
                 ),
 
-                const SizedBox(height: AppSpacing.md),
-
-                // Toggle register/login
-                ShadButton.link(
-                  onPressed: isLoading
-                      ? null
-                      : () => setState(
-                            () => _isRegisterMode = !_isRegisterMode,
-                          ),
-                  child: Text(
-                    _isRegisterMode
-                        ? l10n.authSignInWithEmail
-                        : l10n.authRegister,
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.sm),
-
-                ShadButton.outline(
-                  onPressed:
-                      isLoading ? null : authController.signInAnonymously,
-                  size: ShadButtonSize.sm,
-                  child: Text(l10n.authSignInAnonymous),
-                ),
-
-                // Quick-login (debug only)
                 if (kDebugMode) ...[
-                  const SizedBox(height: AppSpacing.xl),
-                  _buildDivider('Hızlı Giriş (Dev)', theme),
                   const SizedBox(height: AppSpacing.md),
                   _QuickLoginButtons(
                     emailController: _emailController,
@@ -251,19 +184,6 @@ class _AuthPageState extends ConsumerState<AuthPage> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDivider(String label, ShadThemeData theme) {
-    return Row(
-      children: [
-        const Expanded(child: Divider()),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: Text(label, style: theme.textTheme.muted),
-        ),
-        const Expanded(child: Divider()),
-      ],
     );
   }
 
@@ -325,9 +245,6 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     return 'Giriş yapılamadı. Lütfen tekrar deneyin.';
   }
 
-  Future<void> _handleGoogleSignIn(AuthController controller) async {
-    // TODO(dev): integrate google_sign_in package
-  }
 }
 
 // ---------------------------------------------------------------------------

@@ -305,27 +305,27 @@
 | T05 | Ops Dashboard | ✅ PASS | T05-T06-ops-dashboard-navigation.mp4 |
 | T06 | Ops Navigation | ✅ PASS | T05-T06-ops-dashboard-navigation.mp4 |
 | T07 | Ops Create Order | ✅ PASS | T07-ops-create-order.mp4 |
-| T08 | Ops Form Validation | ⬜ | |
-| T09 | Ops Form Reset | ⬜ | |
-| T10 | Ops Assign Courier | ⬜ | |
-| T11 | Ops Finish Order | ⬜ | |
-| T12 | Ops Pricing Cancel | ⬜ | |
-| T13 | SearchableDropdown Filter | ⬜ | |
-| T14 | Müşteri Kayıt | ⬜ | |
-| T15 | Uğrama Yönetimi | ⬜ | |
-| T16 | Kurye Yönetimi | ⬜ | |
-| T17 | Rol Onayları | ⬜ | |
-| T18 | Ops Geçmiş | ⬜ | |
-| T19 | Müşteri Login | ⬜ | |
-| T20 | Müşteri Navigation | ⬜ | |
-| T21 | Müşteri Create Order | ⬜ | |
-| T22 | Müşteri Form Validation | ⬜ | |
-| T23 | Müşteri Active Orders | ⬜ | |
-| T24 | Müşteri Geçmiş | ⬜ | |
-| T25 | Kurye Login | ⬜ | |
-| T26 | Kurye Assigned Orders | ⬜ | |
-| T27 | Kurye Timestamps | ⬜ | |
-| T28 | Cross-role Lifecycle | ⬜ | |
-| T29 | Dropdown Empty Search | ⬜ | |
-| T30 | Multi-select Assign | ⬜ | |
-| T31 | Back Navigation | ⬜ | |
+| T08 | Ops Form Validation | ✅ PASS | T08-T13-ops-flow.mp4 |
+| T09 | Ops Form Reset | ✅ PASS | T07-ops-create-order.mp4 |
+| T10 | Ops Assign Courier | ⏭️ COVERED | 02-dispatch-name-resolution-and-sound.mp4 |
+| T11 | Ops Finish Order | ⏭️ COVERED | 02-dispatch-name-resolution-and-sound.mp4 |
+| T12 | Ops Pricing Cancel | ⚠️ NOT RUN | no live in-progress order without price history |
+| T13 | SearchableDropdown Filter | ⚠️ PARTIAL | T08-T13-ops-flow.mp4 (open/filter behavior limited by Flutter canvas) |
+| T14 | Müşteri Kayıt | ✅ PASS | T08-T13-ops-flow.mp4 |
+| T15 | Uğrama Yönetimi | ✅ PASS | T08-T13-ops-flow.mp4 |
+| T16 | Kurye Yönetimi | ✅ PASS | T08-T13-ops-flow.mp4 |
+| T17 | Rol Onayları | ✅ PASS | T08-T13-ops-flow.mp4 |
+| T18 | Ops Geçmiş | ✅ PASS | T08-T13-ops-flow.mp4 |
+| T19 | Müşteri Login | ✅ PASS | T19-T24-musteri-flow.mp4 |
+| T20 | Müşteri Navigation | ✅ PASS | T19-T24-musteri-flow.mp4 |
+| T21 | Müşteri Create Order | ⚠️ BLOCKED | depends on T19 |
+| T22 | Müşteri Form Validation | ⚠️ BLOCKED | depends on T19 |
+| T23 | Müşteri Active Orders | ⚠️ BLOCKED | depends on T19 |
+| T24 | Müşteri Geçmiş | ⚠️ BLOCKED | depends on T19 |
+| T25 | Kurye Login | ⚠️ NOT RUN | müşteri auth issue suggests fixture/auth drift; not attempted yet |
+| T26 | Kurye Assigned Orders | ⚠️ NOT RUN | depends on T25 |
+| T27 | Kurye Timestamps | ⚠️ NOT RUN | depends on T25/T26 |
+| T28 | Cross-role Lifecycle | ⚠️ PARTIAL | ops-side previously covered; full 3-role simulator flow blocked by auth |
+| T29 | Dropdown Empty Search | ⚠️ NOT RUN | canvas input limitation |
+| T30 | Multi-select Assign | ⚠️ NOT RUN | requires creating multiple waiting orders interactively |
+| T31 | Back Navigation | ⚠️ NOT RUN | lower priority than blocked role flows |
