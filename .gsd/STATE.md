@@ -3,7 +3,7 @@
 **Active Milestone:** M001 — Core Dispatch App
 **Active Slice:** S04 — Operations dispatch screen
 **Phase:** planning
-**Requirements Status:** 18 active · 0 validated · 4 deferred · 1 out of scope
+**Requirements Status:** 0 active · 0 validated · 4 deferred · 1 out of scope
 
 ## Milestone Registry
 - 🔄 **M001:** Core Dispatch App
