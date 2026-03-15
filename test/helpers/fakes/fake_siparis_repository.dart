@@ -175,6 +175,47 @@ class FakeSiparisRepository implements SiparisRepository {
   }
 
   @override
+  Future<List<Siparis>> getHistory({
+    DateTime? startDate,
+    DateTime? endDate,
+    String? musteriId,
+    String? cikisId,
+    String? ugramaId,
+  }) async {
+    var results = store.values.where(
+      (s) =>
+          s.durum == SiparisDurum.tamamlandi ||
+          s.durum == SiparisDurum.iptal,
+    );
+    if (startDate != null) {
+      results = results.where(
+        (s) => s.createdAt != null && !s.createdAt!.isBefore(startDate),
+      );
+    }
+    if (endDate != null) {
+      results = results.where(
+        (s) => s.createdAt != null && !s.createdAt!.isAfter(endDate),
+      );
+    }
+    if (musteriId != null) {
+      results = results.where((s) => s.musteriId == musteriId);
+    }
+    if (cikisId != null) {
+      results = results.where((s) => s.cikisId == cikisId);
+    }
+    if (ugramaId != null) {
+      results = results.where((s) => s.ugramaId == ugramaId);
+    }
+    final list = results.toList()
+      ..sort((a, b) {
+        final aTime = a.createdAt ?? DateTime(1970);
+        final bTime = b.createdAt ?? DateTime(1970);
+        return bTime.compareTo(aTime);
+      });
+    return list;
+  }
+
+  @override
   Future<Siparis?> getRecentPricing({
     required String musteriId,
     required String cikisId,

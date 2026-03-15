@@ -101,6 +101,44 @@ class SupabaseSiparisRepository implements SiparisRepository {
   }
 
   @override
+  Future<List<Siparis>> getHistory({
+    DateTime? startDate,
+    DateTime? endDate,
+    String? musteriId,
+    String? cikisId,
+    String? ugramaId,
+  }) async {
+    _log.i('getHistory: startDate=$startDate, endDate=$endDate, '
+        'musteri=$musteriId, cikis=$cikisId, ugrama=$ugramaId');
+    var query = _client
+        .from(_table)
+        .select()
+        .inFilter('durum', [
+      SiparisDurum.tamamlandi.value,
+      SiparisDurum.iptal.value,
+    ]);
+    if (startDate != null) {
+      query = query.gte('created_at', startDate.toIso8601String());
+    }
+    if (endDate != null) {
+      query = query.lte('created_at', endDate.toIso8601String());
+    }
+    if (musteriId != null) {
+      query = query.eq('musteri_id', musteriId);
+    }
+    if (cikisId != null) {
+      query = query.eq('cikis_id', cikisId);
+    }
+    if (ugramaId != null) {
+      query = query.eq('ugrama_id', ugramaId);
+    }
+    final data =
+        await query.order('created_at', ascending: false);
+    _log.i('getHistory: ${data.length} rows returned');
+    return data.map(Siparis.fromJson).toList();
+  }
+
+  @override
   Future<Siparis?> getRecentPricing({
     required String musteriId,
     required String cikisId,
