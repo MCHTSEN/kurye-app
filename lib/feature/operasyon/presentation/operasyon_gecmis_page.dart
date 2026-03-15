@@ -13,6 +13,7 @@ import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/searchable_dropdown.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 
 final _log = Logger();
@@ -324,37 +325,28 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
         : ugramalar;
 
     final musteriItems = musteriler
-        .map((m) => DropdownMenuItem<String>(
-              value: m.id,
-              child: Text(m.firmaKisaAd),
-            ))
+        .map((m) => (value: m.id, label: m.firmaKisaAd))
         .toList();
 
     final stopItems = filteredStops
-        .map((u) => DropdownMenuItem<String>(
-              value: u.id,
-              child: Text(u.ugramaAdi),
-            ))
+        .map((u) => (value: u.id, label: u.ugramaAdi))
         .toList();
 
     final durumItems = [
       SiparisDurum.tamamlandi,
       SiparisDurum.iptal,
-    ]
-        .map((d) => DropdownMenuItem<String>(
-              value: d.value,
-              child: Text(d.value),
-            ))
-        .toList();
+    ].map((d) => (value: d.value, label: d.value)).toList();
 
     return AppSectionCard(
       title: 'Sipariş Düzenle',
       child: Column(
         children: [
-          DropdownButtonFormField<String>(
+          SearchableDropdown<String>(
             key: const Key('edit_musteri_dropdown'),
             value: _editMusteriId,
-            decoration: const InputDecoration(labelText: 'Müşteri'),
+            label: 'Müşteri',
+            placeholder: 'Müşteri Seç',
+            searchPlaceholder: 'Müşteri ara...',
             items: musteriItems,
             onChanged: (v) {
               setState(() {
@@ -365,18 +357,22 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             },
           ),
           const SizedBox(height: AppSpacing.xs),
-          DropdownButtonFormField<String>(
+          SearchableDropdown<String>(
             key: const Key('edit_cikis_dropdown'),
             value: _editCikisId,
-            decoration: const InputDecoration(labelText: 'Çıkış'),
+            label: 'Çıkış',
+            placeholder: 'Çıkış Seç',
+            searchPlaceholder: 'Uğrama ara...',
             items: stopItems,
             onChanged: (v) => setState(() => _editCikisId = v),
           ),
           const SizedBox(height: AppSpacing.xs),
-          DropdownButtonFormField<String>(
+          SearchableDropdown<String>(
             key: const Key('edit_ugrama_dropdown'),
             value: _editUgramaId,
-            decoration: const InputDecoration(labelText: 'Uğrama'),
+            label: 'Uğrama',
+            placeholder: 'Uğrama Seç',
+            searchPlaceholder: 'Uğrama ara...',
             items: stopItems,
             onChanged: (v) => setState(() => _editUgramaId = v),
           ),
@@ -388,10 +384,11 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
           ),
           const SizedBox(height: AppSpacing.xs),
-          DropdownButtonFormField<String>(
+          SearchableDropdown<String>(
             key: const Key('edit_durum_dropdown'),
             value: _editDurum,
-            decoration: const InputDecoration(labelText: 'Durum'),
+            label: 'Durum',
+            placeholder: 'Durum Seç',
             items: durumItems,
             onChanged: (v) => setState(() => _editDurum = v),
           ),
@@ -472,59 +469,41 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
           ),
           const SizedBox(height: AppSpacing.xs),
           // Müşteri filter
-          DropdownButtonFormField<String>(
+          SearchableDropdown<String>(
             key: const Key('filter_musteri_dropdown'),
             value: _filterMusteriId,
-            decoration: const InputDecoration(labelText: 'Müşteri'),
-            items: [
-              const DropdownMenuItem<String>(
-                child: Text('— Tümü —'),
-              ),
-              ...musteriler.map(
-                (m) => DropdownMenuItem<String>(
-                  value: m.id,
-                  child: Text(m.firmaKisaAd),
-                ),
-              ),
-            ],
+            label: 'Müşteri',
+            placeholder: 'Tümü',
+            searchPlaceholder: 'Müşteri ara...',
+            items: musteriler
+                .map((m) => (value: m.id, label: m.firmaKisaAd))
+                .toList(),
             onChanged: _onFilterMusteriChanged,
           ),
           const SizedBox(height: AppSpacing.xs),
           // Çıkış filter
-          DropdownButtonFormField<String>(
+          SearchableDropdown<String>(
             key: const Key('filter_cikis_dropdown'),
             value: _filterCikisId,
-            decoration: const InputDecoration(labelText: 'Çıkış'),
-            items: [
-              const DropdownMenuItem<String>(
-                child: Text('— Tümü —'),
-              ),
-              ...filteredStops.map(
-                (u) => DropdownMenuItem<String>(
-                  value: u.id,
-                  child: Text(u.ugramaAdi),
-                ),
-              ),
-            ],
+            label: 'Çıkış',
+            placeholder: 'Tümü',
+            searchPlaceholder: 'Uğrama ara...',
+            items: filteredStops
+                .map((u) => (value: u.id, label: u.ugramaAdi))
+                .toList(),
             onChanged: (v) => setState(() => _filterCikisId = v),
           ),
           const SizedBox(height: AppSpacing.xs),
           // Uğrama filter
-          DropdownButtonFormField<String>(
+          SearchableDropdown<String>(
             key: const Key('filter_ugrama_dropdown'),
             value: _filterUgramaId,
-            decoration: const InputDecoration(labelText: 'Uğrama'),
-            items: [
-              const DropdownMenuItem<String>(
-                child: Text('— Tümü —'),
-              ),
-              ...filteredStops.map(
-                (u) => DropdownMenuItem<String>(
-                  value: u.id,
-                  child: Text(u.ugramaAdi),
-                ),
-              ),
-            ],
+            label: 'Uğrama',
+            placeholder: 'Tümü',
+            searchPlaceholder: 'Uğrama ara...',
+            items: filteredStops
+                .map((u) => (value: u.id, label: u.ugramaAdi))
+                .toList(),
             onChanged: (v) => setState(() => _filterUgramaId = v),
           ),
           const SizedBox(height: AppSpacing.sm),

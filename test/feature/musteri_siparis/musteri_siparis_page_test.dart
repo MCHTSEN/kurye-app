@@ -4,6 +4,7 @@ import 'package:bursamotokurye/product/musteri_personel/musteri_personel_provide
 import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
 import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
 import 'package:bursamotokurye/product/user_profile/user_profile_providers.dart';
+import 'package:bursamotokurye/product/widgets/searchable_dropdown.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -127,8 +128,11 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Should show 2 validation errors (Çıkış + Uğrama).
-      expect(find.text('Zorunlu alan'), findsNWidgets(2));
+      // Should show snackbar validation error.
+      expect(
+        find.text('Lütfen zorunlu alanları doldurunuz'),
+        findsOneWidget,
+      );
 
       // No order created.
       expect(fakeSiparisRepo.store, isEmpty);
@@ -138,16 +142,18 @@ void main() {
         (tester) async {
       await pumpPage(tester);
 
-      // Select Çıkış dropdown.
-      await tester.tap(find.byKey(const Key('cikis_dropdown')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Merkez Ofis').last);
+      // Programmatically select Çıkış = ugrama-1 (Merkez Ofis).
+      final cikisDropdown = tester.widget<SearchableDropdown<String>>(
+        find.byKey(const Key('cikis_dropdown')),
+      );
+      cikisDropdown.onChanged('ugrama-1');
       await tester.pumpAndSettle();
 
-      // Select Uğrama dropdown.
-      await tester.tap(find.byKey(const Key('ugrama_dropdown')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Şube A').last);
+      // Programmatically select Uğrama = ugrama-2 (Şube A).
+      final ugramaDropdown = tester.widget<SearchableDropdown<String>>(
+        find.byKey(const Key('ugrama_dropdown')),
+      );
+      ugramaDropdown.onChanged('ugrama-2');
       await tester.pumpAndSettle();
 
       // Scroll to reveal Not1 and submit.

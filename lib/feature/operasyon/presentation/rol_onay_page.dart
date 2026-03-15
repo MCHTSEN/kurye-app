@@ -13,6 +13,7 @@ import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/role_request/role_request_providers.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
+import '../../../product/widgets/searchable_dropdown.dart';
 
 class RolOnayPage extends ConsumerStatefulWidget {
   const RolOnayPage({super.key});
@@ -317,21 +318,14 @@ class _MusteriDropdown extends ConsumerWidget {
 
     return musteriListAsync.when(
       data: (musteriler) {
-        return ShadSelect<String>(
-          placeholder: const Text('Müşteri Seçimi *'),
-          initialValue: selectedId,
-          options: musteriler
-              .map(
-                (m) => ShadOption(value: m.id, child: Text(m.firmaKisaAd)),
-              )
+        return SearchableDropdown<String>(
+          value: selectedId,
+          label: 'Müşteri Seçimi *',
+          placeholder: 'Müşteri Seç',
+          searchPlaceholder: 'Müşteri ara...',
+          items: musteriler
+              .map((m) => (value: m.id, label: m.firmaKisaAd))
               .toList(),
-          selectedOptionBuilder: (context, value) {
-            final musteri = musteriler.firstWhere(
-              (m) => m.id == value,
-              orElse: () => musteriler.first,
-            );
-            return Text(musteri.firmaKisaAd);
-          },
           onChanged: onChanged,
         );
       },
