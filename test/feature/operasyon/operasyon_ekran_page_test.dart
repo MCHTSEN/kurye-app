@@ -9,6 +9,7 @@ import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
 import 'package:bursamotokurye/product/user_profile/user_profile_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../helpers/fakes/fake_kurye_repository.dart';
 import '../../helpers/fakes/fake_musteri_repository.dart';
@@ -176,13 +177,13 @@ void main() {
 
       // Scroll to see the Ata button.
       await tester.dragUntilVisible(
-        find.widgetWithText(ElevatedButton, 'Ata'),
+        find.widgetWithText(ShadButton, 'Ata'),
         find.byType(ListView).first,
         const Offset(0, -200),
       );
 
       // Tap Ata button.
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Ata'));
+      await tester.tap(find.widgetWithText(ShadButton, 'Ata'));
       await tester.pumpAndSettle();
 
       // Verify update was called with correct fields.
@@ -238,11 +239,11 @@ void main() {
 
       // Scroll to and tap Bitir button.
       await tester.dragUntilVisible(
-        find.widgetWithText(ElevatedButton, 'Bitir'),
+        find.widgetWithText(ShadButton, 'Bitir'),
         find.byType(ListView).first,
         const Offset(0, -200),
       );
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Bitir'));
+      await tester.tap(find.widgetWithText(ShadButton, 'Bitir'));
       await tester.pumpAndSettle();
 
       // Verify auto-pricing was applied.
@@ -287,11 +288,11 @@ void main() {
 
       // Scroll to and tap Bitir.
       await tester.dragUntilVisible(
-        find.widgetWithText(ElevatedButton, 'Bitir'),
+        find.widgetWithText(ShadButton, 'Bitir'),
         find.byType(ListView).first,
         const Offset(0, -200),
       );
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Bitir'));
+      await tester.tap(find.widgetWithText(ShadButton, 'Bitir'));
       // Use pump() instead of pumpAndSettle() — the async _onFinish is
       // awaiting the dialog, so the widget tree won't settle until the
       // dialog is dismissed.

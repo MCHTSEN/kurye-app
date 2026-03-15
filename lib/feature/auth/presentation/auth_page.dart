@@ -2,14 +2,12 @@ import 'package:backend_core/backend_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../core/constants/app_spacing.dart';
-import '../../../core/constants/project_padding.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/environment/environment_provider.dart';
-import '../../../product/widgets/app_primary_button.dart';
-import '../../../product/widgets/app_section_card.dart';
 import '../application/auth_controller.dart';
 
 class AuthPage extends ConsumerStatefulWidget {
@@ -24,6 +22,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   bool _isRegisterMode = false;
+  bool _showPassword = false;
 
   @override
   void dispose() {
@@ -45,129 +44,235 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     final authController = ref.read(authControllerProvider.notifier);
     final environment = ref.watch(appEnvironmentProvider);
     final supportedSocial = ref.watch(supportedSocialLoginsProvider);
+    final theme = ShadTheme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.authTitle)),
-      body: ListView(
-        padding: ProjectPadding.all.normal,
-        children: [
-          AppSectionCard(
-            title: l10n.authBackendSelection,
-            child: Text(
-              l10n.authBackendLabel(environment.backendProvider.name),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Logo / Title
+                Icon(
+                  Icons.two_wheeler,
+                  size: 48,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Moto Kurye',
+                  style: theme.textTheme.h2,
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  l10n.authDescription,
+                  style: theme.textTheme.muted,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+
+                // Auth Card
+                ShadCard(
+                  title: Text(
+                    _isRegisterMode ? l10n.authRegister : l10n.authTitle,
+                    style: theme.textTheme.h4,
+                  ),
+                  description: Text(
+                    'Backend: ${environment.backendProvider.name}',
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Social login
+                        if (supportedSocial
+                            .contains(SocialLoginMethod.google)) ...[
+                          ShadButton.outline(
+                            onPressed:
+                                isLoading
+                                    ? null
+                                    : () => _handleGoogleSignIn(
+                                      authController,
+                                    ),
+                            leading: const Padding(
+                              padding: EdgeInsets.only(right: 8),
+                              child: Text(
+                                'G',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            size: ShadButtonSize.lg,
+                            child: Text(l10n.authSignInWithGoogle),
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          _buildDivider(l10n.authOrDivider, theme),
+                          const SizedBox(height: AppSpacing.lg),
+                        ],
+
+                        // Register: name field
+                        if (_isRegisterMode) ...[
+                          Text(l10n.authName, style: theme.textTheme.small),
+                          const SizedBox(height: 6),
+                          ShadInput(
+                            controller: _nameController,
+                            placeholder: Text(l10n.authName),
+                            enabled: !isLoading,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                        ],
+
+                        // Email
+                        Text(l10n.authEmail, style: theme.textTheme.small),
+                        const SizedBox(height: 6),
+                        ShadInput(
+                          controller: _emailController,
+                          placeholder: Text(l10n.authEmail),
+                          keyboardType: TextInputType.emailAddress,
+                          enabled: !isLoading,
+                          leading: const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Icon(Icons.email_outlined, size: 16),
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+
+                        // Password
+                        Text(l10n.authPassword, style: theme.textTheme.small),
+                        const SizedBox(height: 6),
+                        ShadInput(
+                          controller: _passwordController,
+                          placeholder: Text(l10n.authPassword),
+                          obscureText: !_showPassword,
+                          enabled: !isLoading,
+                          leading: const Padding(
+                            padding: EdgeInsets.all(4),
+                            child: Icon(Icons.lock_outline, size: 16),
+                          ),
+                          trailing: ShadButton.ghost(
+                            width: 24,
+                            height: 24,
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              setState(
+                                () => _showPassword = !_showPassword,
+                              );
+                            },
+                            leading: Icon(
+                              _showPassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              size: 16,
+                            ),
+                          ),
+                          onSubmitted: (_) async =>
+                              _handleEmailSignIn(authController),
+                        ),
+
+                        // Error
+                        if (authError != null) ...[
+                          const SizedBox(height: AppSpacing.md),
+                          _buildErrorBanner(authError, theme),
+                        ],
+
+                        const SizedBox(height: AppSpacing.lg),
+
+                        // Submit
+                        ShadButton(
+                          enabled: !isLoading,
+                          onPressed: isLoading
+                              ? null
+                              : () => _handleEmailSignIn(authController),
+                          leading: isLoading
+                              ? const SizedBox.square(
+                                  dimension: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : null,
+                          size: ShadButtonSize.lg,
+                          child: Text(
+                            _isRegisterMode
+                                ? l10n.authRegister
+                                : l10n.authSignInWithEmail,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.md),
+
+                // Toggle register/login
+                ShadButton.link(
+                  onPressed: isLoading
+                      ? null
+                      : () => setState(
+                            () => _isRegisterMode = !_isRegisterMode,
+                          ),
+                  child: Text(
+                    _isRegisterMode
+                        ? l10n.authSignInWithEmail
+                        : l10n.authRegister,
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.sm),
+
+                ShadButton.outline(
+                  onPressed:
+                      isLoading ? null : authController.signInAnonymously,
+                  size: ShadButtonSize.sm,
+                  child: Text(l10n.authSignInAnonymous),
+                ),
+
+                // Quick-login (debug only)
+                if (kDebugMode) ...[
+                  const SizedBox(height: AppSpacing.xl),
+                  _buildDivider('Hızlı Giriş (Dev)', theme),
+                  const SizedBox(height: AppSpacing.md),
+                  _QuickLoginButtons(
+                    emailController: _emailController,
+                    passwordController: _passwordController,
+                    onLogin: () => _handleEmailSignIn(authController),
+                    isLoading: isLoading,
+                  ),
+                ],
+              ],
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
-          AppSectionCard(
-            title: l10n.authTitle,
-            child: Text(l10n.authDescription),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-
-          // Social login buttons (only if backend supports them)
-          if (supportedSocial.contains(SocialLoginMethod.google))
-            _GoogleSignInButton(
-              isLoading: isLoading,
-              onPressed: () => _handleGoogleSignIn(authController),
-              label: l10n.authSignInWithGoogle,
-            ),
-
-          if (supportedSocial.isNotEmpty) ...[
-            const SizedBox(height: AppSpacing.lg),
-            _OrDivider(label: l10n.authOrDivider),
-            const SizedBox(height: AppSpacing.lg),
-          ],
-
-          // Register mode: name field
-          if (_isRegisterMode) ...[
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: l10n.authName),
-              textInputAction: TextInputAction.next,
-              enabled: !isLoading,
-            ),
-            const SizedBox(height: AppSpacing.md),
-          ],
-
-          // Email & Password
-          TextField(
-            controller: _emailController,
-            decoration: InputDecoration(labelText: l10n.authEmail),
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
-            enabled: !isLoading,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          TextField(
-            controller: _passwordController,
-            decoration: InputDecoration(labelText: l10n.authPassword),
-            obscureText: true,
-            textInputAction: TextInputAction.done,
-            enabled: !isLoading,
-            onSubmitted: (_) async => _handleEmailSignIn(authController),
-          ),
-
-          if (authError != null) ...[
-            const SizedBox(height: AppSpacing.sm),
-            if (authError is EmailConfirmationRequiredException)
-              _MessageBanner(
-                icon: Icons.mark_email_read,
-                message: authError.toString(),
-                color: Colors.green,
-              )
-            else
-              _MessageBanner(
-                icon: Icons.error_outline,
-                message: _friendlyError(authError),
-                color: Colors.red,
-              ),
-          ],
-
-          const SizedBox(height: AppSpacing.lg),
-
-          AppPrimaryButton(
-            label: _isRegisterMode
-                ? l10n.authRegister
-                : l10n.authSignInWithEmail,
-            isLoading: isLoading,
-            onPressed: () => _handleEmailSignIn(authController),
-          ),
-
-          const SizedBox(height: AppSpacing.sm),
-
-          // Toggle register/login
-          TextButton(
-            onPressed: isLoading
-                ? null
-                : () => setState(() => _isRegisterMode = !_isRegisterMode),
-            child: Text(
-              _isRegisterMode
-                  ? l10n.authSignInWithEmail
-                  : l10n.authRegister,
-            ),
-          ),
-
-          const SizedBox(height: AppSpacing.md),
-
-          OutlinedButton(
-            onPressed: isLoading ? null : authController.signInAnonymously,
-            child: Text(l10n.authSignInAnonymous),
-          ),
-
-          // Quick-login buttons for dev/debug mode only.
-          if (kDebugMode) ...[
-            const SizedBox(height: AppSpacing.xl),
-            const _OrDivider(label: 'Hızlı Giriş (Dev)'),
-            const SizedBox(height: AppSpacing.md),
-            _QuickLoginButtons(
-              emailController: _emailController,
-              passwordController: _passwordController,
-              onLogin: () => _handleEmailSignIn(authController),
-              isLoading: isLoading,
-            ),
-          ],
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildDivider(String label, ShadThemeData theme) {
+    return Row(
+      children: [
+        const Expanded(child: Divider()),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Text(label, style: theme.textTheme.muted),
+        ),
+        const Expanded(child: Divider()),
+      ],
+    );
+  }
+
+  Widget _buildErrorBanner(Object error, ShadThemeData theme) {
+    final isConfirmation = error is EmailConfirmationRequiredException;
+    return ShadAlert(
+      icon: const Icon(LucideIcons.circleAlert),
+      title: Text(isConfirmation ? 'E-posta Onayı' : 'Hata'),
+      description: Text(_friendlyError(error)),
     );
   }
 
@@ -175,9 +280,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    if (email.isEmpty || password.isEmpty) {
-      return;
-    }
+    if (email.isEmpty || password.isEmpty) return;
 
     if (_isRegisterMode) {
       final name = _nameController.text.trim();
@@ -199,8 +302,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
       return 'E-posta veya şifre hatalı.';
     }
     if (msg.contains('email not confirmed')) {
-      return 'E-posta adresiniz henüz onaylanmamış. '
-          'Gelen kutunuzu kontrol edin.';
+      return 'E-posta adresiniz henüz onaylanmamış. Gelen kutunuzu kontrol edin.';
     }
     if (msg.contains('user not found')) {
       return 'Bu e-posta ile kayıtlı kullanıcı bulunamadı.';
@@ -209,8 +311,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         msg.contains('user already registered')) {
       return 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.';
     }
-    if (msg.contains('too many requests') ||
-        msg.contains('rate limit')) {
+    if (msg.contains('too many requests') || msg.contains('rate limit')) {
       return 'Çok fazla deneme yaptınız. Lütfen biraz bekleyin.';
     }
     if (msg.contains('network') ||
@@ -218,123 +319,14 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         msg.contains('connection')) {
       return 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.';
     }
-    if (msg.contains('weak password') ||
-        msg.contains('password')) {
+    if (msg.contains('weak password') || msg.contains('password')) {
       return 'Şifre en az 6 karakter olmalıdır.';
     }
     return 'Giriş yapılamadı. Lütfen tekrar deneyin.';
   }
 
   Future<void> _handleGoogleSignIn(AuthController controller) async {
-    // TODO(dev): integrate google_sign_in package to get idToken
-    // For now, this is a placeholder that shows the button
-    // when the backend supports it.
-    // final googleUser = await GoogleSignIn().signIn();
-    // final auth = await googleUser?.authentication;
-    // if (auth?.idToken != null) {
-    //   await controller.signInWithGoogle(idToken: auth!.idToken!);
-    // }
-  }
-}
-
-class _GoogleSignInButton extends StatelessWidget {
-  const _GoogleSignInButton({
-    required this.isLoading,
-    required this.onPressed,
-    required this.label,
-  });
-
-  final bool isLoading;
-  final VoidCallback onPressed;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return SizedBox(
-      height: 48,
-      child: OutlinedButton.icon(
-        onPressed: isLoading ? null : onPressed,
-        icon: const Text(
-          'G',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        label: Text(label),
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: theme.colorScheme.outline),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MessageBanner extends StatelessWidget {
-  const _MessageBanner({
-    required this.icon,
-    required this.message,
-    required this.color,
-  });
-
-  final IconData icon;
-  final String message;
-  final MaterialColor color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.shade300),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color.shade700),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              message,
-              style: TextStyle(color: color.shade800),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _OrDivider extends StatelessWidget {
-  const _OrDivider({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Row(
-      children: [
-        Expanded(child: Divider(color: theme.colorScheme.outlineVariant)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-        Expanded(child: Divider(color: theme.colorScheme.outlineVariant)),
-      ],
-    );
+    // TODO(dev): integrate google_sign_in package
   }
 }
 
@@ -355,23 +347,24 @@ class _QuickLoginButtons extends StatelessWidget {
   final VoidCallback onLogin;
   final bool isLoading;
 
-  static const _accounts = <({String label, IconData icon, Color color, String email})>[
+  static const _accounts = <({
+    String label,
+    IconData icon,
+    String email,
+  })>[
     (
       label: 'Operasyon',
       icon: Icons.admin_panel_settings,
-      color: Colors.indigo,
       email: 'ops@test.com',
     ),
     (
-      label: 'Müşteri Personel',
+      label: 'Müşteri',
       icon: Icons.storefront,
-      color: Colors.teal,
       email: 'musteri@test.com',
     ),
     (
       label: 'Kurye',
       icon: Icons.two_wheeler,
-      color: Colors.orange,
       email: 'kurye@test.com',
     ),
   ];
@@ -391,14 +384,15 @@ class _QuickLoginButtons extends StatelessWidget {
       runSpacing: AppSpacing.sm,
       children: [
         for (final account in _accounts)
-          FilledButton.tonalIcon(
+          ShadButton.outline(
+            enabled: !isLoading,
             onPressed: isLoading ? null : () => _fillAndLogin(account.email),
-            icon: Icon(account.icon, size: 18),
-            label: Text(account.label),
-            style: FilledButton.styleFrom(
-              backgroundColor: account.color.withValues(alpha: 0.12),
-              foregroundColor: account.color,
+            leading: Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Icon(account.icon, size: 16),
             ),
+            size: ShadButtonSize.sm,
+            child: Text(account.label),
           ),
       ],
     );

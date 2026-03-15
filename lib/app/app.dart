@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../core/theme/app_theme.dart';
 import '../l10n/app_localizations.dart';
@@ -21,32 +22,50 @@ class BursamotoKuryeApp extends ConsumerWidget {
       appNavigatorObserversBuilderProvider,
     );
 
-    return KeyboardDismissWrapper(
-      child: MaterialApp.router(
-        title: 'bursamotokurye',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        routerConfig: router.config(
-          navigatorObservers: navigatorObserversBuilder,
-          reevaluateListenable: reevaluateListenable,
-          deepLinkBuilder: (deepLink) {
-            if (deepLink.path.startsWith('/home') ||
-                deepLink.path.startsWith('/example-feed') ||
-                deepLink.path.startsWith('/profile') ||
-                deepLink.path.startsWith('/buy-credit') ||
-                deepLink.path.startsWith('/role-selection') ||
-                deepLink.path.startsWith('/musteri') ||
-                deepLink.path.startsWith('/operasyon') ||
-                deepLink.path.startsWith('/kurye')) {
-              return deepLink;
-            }
-            return DeepLink.defaultPath;
-          },
-        ),
+    return ShadApp.custom(
+      themeMode: ThemeMode.light,
+      theme: ShadThemeData(
+        colorScheme: const ShadZincColorScheme.light(),
+        brightness: Brightness.light,
       ),
+      darkTheme: ShadThemeData(
+        colorScheme: const ShadZincColorScheme.dark(),
+        brightness: Brightness.dark,
+      ),
+      appBuilder: (context) {
+        return KeyboardDismissWrapper(
+          child: MaterialApp.router(
+            title: 'bursamotokurye',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            builder: (context, child) {
+              return ShadToaster(
+                child: child ?? const SizedBox.shrink(),
+              );
+            },
+            routerConfig: router.config(
+              navigatorObservers: navigatorObserversBuilder,
+              reevaluateListenable: reevaluateListenable,
+              deepLinkBuilder: (deepLink) {
+                if (deepLink.path.startsWith('/home') ||
+                    deepLink.path.startsWith('/example-feed') ||
+                    deepLink.path.startsWith('/profile') ||
+                    deepLink.path.startsWith('/buy-credit') ||
+                    deepLink.path.startsWith('/role-selection') ||
+                    deepLink.path.startsWith('/musteri') ||
+                    deepLink.path.startsWith('/operasyon') ||
+                    deepLink.path.startsWith('/kurye')) {
+                  return deepLink;
+                }
+                return DeepLink.defaultPath;
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }

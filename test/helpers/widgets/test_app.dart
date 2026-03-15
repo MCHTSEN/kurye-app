@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../fakes/fake_analytics_service.dart';
 import '../fakes/fake_connectivity_service.dart';
@@ -63,11 +64,17 @@ extension TestAppPump on WidgetTester {
     await pumpWidget(
       ProviderScope(
         overrides: resolvedOverrides,
-        child: MaterialApp(
-          theme: AppTheme.light,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: child,
+        child: ShadApp.custom(
+          theme: ShadThemeData(
+            colorScheme: const ShadZincColorScheme.light(),
+            brightness: Brightness.light,
+          ),
+          appBuilder: (_) => MaterialApp(
+            theme: AppTheme.light,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: child,
+          ),
         ),
       ),
     );

@@ -146,9 +146,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Courier names
-      expect(find.text('Ali Kurye'), findsOneWidget);
-      expect(find.text('Veli Kurye'), findsOneWidget);
+      // Courier names (may appear in avatar + name text)
+      expect(find.text('Ali Kurye'), findsWidgets);
+      expect(find.text('Veli Kurye'), findsWidgets);
 
       // k1 (Ali): monthly = o1 + o3 + o5 = 3, daily = o5 = 1
       expect(find.text('Ay: 3'), findsOneWidget);
@@ -169,9 +169,9 @@ void main() {
       // 2 online couriers
       expect(find.text('2'), findsOneWidget);
 
-      // Their names listed with bullet
-      expect(find.text('• Ali Kurye'), findsOneWidget);
-      expect(find.text('• Hasan Kurye'), findsOneWidget);
+      // Their names listed (no bullet in new layout)
+      expect(find.text('Ali Kurye'), findsWidgets);
+      expect(find.text('Hasan Kurye'), findsWidgets);
     });
 
     testWidgets('shows "Aktif kurye yok" when no couriers online',

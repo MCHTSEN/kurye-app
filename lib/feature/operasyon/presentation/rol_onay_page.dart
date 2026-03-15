@@ -3,14 +3,15 @@ import 'dart:async';
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../../app/router/custom_route.dart';
+import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/role_request/role_request_providers.dart';
-import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 
 class RolOnayPage extends ConsumerStatefulWidget {
@@ -21,7 +22,6 @@ class RolOnayPage extends ConsumerStatefulWidget {
 }
 
 class _RolOnayPageState extends ConsumerState<RolOnayPage> {
-  /// Tracks selected müşteri per request (for müşteri_personel approvals).
   final _musteriSelections = <String, String?>{};
 
   @override
@@ -37,29 +37,48 @@ class _RolOnayPageState extends ConsumerState<RolOnayPage> {
       body: pendingAsync.when(
         data: (requests) {
           if (requests.isEmpty) {
-            return const Center(
-              child: Text('Bekleyen rol talebi yok.'),
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.check_circle_outline,
+                    size: 48,
+                    color: ShadTheme.of(context).colorScheme.mutedForeground,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Text(
+                    'Bekleyen rol talebi yok.',
+                    style: ShadTheme.of(context).textTheme.muted,
+                  ),
+                ],
+              ),
             );
           }
           return ListView.builder(
             padding: ProjectPadding.all.normal,
             itemCount: requests.length,
-            itemBuilder: (context, index) =>
-                _RequestCard(
-                  request: requests[index],
-                  musteriSelection: _musteriSelections[requests[index].id],
-                  onMusteriChanged: (value) {
-                    setState(() {
-                      _musteriSelections[requests[index].id] = value;
-                    });
-                  },
-                  onApprove: () => _approve(requests[index]),
-                  onReject: () => _reject(requests[index]),
-                ),
+            itemBuilder: (context, index) => _RequestCard(
+              request: requests[index],
+              musteriSelection: _musteriSelections[requests[index].id],
+              onMusteriChanged: (value) {
+                setState(() {
+                  _musteriSelections[requests[index].id] = value;
+                });
+              },
+              onApprove: () => _approve(requests[index]),
+              onReject: () => _reject(requests[index]),
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Hata: $e')),
+        error: (e, _) => Center(
+          child: ShadAlert.destructive(
+            icon: const Icon(LucideIcons.circleAlert),
+            title: const Text('Hata'),
+            description: Text('$e'),
+          ),
+        ),
       ),
     );
   }
@@ -70,9 +89,11 @@ class _RolOnayPageState extends ConsumerState<RolOnayPage> {
     final musteriId = _musteriSelections[request.id];
 
     if (isMusteriPersonel && (musteriId == null || musteriId.isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Müşteri personeli onayı için müşteri seçimi zorunlu.'),
+      ShadToaster.of(context).show(
+        const ShadToast.destructive(
+          title: Text('Hata'),
+          description:
+              Text('Müşteri personeli onayı için müşteri seçimi zorunlu.'),
         ),
       );
       return;
@@ -90,27 +111,31 @@ class _RolOnayPageState extends ConsumerState<RolOnayPage> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${request.displayName} onaylandı.'),
+        ShadToaster.of(context).show(
+          ShadToast(
+            title: Text('${request.displayName} onaylandı'),
+            description: const Text('Kullanıcı rolü aktif edildi.'),
           ),
         );
+        ref.invalidate(pendingRoleRequestsProvider);
       }
     } on Exception catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Onay hatası: $e')),
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('Onay hatası'),
+            description: Text('$e'),
+          ),
         );
       }
     }
   }
 
   Future<void> _reject(RoleRequest request) async {
-    final reason = await showDialog<String>(
+    final reason = await showShadDialog<String>(
       context: context,
       builder: (ctx) => _RejectReasonDialog(),
     );
-    // null means cancelled, empty string means no reason given
     if (reason == null) return;
 
     try {
@@ -125,16 +150,20 @@ class _RolOnayPageState extends ConsumerState<RolOnayPage> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${request.displayName} reddedildi.'),
+        ShadToaster.of(context).show(
+          ShadToast(
+            title: Text('${request.displayName} reddedildi'),
           ),
         );
+        ref.invalidate(pendingRoleRequestsProvider);
       }
     } on Exception catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Red hatası: $e')),
+        ShadToaster.of(context).show(
+          ShadToast.destructive(
+            title: const Text('Red hatası'),
+            description: Text('$e'),
+          ),
         );
       }
     }
@@ -158,53 +187,83 @@ class _RequestCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ShadTheme.of(context);
     final isMusteriPersonel =
         request.requestedRole == UserRole.musteriPersonel;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: AppSectionCard(
-        title: request.displayName,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: ShadCard(
+        title: Row(
           children: [
-            if (request.phone != null)
-              Text('Telefon: ${request.phone}'),
-            Text('Rol: ${request.requestedRole.value}'),
-            if (request.note != null && request.note!.isNotEmpty)
-              Text('Not: ${request.note}'),
-            if (request.createdAt != null)
-              Text(
-                'Tarih: ${_formatDate(request.createdAt!)}',
-                style: Theme.of(context).textTheme.bodySmall,
+            ShadAvatar(
+              '',
+              size: const Size.square(32),
+              placeholder: Text(
+                request.displayName.isNotEmpty
+                    ? request.displayName[0].toUpperCase()
+                    : '?',
+                style: const TextStyle(fontSize: 14),
               ),
-            if (isMusteriPersonel) ...[
-              const SizedBox(height: 8),
-              _MusteriDropdown(
-                selectedId: musteriSelection,
-                onChanged: onMusteriChanged,
-              ),
-            ],
-            const SizedBox(height: 12),
-            Wrap(
-              alignment: WrapAlignment.end,
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: onReject,
-                  icon: const Icon(Icons.close, size: 18),
-                  label: const Text('Reddet'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(request.displayName, style: theme.textTheme.h4),
+                  ShadBadge.secondary(
+                    child: Text(request.requestedRole.value),
                   ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (request.phone != null)
+                _InfoRow(icon: Icons.phone, text: request.phone!),
+              if (request.note != null && request.note!.isNotEmpty)
+                _InfoRow(icon: Icons.note, text: request.note!),
+              if (request.createdAt != null)
+                _InfoRow(
+                  icon: Icons.calendar_today,
+                  text: _formatDate(request.createdAt!),
                 ),
-                FilledButton.icon(
-                  onPressed: onApprove,
-                  icon: const Icon(Icons.check, size: 18),
-                  label: const Text('Onayla'),
+              if (isMusteriPersonel) ...[
+                const SizedBox(height: AppSpacing.md),
+                _MusteriDropdown(
+                  selectedId: musteriSelection,
+                  onChanged: onMusteriChanged,
                 ),
               ],
+            ],
+          ),
+        ),
+        footer: Wrap(
+          alignment: WrapAlignment.end,
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ShadButton.outline(
+              onPressed: onReject,
+              leading: const Padding(
+                padding: EdgeInsets.only(right: 4),
+                child: Icon(Icons.close, size: 16),
+              ),
+              child: const Text('Reddet'),
+            ),
+            ShadButton(
+              onPressed: onApprove,
+              leading: const Padding(
+                padding: EdgeInsets.only(right: 4),
+                child: Icon(Icons.check, size: 16),
+              ),
+              child: const Text('Onayla'),
             ),
           ],
         ),
@@ -218,6 +277,28 @@ class _RequestCard extends ConsumerWidget {
         '${dt.year} '
         '${dt.hour.toString().padLeft(2, '0')}:'
         '${dt.minute.toString().padLeft(2, '0')}';
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ShadTheme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: theme.colorScheme.mutedForeground),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text, style: theme.textTheme.small)),
+        ],
+      ),
+    );
   }
 }
 
@@ -236,21 +317,21 @@ class _MusteriDropdown extends ConsumerWidget {
 
     return musteriListAsync.when(
       data: (musteriler) {
-        return DropdownButtonFormField<String>(
+        return ShadSelect<String>(
+          placeholder: const Text('Müşteri Seçimi *'),
           initialValue: selectedId,
-          decoration: const InputDecoration(
-            labelText: 'Müşteri Seçimi *',
-            border: OutlineInputBorder(),
-            isDense: true,
-          ),
-          items: musteriler
+          options: musteriler
               .map(
-                (m) => DropdownMenuItem<String>(
-                  value: m.id,
-                  child: Text(m.firmaKisaAd),
-                ),
+                (m) => ShadOption(value: m.id, child: Text(m.firmaKisaAd)),
               )
               .toList(),
+          selectedOptionBuilder: (context, value) {
+            final musteri = musteriler.firstWhere(
+              (m) => m.id == value,
+              orElse: () => musteriler.first,
+            );
+            return Text(musteri.firmaKisaAd);
+          },
           onChanged: onChanged,
         );
       },
@@ -276,22 +357,23 @@ class _RejectReasonDialogState extends State<_RejectReasonDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
+    return ShadDialog(
       title: const Text('Red Sebebi'),
-      content: TextField(
-        controller: _controller,
-        decoration: const InputDecoration(
-          hintText: 'Opsiyonel — boş bırakabilirsiniz',
-          border: OutlineInputBorder(),
+      description: const Text('Opsiyonel — boş bırakabilirsiniz'),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: ShadInput(
+          controller: _controller,
+          placeholder: const Text('Sebep (opsiyonel)'),
+          maxLines: 3,
         ),
-        maxLines: 3,
       ),
       actions: [
-        TextButton(
+        ShadButton.outline(
           onPressed: () => Navigator.pop(context),
           child: const Text('İptal'),
         ),
-        FilledButton(
+        ShadButton.destructive(
           onPressed: () => Navigator.pop(context, _controller.text),
           child: const Text('Reddet'),
         ),
