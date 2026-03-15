@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/kurye/kurye_providers.dart';
+import '../../../product/navigation/logout_helper.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
@@ -19,8 +20,26 @@ class KuryeAnaPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final kuryeAsync = ref.watch(currentKuryeProvider);
 
+    final logout = logoutCallback(ref);
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Kurye Paneli')),
+      appBar: AppBar(
+        title: kuryeAsync.when(
+          data: (kurye) => Text(
+            kurye != null ? kurye.ad : 'Kurye Paneli',
+          ),
+          loading: () => const Text('Kurye Paneli'),
+          error: (_, __) => const Text('Kurye Paneli'),
+        ),
+        actions: [
+          IconButton(
+            key: const Key('kurye_logout_btn'),
+            icon: const Icon(Icons.logout),
+            tooltip: 'Çıkış Yap',
+            onPressed: logout,
+          ),
+        ],
+      ),
       body: kuryeAsync.when(
         data: (kurye) {
           if (kurye == null) {

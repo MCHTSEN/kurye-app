@@ -5,11 +5,13 @@ import 'supabase_auth_gateway.dart';
 import 'supabase_kurye_repository.dart';
 import 'supabase_musteri_personel_repository.dart';
 import 'supabase_musteri_repository.dart';
+import 'supabase_musteri_ugrama_repository.dart';
 import 'supabase_role_request_repository.dart';
 import 'supabase_siparis_log_repository.dart';
 import 'supabase_siparis_repository.dart';
 import 'supabase_token_refresh_service.dart';
 import 'supabase_ugrama_repository.dart';
+import 'supabase_ugrama_talebi_repository.dart';
 import 'supabase_user_profile_repository.dart';
 
 class SupabaseBackendModule extends BackendModule {
@@ -89,5 +91,15 @@ class SupabaseBackendModule extends BackendModule {
   @override
   SiparisLogRepository createSiparisLogRepository() {
     return SupabaseSiparisLogRepository(client: Supabase.instance.client);
+  }
+
+  @override
+  MusteriUgramaRepository createMusteriUgramaRepository() {
+    return SupabaseMusteriUgramaRepository(client: Supabase.instance.client);
+  }
+
+  @override
+  UgramaTalebiRepository createUgramaTalebiRepository() {
+    return SupabaseUgramaTalebiRepository(client: Supabase.instance.client);
   }
 }

@@ -54,12 +54,10 @@ void main() {
       seed: [
         const Ugrama(
           id: cikisUgramaId,
-          musteriId: musteriId,
           ugramaAdi: 'Merkez Ofis',
         ),
         const Ugrama(
           id: varisUgramaId,
-          musteriId: musteriId,
           ugramaAdi: 'Şube Depo',
         ),
       ],

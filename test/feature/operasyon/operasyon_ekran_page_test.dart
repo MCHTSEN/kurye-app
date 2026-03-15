@@ -35,17 +35,14 @@ final _testMusteriler = [
 final _testUgramalar = [
   const Ugrama(
     id: 'ugrama-1',
-    musteriId: 'musteri-1',
     ugramaAdi: 'Merkez Ofis',
   ),
   const Ugrama(
     id: 'ugrama-2',
-    musteriId: 'musteri-1',
     ugramaAdi: 'Şube A',
   ),
   const Ugrama(
     id: 'ugrama-3',
-    musteriId: 'musteri-1',
     ugramaAdi: 'Şube B',
   ),
 ];

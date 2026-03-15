@@ -1,9 +1,10 @@
 /// Uğrama (güzergah noktası) domain modeli — `ugramalar` tablosu.
+/// Uğramalar bağımsız havuzda yaşar; müşteri ilişkisi `musteri_ugrama`
+/// köprü tablosu üzerinden many-to-many.
 /// Not: `lokasyon` (Geography) alanı kasıtlı olarak dahil edilmedi.
 class Ugrama {
   const Ugrama({
     required this.id,
-    required this.musteriId,
     required this.ugramaAdi,
     this.adres,
     this.isActive = true,
@@ -13,7 +14,6 @@ class Ugrama {
   factory Ugrama.fromJson(Map<String, dynamic> json) {
     return Ugrama(
       id: json['id'] as String,
-      musteriId: json['musteri_id'] as String,
       ugramaAdi: json['ugrama_adi'] as String,
       adres: json['adres'] as String?,
       isActive: json['is_active'] as bool? ?? true,
@@ -24,7 +24,6 @@ class Ugrama {
   }
 
   final String id;
-  final String musteriId;
   final String ugramaAdi;
   final String? adres;
   final bool isActive;
@@ -32,7 +31,6 @@ class Ugrama {
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'musteri_id': musteriId,
         'ugrama_adi': ugramaAdi,
         'adres': adres,
         'is_active': isActive,
