@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
@@ -175,7 +176,7 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
           if (siparis.createdAt != null) _formatDate(siparis.createdAt!),
         ].join(' • '),
       ),
-      trailing: const Icon(Icons.check_circle, color: Colors.green, size: 20),
+      trailing: const Icon(Icons.check_circle, color: AppColors.secondary, size: 20),
     );
   }
 

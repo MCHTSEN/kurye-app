@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
@@ -296,7 +297,7 @@ class _UgramaListTile extends ConsumerWidget {
                   'Atanmamış',
                   style: TextStyle(
                     fontStyle: FontStyle.italic,
-                    color: Colors.grey,
+                    color: AppColors.textMuted,
                   ),
                 )
               : Wrap(
@@ -317,7 +318,7 @@ class _UgramaListTile extends ConsumerWidget {
           trailing: Icon(
             Icons.circle,
             size: 12,
-            color: ugrama.isActive ? Colors.green : Colors.grey,
+            color: ugrama.isActive ? AppColors.secondary : AppColors.textMuted,
           ),
           onTap: () => onTap(musteriIds),
         );

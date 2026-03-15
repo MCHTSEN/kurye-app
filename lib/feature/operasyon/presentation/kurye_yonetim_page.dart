@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/widgets/app_primary_button.dart';
@@ -192,16 +193,16 @@ class _KuryeYonetimPageState extends ConsumerState<KuryeYonetimPage> {
                                         : Icons.wifi_off,
                                     size: 16,
                                     color: k.isOnline
-                                        ? Colors.green
-                                        : Colors.grey,
+                                        ? AppColors.secondary
+                                        : AppColors.textMuted,
                                   ),
                                   const SizedBox(width: 8),
                                   Icon(
                                     Icons.circle,
                                     size: 12,
                                     color: k.isActive
-                                        ? Colors.green
-                                        : Colors.grey,
+                                        ? AppColors.secondary
+                                        : AppColors.textMuted,
                                   ),
                                 ],
                               ),

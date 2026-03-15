@@ -25,11 +25,11 @@ class BursamotoKuryeApp extends ConsumerWidget {
     return ShadApp.custom(
       themeMode: ThemeMode.light,
       theme: ShadThemeData(
-        colorScheme: const ShadZincColorScheme.light(),
+        colorScheme: const ShadSlateColorScheme.light(),
         brightness: Brightness.light,
       ),
       darkTheme: ShadThemeData(
-        colorScheme: const ShadZincColorScheme.dark(),
+        colorScheme: const ShadSlateColorScheme.dark(),
         brightness: Brightness.dark,
       ),
       appBuilder: (context) {

@@ -2,6 +2,7 @@ import 'package:backend_core/backend_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../core/environment/app_environment.dart';
 import '../core/error/app_error_handler.dart';
@@ -17,6 +18,10 @@ Future<void> bootstrap({
   AppEnvironment? environment,
 }) async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Prevent Google Fonts from fetching over HTTP — avoids Objective-C FFI
+  // crash on iOS Simulator and ensures offline-first font loading.
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   if (kReleaseMode) {
     logConfig = AppLogConfig(enabled: false);

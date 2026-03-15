@@ -8,12 +8,14 @@ import 'package:logger/logger.dart';
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/services/order_alert_service.dart';
 import '../../../product/siparis/siparis_log_providers.dart';
 import '../../../product/siparis/siparis_providers.dart';
+import '../../../product/musteri_personel/musteri_personel_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
@@ -433,6 +435,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     List<Siparis> active,
     Map<String, String> ugramaMap,
     Map<String, String> kuryeMap,
+    Map<String, String> musteriMap,
+    Map<String, String> personelMap,
   }) _resolveDispatchData(List<Siparis> allOrders) {
     final waiting = allOrders
         .where((s) => s.durum == SiparisDurum.kuryeBekliyor)
@@ -444,6 +448,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     // Build name-resolution maps (D027 pattern).
     final ugramaListAsync = ref.watch(ugramaListProvider);
     final kuryeListAsync = ref.watch(kuryeListProvider);
+    final musteriListAsync = ref.watch(musteriListProvider);
+    final personelListAsync = ref.watch(musteriPersonelListProvider);
 
     final ugramaMap = <String, String>{};
     if (ugramaListAsync case AsyncData(value: final ugramalar)) {
@@ -459,11 +465,27 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       }
     }
 
+    final musteriMap = <String, String>{};
+    if (musteriListAsync case AsyncData(value: final musteriler)) {
+      for (final m in musteriler) {
+        musteriMap[m.id] = m.firmaKisaAd;
+      }
+    }
+
+    final personelMap = <String, String>{};
+    if (personelListAsync case AsyncData(value: final personeller)) {
+      for (final p in personeller) {
+        personelMap[p.id] = p.ad;
+      }
+    }
+
     return (
       waiting: waiting,
       active: active,
       ugramaMap: ugramaMap,
       kuryeMap: kuryeMap,
+      musteriMap: musteriMap,
+      personelMap: personelMap,
     );
   }
 
@@ -474,8 +496,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final data = _resolveDispatchData(allOrders);
     return Column(
       children: [
-        _buildWaitingPanel(data.waiting, userId,
-            ugramaMap: data.ugramaMap),
+        _buildWaitingPanel(
+          data.waiting,
+          userId,
+          ugramaMap: data.ugramaMap,
+          musteriMap: data.musteriMap,
+          personelMap: data.personelMap,
+        ),
         const SizedBox(height: AppSpacing.md),
         _buildActivePanel(
           data.active,
@@ -501,6 +528,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
               data.waiting,
               userId,
               ugramaMap: data.ugramaMap,
+              musteriMap: data.musteriMap,
+              personelMap: data.personelMap,
             ),
           ),
         ),
@@ -525,7 +554,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final musteriListAsync = ref.watch(musteriListProvider);
 
     return AppSectionCard(
-      title: 'Sipariş Oluşturma Paneli',
+      title: 'Siparis Olusturma',
+      icon: Icons.add_circle_outline_rounded,
+      accentColor: AppColors.primary,
       child: musteriListAsync.when(
         data: (musteriler) =>
             _buildOrderForm(musteriler: musteriler, userId: userId),
@@ -646,11 +677,15 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     List<Siparis> waiting,
     String userId, {
     required Map<String, String> ugramaMap,
+    required Map<String, String> musteriMap,
+    required Map<String, String> personelMap,
   }) {
     final kuryeListAsync = ref.watch(kuryeListProvider);
 
     return AppSectionCard(
       title: 'Kurye Bekleyenler (${waiting.length})',
+      icon: Icons.hourglass_top_rounded,
+      accentColor: AppColors.secondary,
       child: Column(
         children: [
           if (waiting.isEmpty)
@@ -660,10 +695,21 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
             )
           else
             ...waiting.map(
-              (s) => CheckboxListTile(
+              (s) {
+                final musteriAd = musteriMap[s.musteriId] ?? s.musteriId;
+                final personelAd = s.personelId != null
+                    ? personelMap[s.personelId!]
+                    : null;
+                final subtitle = [
+                  if (personelAd != null) '$musteriAd / $personelAd'
+                  else musteriAd,
+                  if (s.not1 != null) s.not1!,
+                ].join(' — ');
+
+                return CheckboxListTile(
                 key: Key('waiting_${s.id}'),
                 title: Text(_routeLabel(s, ugramaMap: ugramaMap)),
-                subtitle: s.not1 != null ? Text(s.not1!) : null,
+                subtitle: Text(subtitle),
                 value: _waitingSelected.contains(s.id),
                 onChanged: (checked) {
                   setState(() {
@@ -674,7 +720,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     }
                   });
                 },
-              ),
+              );
+              },
             ),
           const SizedBox(height: AppSpacing.sm),
           kuryeListAsync.when(
@@ -729,6 +776,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }) {
     return AppSectionCard(
       title: 'Devam Edenler (${active.length})',
+      icon: Icons.local_shipping_rounded,
+      accentColor: AppColors.primary,
       child: Column(
         children: [
           if (active.isEmpty)

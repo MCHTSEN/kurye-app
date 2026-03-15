@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
@@ -209,7 +210,7 @@ class _MusteriUgramaTalepPageState
                 child: Text(
                   'Red notu: ${talep.redNotu}',
                   style: TextStyle(
-                    color: Colors.red.shade700,
+                    color: AppColors.primaryDark,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
@@ -219,7 +220,7 @@ class _MusteriUgramaTalepPageState
                 padding: const EdgeInsets.only(top: 2),
                 child: Text(
                   _formatDate(talep.createdAt!),
-                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
                 ),
               ),
           ],
@@ -246,9 +247,9 @@ class _MusteriUgramaTalepPageState
 
   Color _durumColor(UgramaTalepDurum durum) {
     return switch (durum) {
-      UgramaTalepDurum.beklemede => Colors.orange,
-      UgramaTalepDurum.onaylandi => Colors.green,
-      UgramaTalepDurum.reddedildi => Colors.red,
+      UgramaTalepDurum.beklemede => AppColors.secondary,
+      UgramaTalepDurum.onaylandi => AppColors.secondaryDark,
+      UgramaTalepDurum.reddedildi => AppColors.primaryDark,
     };
   }
 

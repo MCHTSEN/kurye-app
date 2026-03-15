@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
@@ -244,7 +245,7 @@ class _TalepCardState extends ConsumerState<_TalepCard> {
               const SizedBox(height: AppSpacing.xxs),
               Row(
                 children: [
-                  const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                  const Icon(Icons.location_on, size: 16, color: AppColors.textMuted),
                   const SizedBox(width: 4),
                   Expanded(child: Text(talep.adres!)),
                 ],
@@ -254,22 +255,23 @@ class _TalepCardState extends ConsumerState<_TalepCard> {
               const SizedBox(height: AppSpacing.xxs),
               Text(
                 _formatDate(talep.createdAt!),
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
               ),
             ],
             const SizedBox(height: AppSpacing.sm),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: AppSpacing.xs,
+              runSpacing: AppSpacing.xs,
               children: [
                 OutlinedButton.icon(
                   onPressed: _isProcessing ? null : _onReject,
                   icon: const Icon(Icons.close, size: 18),
                   label: const Text('Reddet'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red,
+                    foregroundColor: AppColors.primaryDark,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.xs),
                 FilledButton.icon(
                   onPressed: _isProcessing ? null : _onApprove,
                   icon: _isProcessing

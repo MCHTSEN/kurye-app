@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Multi-backend Flutter mobile app skeleton (monorepo). Backend is selected at compile time via entry point — only the chosen SDK is included in the binary.
+Moto Kurye Sipariş & Takip uygulaması — Flutter mobile app built on a multi-backend skeleton. Three user roles with role-based routing:
+
+- **Müşteri Personel** (`musteri_personel`): Creates orders, tracks status (Mobile)
+- **Operasyon Personeli** (`operasyon`): Manages orders, assigns couriers, views analytics (Web + Mobile)
+- **Kurye** (`kurye`): Receives orders, timestamps pickup/delivery, shares location (Mobile)
+
+**Backend**: Supabase (PostgreSQL + Realtime + Auth + PostGIS). Backend is selected at compile time via entry point — only the chosen SDK is included in the binary.
 
 ## Architecture
 
@@ -76,7 +82,12 @@ AuthGateway authGateway(Ref ref) => ref.watch(backendModuleProvider).createAuthG
 
 `RouteReevaluationNotifier` (ChangeNotifier) watches auth state + `AppNavigationState` and triggers guard re-evaluation when either changes.
 
-Routes are defined as `CustomRoute` enum in `app_router.dart`. Deeplinks whitelist: `/home`, `/example-feed`, `/profile`, `/buy-credit`.
+Routes are defined as `CustomRoute` enum in `app_router.dart`. Role-based routing after login:
+- `musteri_personel` → `/musteri/siparis`
+- `operasyon` → `/operasyon/dashboard`
+- `kurye` → `/kurye/ana`
+
+Guard enforces role-based access: operasyon routes only for `operasyon`, müşteri routes only for `musteri_personel`, kurye routes only for `kurye`.
 
 ## Feature Vertical Slice Pattern
 
@@ -188,6 +199,32 @@ await robot.tapRefresh();
 | `MIXPANEL_TOKEN` / `ANALYTICS_ENABLED` | Analytics |
 | `SENTRY_DSN` | Sentry (empty = disabled) |
 
+## Domain: Order Lifecycle
+
+```
+Müşteri sipariş verir → [kurye_bekliyor] → Operasyon panel B'ye düşer + sesli uyarı
+  → Operasyon kurye atar → [devam_ediyor] → Panel C + kurye ekranı
+  → Kurye onaylar, çıkış/uğrama saat basar → Operasyon "Bitir" + otomatik ücret
+  → [tamamlandi] → Ekranlardan düşer, geçmişe eklenir
+```
+
+**Sipariş durumları** (`SiparisDurum` enum): `kuryeBekliyor`, `devamEdiyor`, `tamamlandi`, `iptal`
+
+**User roles** (`UserRole` enum in backend_core): `musteriPersonel`, `operasyon`, `kurye` — mapped to DB strings via `.value`.
+
+**Supabase Realtime**: Order INSERT/UPDATE → operasyon ekranına anlık düşer. Kurye konum stream → haritada takip. Used in operasyon and müşteri features.
+
+## Database
+
+Supabase with migrations in `supabase/migrations/`. Key tables: `app_users`, `musteriler`, `musteri_personelleri`, `ugramalar` (with PostGIS `GEOGRAPHY` for location), `kuryeler`, `siparisler`, `siparis_log`, `kurye_konum`. RLS enforces role-based data access. Uğramalar use many-to-many model for order stops (talep sistemi).
+
+Supabase MCP has access token issues — use curl with `SUPABASE_SERVICE_ROLE_KEY` for direct REST access when MCP fails:
+```bash
+SUPABASE_URL=$(grep SUPABASE_URL .env | head -1 | cut -d= -f2)
+SERVICE_KEY=$(grep SUPABASE_SERVICE_ROLE_KEY .env | cut -d= -f2)
+curl -s "${SUPABASE_URL}/rest/v1/<table>?select=*" -H "apikey: ${SERVICE_KEY}" -H "Authorization: Bearer ${SERVICE_KEY}"
+```
+
 ## Conventions
 
 - Riverpod with code generation (`@riverpod` annotations)
@@ -196,6 +233,20 @@ await robot.tapRefresh();
 - auto_route for navigation with `CustomRoute` enum
 - Analytics tracking happens in repositories/controllers, not views
 - `rename.sh` script renames the project across all platform configs (bundle IDs, package names)
+- Route path strings must not be hardcoded — use `CustomRoute.<name>.path`
+- Layout paddings must use `ProjectPadding` tokens, not inline `EdgeInsets`
+
+## Doc-First Development Flow
+
+Every feature has `DOC.md` and `presentation/SCREENS.md`. Read and update these **before** implementing code. Layer docs exist at `lib/core/DOC.md` and `lib/product/DOC.md`. Shared widgets are documented in `product/widgets/WIDGETS.md`. Changes are appended to `BACKLOG.md`.
+
+## Validation Before Completion
+
+A task is not complete until:
+1. `flutter analyze` — must be 0 issues
+2. `flutter test` — all pass
+3. Feature-level tests exist: unit (repository/controller), widget (main screen), golden (if visual contract changed), integration smoke (if app flow changed)
+4. Task summary includes validation results
 
 ## Adding a New Feature
 
@@ -207,4 +258,5 @@ await robot.tapRefresh();
 6. Add route to `CustomRoute` enum and `app_router.dart`
 7. Add localization strings to `app_tr.arb` + `app_en.arb`
 8. Add logging with appropriate `LogTag`
-9. Write tests: unit (repository), widget (page + robot), update smoke test
+9. Create `DOC.md` + `SCREENS.md` for the feature
+10. Write tests: unit (repository), widget (page + robot), update smoke test
