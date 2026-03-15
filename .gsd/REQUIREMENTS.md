@@ -137,7 +137,7 @@
 - Primary owning slice: M001/S03
 - Supporting slices: M001/S04, M001/S05, M001/S08
 - Validation: partial
-- Notes: Supabase stream() pattern established in S03 — customer sees live updates. Cross-role realtime proof continues in S04/S05.
+- Notes: Supabase stream() pattern established in S03 — customer sees live updates. S04 adds ops-side realtime panels fed from siparisStreamActiveProvider. Cross-role proof deferred to S08.
 
 ### R009 — Operations 3-panel dispatch screen
 
@@ -148,8 +148,8 @@
 - Source: user
 - Primary owning slice: M001/S04
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Panel B has checkboxes + courier assignment dropdown. Panel C has checkboxes + finish button.
+- Validation: validated
+- Notes: Fully implemented in S04. Widget tests prove 3-panel rendering with correct status-based split.
 
 ### R010 — Courier assignment (manual)
 
@@ -160,8 +160,8 @@
 - Source: user
 - Primary owning slice: M001/S04
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Assignment sets `kurye_id` and `atanma_saat` on the order
+- Validation: validated
+- Notes: Implemented in S04. Widget test proves checkbox select + courier dropdown + Ata → order updated with kurye_id, atanma_saat, durum=devam_ediyor.
 
 ### R011 — Courier order acceptance & timestamp punching
 
@@ -184,8 +184,8 @@
 - Source: user
 - Primary owning slice: M001/S04
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Query: same musteri_id + cikis_id + ugrama_id, status=tamamlandi, ORDER BY created_at DESC LIMIT 1
+- Validation: validated
+- Notes: Implemented in S04. getRecentPricing() queries matching musteri+cikis+ugrama with tamamlandi status. Widget tests prove auto-pricing and manual fallback dialog.
 
 ### R013 — Customer order tracking (active + history)
 
@@ -256,8 +256,8 @@
 - Source: user
 - Primary owning slice: M001/S04
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Table `siparis_log` exists in DB
+- Validation: validated
+- Notes: Implemented in S04. SiparisLog domain model + repository. Created on assign (kuryeBekliyor→devamEdiyor) and finish (devamEdiyor→tamamlandi). Widget tests verify log creation.
 
 ## Deferred
 
@@ -335,16 +335,16 @@
 | R006 | primary-user-loop | active | M001/S02 | none | validated |
 | R007 | primary-user-loop | active | M001/S03 | M001/S04 | validated |
 | R008 | core-capability | active | M001/S03 | M001/S04,S05,S08 | partial |
-| R009 | primary-user-loop | active | M001/S04 | none | unmapped |
-| R010 | primary-user-loop | active | M001/S04 | none | unmapped |
+| R009 | primary-user-loop | active | M001/S04 | none | validated |
+| R010 | primary-user-loop | active | M001/S04 | none | validated |
 | R011 | primary-user-loop | active | M001/S05 | none | unmapped |
-| R012 | primary-user-loop | active | M001/S04 | none | unmapped |
+| R012 | primary-user-loop | active | M001/S04 | none | validated |
 | R013 | primary-user-loop | active | M001/S03 | none | validated |
 | R014 | primary-user-loop | active | M001/S06 | none | unmapped |
 | R015 | differentiator | active | M001/S07 | none | unmapped |
 | R016 | primary-user-loop | active | M001/S05 | M001/S04 | unmapped |
 | R017 | launchability | active | M001/S08 | none | unmapped |
-| R018 | continuity | active | M001/S04 | none | unmapped |
+| R018 | continuity | active | M001/S04 | none | validated |
 | R019 | differentiator | deferred | none | none | unmapped |
 | R020 | differentiator | deferred | none | none | unmapped |
 | R021 | differentiator | deferred | none | none | unmapped |
@@ -355,6 +355,6 @@
 
 - Active requirements: 18
 - Mapped to slices: 16
-- Validated: 8 (R001, R002, R003, R004, R005, R006, R007, R013)
+- Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R009, R010, R012, R013, R018)
 - Partially validated: 1 (R008)
 - Unmapped active requirements: 0

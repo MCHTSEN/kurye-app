@@ -4,6 +4,7 @@ export 'src/supabase_kurye_repository.dart';
 export 'src/supabase_musteri_personel_repository.dart';
 export 'src/supabase_musteri_repository.dart';
 export 'src/supabase_role_request_repository.dart';
+export 'src/supabase_siparis_log_repository.dart';
 export 'src/supabase_siparis_repository.dart';
 export 'src/supabase_token_refresh_service.dart';
 export 'src/supabase_ugrama_repository.dart';

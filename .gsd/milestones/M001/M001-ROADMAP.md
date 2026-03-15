@@ -64,7 +64,7 @@ This milestone is complete only when all are true:
 - [x] **S03: Order creation & customer tracking** `risk:medium` `depends:[S02]`
   > After this: Customer can create orders with cascading dropdowns and see live status. Operations sees new orders arrive in realtime. Order creation verified from both roles.
 
-- [ ] **S04: Operations dispatch screen** `risk:high` `depends:[S02,S03]`
+- [x] **S04: Operations dispatch screen** `risk:high` `depends:[S02,S03]`
   > After this: 3-panel operations screen works — create orders, assign couriers from waiting queue, finish orders with auto-pricing. Realtime panel updates verified.
 
 - [ ] **S05: Courier workflow** `risk:medium` `depends:[S04]`

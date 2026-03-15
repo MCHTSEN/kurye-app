@@ -6,6 +6,7 @@ import 'musteri_repository.dart';
 import 'noop_payment_service.dart';
 import 'payment_service.dart';
 import 'role_request_repository.dart';
+import 'siparis_log_repository.dart';
 import 'siparis_repository.dart';
 import 'token_refresh_service.dart';
 import 'ugrama_repository.dart';
@@ -34,4 +35,5 @@ abstract class BackendModule {
   MusteriPersonelRepository? createMusteriPersonelRepository() => null;
   KuryeRepository? createKuryeRepository() => null;
   SiparisRepository? createSiparisRepository() => null;
+  SiparisLogRepository? createSiparisLogRepository() => null;
 }

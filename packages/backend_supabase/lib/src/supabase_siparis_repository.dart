@@ -88,6 +88,44 @@ class SupabaseSiparisRepository implements SiparisRepository {
   }
 
   @override
+  Future<Siparis> update(String id, Map<String, dynamic> fields) async {
+    _log.i('update: $id — fields=${fields.keys.toList()}');
+    final data = await _client
+        .from(_table)
+        .update(fields)
+        .eq('id', id)
+        .select()
+        .single();
+    _log.i('updated: $id');
+    return Siparis.fromJson(data);
+  }
+
+  @override
+  Future<Siparis?> getRecentPricing({
+    required String musteriId,
+    required String cikisId,
+    required String ugramaId,
+  }) async {
+    _log.d('getRecentPricing: musteri=$musteriId, '
+        'cikis=$cikisId, ugrama=$ugramaId');
+    final data = await _client
+        .from(_table)
+        .select()
+        .eq('musteri_id', musteriId)
+        .eq('cikis_id', cikisId)
+        .eq('ugrama_id', ugramaId)
+        .eq('durum', SiparisDurum.tamamlandi.value)
+        .order('created_at', ascending: false)
+        .limit(1);
+    if (data.isEmpty) {
+      _log.w('getRecentPricing: no match — '
+          'musteri=$musteriId, cikis=$cikisId, ugrama=$ugramaId');
+      return null;
+    }
+    return Siparis.fromJson(data.first);
+  }
+
+  @override
   Stream<List<Siparis>> streamActive() {
     _log.d('streamActive — subscribing');
     return _client
