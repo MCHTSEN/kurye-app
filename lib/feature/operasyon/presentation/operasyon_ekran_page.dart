@@ -5,10 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
+import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
+import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/services/order_alert_service.dart';
 import '../../../product/siparis/siparis_log_providers.dart';
 import '../../../product/siparis/siparis_providers.dart';
@@ -16,6 +18,8 @@ import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/responsive_layout.dart';
+import '../../../product/widgets/responsive_scaffold.dart';
 
 final _log = Logger();
 
@@ -323,8 +327,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentUserProfileProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Operasyon Ekranı')),
+    return ResponsiveScaffold(
+      title: 'Operasyon Ekranı',
+      currentRoute: CustomRoute.operasyonEkran,
+      navItems: operasyonNavItems,
+      headerTitle: 'Moto Kurye',
+      headerSubtitle: 'Operasyon',
       body: profileAsync.when(
         data: (profile) {
           if (profile == null) {
@@ -369,13 +377,24 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       }
     });
 
+    final type = layoutTypeOf(context);
+    if (type == LayoutType.mobile) {
+      return _buildMobileBody(streamAsync, profile.id);
+    }
+    return _buildDesktopBody(streamAsync, profile.id);
+  }
+
+  Widget _buildMobileBody(
+    AsyncValue<List<Siparis>> streamAsync,
+    String userId,
+  ) {
     return ListView(
       padding: ProjectPadding.all.normal,
       children: [
-        _buildOrderCreationPanel(profile.id),
+        _buildOrderCreationPanel(userId),
         const SizedBox(height: AppSpacing.md),
         streamAsync.when(
-          data: (orders) => _buildDispatchPanels(orders, profile.id),
+          data: (orders) => _buildDispatchPanelsMobile(orders, userId),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => AppSectionCard(
             title: 'Siparişler',
@@ -386,7 +405,47 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     );
   }
 
-  Widget _buildDispatchPanels(List<Siparis> allOrders, String userId) {
+  Widget _buildDesktopBody(
+    AsyncValue<List<Siparis>> streamAsync,
+    String userId,
+  ) {
+    return Padding(
+      padding: ProjectPadding.all.normal,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Panel 1: Order creation
+          Expanded(
+            child: SingleChildScrollView(
+              child: _buildOrderCreationPanel(userId),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          // Panel 2 + 3: Dispatch
+          Expanded(
+            flex: 2,
+            child: streamAsync.when(
+              data: (orders) =>
+                  _buildDispatchPanelsDesktop(orders, userId),
+              loading: () =>
+                  const Center(child: CircularProgressIndicator()),
+              error: (e, _) => AppSectionCard(
+                title: 'Siparişler',
+                child: Text('Hata: $e'),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  ({
+    List<Siparis> waiting,
+    List<Siparis> active,
+    Map<String, String> ugramaMap,
+    Map<String, String> kuryeMap,
+  }) _resolveDispatchData(List<Siparis> allOrders) {
     final waiting = allOrders
         .where((s) => s.durum == SiparisDurum.kuryeBekliyor)
         .toList();
@@ -412,15 +471,61 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       }
     }
 
+    return (
+      waiting: waiting,
+      active: active,
+      ugramaMap: ugramaMap,
+      kuryeMap: kuryeMap,
+    );
+  }
+
+  Widget _buildDispatchPanelsMobile(
+    List<Siparis> allOrders,
+    String userId,
+  ) {
+    final data = _resolveDispatchData(allOrders);
     return Column(
       children: [
-        _buildWaitingPanel(waiting, userId, ugramaMap: ugramaMap),
+        _buildWaitingPanel(data.waiting, userId,
+            ugramaMap: data.ugramaMap),
         const SizedBox(height: AppSpacing.md),
         _buildActivePanel(
-          active,
+          data.active,
           userId,
-          ugramaMap: ugramaMap,
-          kuryeMap: kuryeMap,
+          ugramaMap: data.ugramaMap,
+          kuryeMap: data.kuryeMap,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDispatchPanelsDesktop(
+    List<Siparis> allOrders,
+    String userId,
+  ) {
+    final data = _resolveDispatchData(allOrders);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            child: _buildWaitingPanel(
+              data.waiting,
+              userId,
+              ugramaMap: data.ugramaMap,
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: SingleChildScrollView(
+            child: _buildActivePanel(
+              data.active,
+              userId,
+              ugramaMap: data.ugramaMap,
+              kuryeMap: data.kuryeMap,
+            ),
+          ),
         ),
       ],
     );

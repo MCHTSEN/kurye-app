@@ -3,14 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
+import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
+import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/responsive_scaffold.dart';
 
 final _log = Logger();
 
@@ -250,8 +253,12 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       }
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Geçmiş Siparişler')),
+    return ResponsiveScaffold(
+      title: 'Geçmiş Siparişler',
+      currentRoute: CustomRoute.operasyonGecmis,
+      navItems: operasyonNavItems,
+      headerTitle: 'Moto Kurye',
+      headerSubtitle: 'Operasyon',
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [

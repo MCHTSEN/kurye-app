@@ -2,11 +2,14 @@ import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/kurye/kurye_providers.dart';
+import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/responsive_scaffold.dart';
 
 class KuryeYonetimPage extends ConsumerStatefulWidget {
   const KuryeYonetimPage({super.key});
@@ -103,8 +106,12 @@ class _KuryeYonetimPageState extends ConsumerState<KuryeYonetimPage> {
   Widget build(BuildContext context) {
     final listAsync = ref.watch(kuryeListProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Kurye Yönetimi')),
+    return ResponsiveScaffold(
+      title: 'Kurye Yönetimi',
+      currentRoute: CustomRoute.kuryeYonetim,
+      navItems: operasyonNavItems,
+      headerTitle: 'Moto Kurye',
+      headerSubtitle: 'Operasyon',
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [

@@ -2,14 +2,18 @@ import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/musteri_personel/musteri_personel_providers.dart';
+import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/responsive_layout.dart';
+import '../../../product/widgets/responsive_scaffold.dart';
 
 class MusteriSiparisPage extends ConsumerStatefulWidget {
   const MusteriSiparisPage({super.key});
@@ -102,8 +106,12 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentUserProfileProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sipariş Oluştur')),
+    return ResponsiveScaffold(
+      title: 'Sipariş Oluştur',
+      currentRoute: CustomRoute.musteriSiparis,
+      navItems: musteriNavItems,
+      headerTitle: 'Moto Kurye',
+      headerSubtitle: 'Müşteri',
       body: profileAsync.when(
         data: (profile) {
           if (profile == null || profile.musteriId == null) {
@@ -134,6 +142,32 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     final activeOrdersAsync =
         ref.watch(siparisStreamByMusteriProvider(musteriId));
 
+    final type = layoutTypeOf(context);
+    if (type == LayoutType.mobile) {
+      return _buildMobileContent(
+        musteriId: musteriId,
+        userId: userId,
+        displayName: displayName,
+        ugramaListAsync: ugramaListAsync,
+        activeOrdersAsync: activeOrdersAsync,
+      );
+    }
+    return _buildDesktopContent(
+      musteriId: musteriId,
+      userId: userId,
+      displayName: displayName,
+      ugramaListAsync: ugramaListAsync,
+      activeOrdersAsync: activeOrdersAsync,
+    );
+  }
+
+  Widget _buildMobileContent({
+    required String musteriId,
+    required String userId,
+    required String displayName,
+    required AsyncValue<List<Ugrama>> ugramaListAsync,
+    required AsyncValue<List<Siparis>> activeOrdersAsync,
+  }) {
     return ListView(
       padding: ProjectPadding.all.normal,
       children: [
@@ -142,7 +176,6 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
           child: const Text('Yeni sipariş oluşturmak için formu doldurun.'),
         ),
         const SizedBox(height: AppSpacing.md),
-        // — Order form —
         ugramaListAsync.when(
           data: (ugramalar) => _buildOrderForm(
             ugramalar: ugramalar,
@@ -159,9 +192,67 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
           ),
         ),
         const SizedBox(height: AppSpacing.md),
-        // — Active orders —
         _buildActiveOrders(activeOrdersAsync, ugramaListAsync),
       ],
+    );
+  }
+
+  Widget _buildDesktopContent({
+    required String musteriId,
+    required String userId,
+    required String displayName,
+    required AsyncValue<List<Ugrama>> ugramaListAsync,
+    required AsyncValue<List<Siparis>> activeOrdersAsync,
+  }) {
+    return Padding(
+      padding: ProjectPadding.all.large,
+      child: ContentConstraint(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppSectionCard(
+                      title: 'Hoş geldiniz, $displayName',
+                      child: const Text(
+                        'Yeni sipariş oluşturmak için formu doldurun.',
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    ugramaListAsync.when(
+                      data: (ugramalar) => _buildOrderForm(
+                        ugramalar: ugramalar,
+                        musteriId: musteriId,
+                        userId: userId,
+                      ),
+                      loading: () => const AppSectionCard(
+                        title: 'Sipariş Formu',
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                      error: (e, _) => AppSectionCard(
+                        title: 'Sipariş Formu',
+                        child: Text('Uğrama listesi yüklenemedi: $e'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.lg),
+            Expanded(
+              child: SingleChildScrollView(
+                child: _buildActiveOrders(
+                  activeOrdersAsync,
+                  ugramaListAsync,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
