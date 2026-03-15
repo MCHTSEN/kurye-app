@@ -172,8 +172,8 @@
 - Source: user
 - Primary owning slice: M001/S05
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Timestamp punching is tap-to-set-current-time on each stop field
+- Validation: validated
+- Notes: Implemented in S05. Widget tests prove timestamp buttons call update with correct fields, disabled state for already-set timestamps, order list rendering with devamEdiyor filter. Uğrama1 conditionally hidden.
 
 ### R012 — Order completion with auto-pricing
 
@@ -232,8 +232,8 @@
 - Source: user
 - Primary owning slice: M001/S05
 - Supporting slices: M001/S04
-- Validation: unmapped
-- Notes: Updates `is_online` field on kuryeler table
+- Validation: validated
+- Notes: Implemented in S05. Widget test proves toggle calls updateOnlineStatus with correct parameter. Optimistic local state with revert on failure.
 
 ### R017 — Sound alerts for new orders
 
@@ -337,12 +337,12 @@
 | R008 | core-capability | active | M001/S03 | M001/S04,S05,S08 | partial |
 | R009 | primary-user-loop | active | M001/S04 | none | validated |
 | R010 | primary-user-loop | active | M001/S04 | none | validated |
-| R011 | primary-user-loop | active | M001/S05 | none | unmapped |
+| R011 | primary-user-loop | active | M001/S05 | none | validated |
 | R012 | primary-user-loop | active | M001/S04 | none | validated |
 | R013 | primary-user-loop | active | M001/S03 | none | validated |
 | R014 | primary-user-loop | active | M001/S06 | none | unmapped |
 | R015 | differentiator | active | M001/S07 | none | unmapped |
-| R016 | primary-user-loop | active | M001/S05 | M001/S04 | unmapped |
+| R016 | primary-user-loop | active | M001/S05 | M001/S04 | validated |
 | R017 | launchability | active | M001/S08 | none | unmapped |
 | R018 | continuity | active | M001/S04 | none | validated |
 | R019 | differentiator | deferred | none | none | unmapped |
@@ -355,6 +355,6 @@
 
 - Active requirements: 18
 - Mapped to slices: 16
-- Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R009, R010, R012, R013, R018)
+- Validated: 14 (R001, R002, R003, R004, R005, R006, R007, R009, R010, R011, R012, R013, R016, R018)
 - Partially validated: 1 (R008)
 - Unmapped active requirements: 0

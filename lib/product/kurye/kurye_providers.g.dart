@@ -89,3 +89,44 @@ final class KuryeListProvider
 }
 
 String _$kuryeListHash() => r'1586056e19d1c46792dca6fe61c59f7144efbcdb';
+
+/// Giriş yapan kullanıcının kurye kaydını auth UID ile çözer.
+/// Null dönerse kullanıcı kuryeler tablosunda bulunamadı demektir.
+
+@ProviderFor(currentKurye)
+const currentKuryeProvider = CurrentKuryeProvider._();
+
+/// Giriş yapan kullanıcının kurye kaydını auth UID ile çözer.
+/// Null dönerse kullanıcı kuryeler tablosunda bulunamadı demektir.
+
+final class CurrentKuryeProvider
+    extends $FunctionalProvider<AsyncValue<Kurye?>, Kurye?, FutureOr<Kurye?>>
+    with $FutureModifier<Kurye?>, $FutureProvider<Kurye?> {
+  /// Giriş yapan kullanıcının kurye kaydını auth UID ile çözer.
+  /// Null dönerse kullanıcı kuryeler tablosunda bulunamadı demektir.
+  const CurrentKuryeProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'currentKuryeProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$currentKuryeHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<Kurye?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Kurye?> create(Ref ref) {
+    return currentKurye(ref);
+  }
+}
+
+String _$currentKuryeHash() => r'0d60ec2c6b90353669586ab6c703e3cb9eb94592';

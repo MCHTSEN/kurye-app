@@ -8,4 +8,7 @@ abstract class KuryeRepository {
   Future<Kurye> update(Kurye kurye);
   Future<void> delete(String id);
   Future<void> updateOnlineStatus(String id, {required bool isOnline});
+
+  /// Kurye kaydını auth UID'ye göre getirir.
+  Future<Kurye?> getByUserId(String userId);
 }

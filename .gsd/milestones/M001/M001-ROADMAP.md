@@ -67,7 +67,7 @@ This milestone is complete only when all are true:
 - [x] **S04: Operations dispatch screen** `risk:high` `depends:[S02,S03]`
   > After this: 3-panel operations screen works — create orders, assign couriers from waiting queue, finish orders with auto-pricing. Realtime panel updates verified.
 
-- [ ] **S05: Courier workflow** `risk:medium` `depends:[S04]`
+- [x] **S05: Courier workflow** `risk:medium` `depends:[S04]`
   > After this: Courier can go active/passive, see assigned orders, punch timestamps at each stop. Order lifecycle complete from courier perspective.
 
 - [ ] **S06: Order history & editing** `risk:low` `depends:[S04]`

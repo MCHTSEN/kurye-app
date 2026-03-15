@@ -1,7 +1,7 @@
 # GSD State
 
 **Active Milestone:** M001 — Core Dispatch App
-**Active Slice:** S05 — Courier workflow
+**Active Slice:** S06 — Order history & editing
 **Phase:** planning
 **Requirements Status:** 0 active · 0 validated · 4 deferred · 1 out of scope
 
@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Plan slice S05 (Courier workflow).
+Plan slice S06 (Order history & editing).

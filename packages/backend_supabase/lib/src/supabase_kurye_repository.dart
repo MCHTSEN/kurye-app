@@ -79,6 +79,18 @@ class SupabaseKuryeRepository implements KuryeRepository {
   }
 
   @override
+  Future<Kurye?> getByUserId(String userId) async {
+    _log.i('getByUserId: $userId');
+    final data = await _client
+        .from(_table)
+        .select()
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (data == null) return null;
+    return Kurye.fromJson(data);
+  }
+
+  @override
   Future<void> updateOnlineStatus(String id, {required bool isOnline}) async {
     _log.i('updateOnlineStatus: $id -> $isOnline');
     await _client

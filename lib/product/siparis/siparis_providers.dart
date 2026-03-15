@@ -29,6 +29,12 @@ Stream<List<Siparis>> siparisStreamActive(Ref ref) {
 }
 
 @riverpod
+Stream<List<Siparis>> siparisStreamByKurye(Ref ref, String kuryeId) {
+  final repo = ref.watch(siparisRepositoryProvider);
+  return repo.streamByKuryeId(kuryeId);
+}
+
+@riverpod
 Future<List<Siparis>> siparisListByMusteri(Ref ref, String musteriId) async {
   final repo = ref.watch(siparisRepositoryProvider);
   return repo.getByMusteriId(musteriId);

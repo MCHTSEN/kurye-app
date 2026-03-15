@@ -14,7 +14,7 @@ The core dispatch loop: customer creates order → operations assigns courier �
 
 ## Current State
 
-S01 (auth), S02 (master data CRUD), S03 (order creation & tracking), and S04 (operations dispatch) are complete:
+S01 (auth), S02 (master data CRUD), S03 (order creation & tracking), S04 (operations dispatch), and S05 (courier workflow) are complete:
 - Supabase DB with 10 tables deployed + siparis_log audit table
 - Auth with Supabase, role-based routing via AppAccessGuard
 - Role request/approval flow with müşteri assignment for personel role
@@ -26,10 +26,11 @@ S01 (auth), S02 (master data CRUD), S03 (order creation & tracking), and S04 (op
 - Courier assignment flow with checkbox selection + courier dropdown
 - Order finish flow with auto-pricing from historical orders + manual pricing fallback dialog
 - SiparisLog audit trail on every status transition
-- Supabase Realtime stream pattern: single stream feeds both dispatch panels, split client-side by status
-- 86 tests passing, 0 analysis errors
+- Courier main screen with active/passive toggle, realtime order list, and çıkış/uğrama/uğrama1 timestamp punching
+- Supabase Realtime stream pattern: single stream feeds panels, split client-side by status (ops + courier)
+- 92 tests passing, 0 analysis errors
 
-Next: S05 (Courier workflow) — courier active/passive toggle, assigned order list, timestamp punching at stops.
+Next: S06 (Order history & editing) — operations order history with filtering, inline editing, revenue totals.
 
 ## Architecture / Key Patterns
 
