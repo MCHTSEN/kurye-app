@@ -70,6 +70,14 @@ class FakeKuryeRepository implements KuryeRepository {
   }
 
   @override
+  Future<Kurye?> getByUserId(String userId) async {
+    return store.values.cast<Kurye?>().firstWhere(
+          (k) => k!.userId == userId,
+          orElse: () => null,
+        );
+  }
+
+  @override
   Future<void> updateOnlineStatus(String id, {required bool isOnline}) async {
     final existing = store[id];
     if (existing == null) {

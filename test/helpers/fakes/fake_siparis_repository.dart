@@ -98,6 +98,21 @@ class FakeSiparisRepository implements SiparisRepository {
   }
 
   @override
+  Stream<List<Siparis>> streamByKuryeId(String kuryeId) {
+    final key = 'kurye_$kuryeId';
+    _controllers[key] ??= StreamController<List<Siparis>>.broadcast();
+    final controller = _controllers[key]!;
+
+    return controller.stream.transform(
+      StreamTransformer<List<Siparis>, List<Siparis>>.fromHandlers(
+        handleData: (data, sink) => sink.add(data),
+      ),
+    ).startWithValue(
+      store.values.where((s) => s.kuryeId == kuryeId).toList(),
+    );
+  }
+
+  @override
   Stream<List<Siparis>> streamActive() {
     const key = '_active';
     _controllers[key] ??= StreamController<List<Siparis>>.broadcast();
@@ -132,6 +147,11 @@ class FakeSiparisRepository implements SiparisRepository {
         final musteriId = entry.key.substring('musteri_'.length);
         entry.value.add(
           store.values.where((s) => s.musteriId == musteriId).toList(),
+        );
+      } else if (entry.key.startsWith('kurye_')) {
+        final kuryeId = entry.key.substring('kurye_'.length);
+        entry.value.add(
+          store.values.where((s) => s.kuryeId == kuryeId).toList(),
         );
       }
     }
@@ -180,6 +200,12 @@ class FakeSiparisRepository implements SiparisRepository {
   /// Emit arbitrary data to a stream — for test scenarios.
   void emitForMusteri(String musteriId, List<Siparis> data) {
     final key = 'musteri_$musteriId';
+    _controllers[key]?.add(data);
+  }
+
+  /// Emit arbitrary data to a kurye stream — for test scenarios.
+  void emitForKurye(String kuryeId, List<Siparis> data) {
+    final key = 'kurye_$kuryeId';
     _controllers[key]?.add(data);
   }
 

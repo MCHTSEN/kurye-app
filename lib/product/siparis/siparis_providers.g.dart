@@ -173,6 +173,82 @@ final class SiparisStreamActiveProvider
 String _$siparisStreamActiveHash() =>
     r'cabc7837ff1a1b3e98fdd9fdaa67b569642c8bae';
 
+@ProviderFor(siparisStreamByKurye)
+const siparisStreamByKuryeProvider = SiparisStreamByKuryeFamily._();
+
+final class SiparisStreamByKuryeProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<Siparis>>,
+          List<Siparis>,
+          Stream<List<Siparis>>
+        >
+    with $FutureModifier<List<Siparis>>, $StreamProvider<List<Siparis>> {
+  const SiparisStreamByKuryeProvider._({
+    required SiparisStreamByKuryeFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'siparisStreamByKuryeProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$siparisStreamByKuryeHash();
+
+  @override
+  String toString() {
+    return r'siparisStreamByKuryeProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $StreamProviderElement<List<Siparis>> $createElement(
+    $ProviderPointer pointer,
+  ) => $StreamProviderElement(pointer);
+
+  @override
+  Stream<List<Siparis>> create(Ref ref) {
+    final argument = this.argument as String;
+    return siparisStreamByKurye(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is SiparisStreamByKuryeProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$siparisStreamByKuryeHash() =>
+    r'f269a0ccc284454d39e68ca390f05f25ece404d9';
+
+final class SiparisStreamByKuryeFamily extends $Family
+    with $FunctionalFamilyOverride<Stream<List<Siparis>>, String> {
+  const SiparisStreamByKuryeFamily._()
+    : super(
+        retry: null,
+        name: r'siparisStreamByKuryeProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  SiparisStreamByKuryeProvider call(String kuryeId) =>
+      SiparisStreamByKuryeProvider._(argument: kuryeId, from: this);
+
+  @override
+  String toString() => r'siparisStreamByKuryeProvider';
+}
+
 @ProviderFor(siparisListByMusteri)
 const siparisListByMusteriProvider = SiparisListByMusteriFamily._();
 

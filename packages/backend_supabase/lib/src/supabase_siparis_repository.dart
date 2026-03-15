@@ -126,6 +126,23 @@ class SupabaseSiparisRepository implements SiparisRepository {
   }
 
   @override
+  Stream<List<Siparis>> streamByKuryeId(String kuryeId) {
+    _log.d('streamByKuryeId: $kuryeId — subscribing');
+    return _client
+        .from(_table)
+        .stream(primaryKey: ['id'])
+        .eq('kurye_id', kuryeId)
+        .order('created_at', ascending: false)
+        .map((rows) {
+          _log.d('streamByKuryeId: $kuryeId — ${rows.length} rows');
+          return rows.map(Siparis.fromJson).toList();
+        })
+        .handleError((Object error) {
+          _log.e('streamByKuryeId error: $error');
+        });
+  }
+
+  @override
   Stream<List<Siparis>> streamActive() {
     _log.d('streamActive — subscribing');
     return _client

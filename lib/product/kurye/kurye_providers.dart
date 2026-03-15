@@ -21,3 +21,13 @@ Future<List<Kurye>> kuryeList(Ref ref) async {
   final repo = ref.watch(kuryeRepositoryProvider);
   return repo.getAll();
 }
+
+/// Giriş yapan kullanıcının kurye kaydını auth UID ile çözer.
+/// Null dönerse kullanıcı kuryeler tablosunda bulunamadı demektir.
+@Riverpod(keepAlive: true)
+Future<Kurye?> currentKurye(Ref ref) async {
+  final session = await ref.watch(authStateProvider.future);
+  if (session == null) return null;
+  final repo = ref.watch(kuryeRepositoryProvider);
+  return repo.getByUserId(session.user.id);
+}
