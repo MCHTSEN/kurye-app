@@ -1,4 +1,5 @@
 import 'package:backend_core/backend_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -152,6 +153,19 @@ class _AuthPageState extends ConsumerState<AuthPage> {
             onPressed: isLoading ? null : authController.signInAnonymously,
             child: Text(l10n.authSignInAnonymous),
           ),
+
+          // Quick-login buttons for dev/debug mode only.
+          if (kDebugMode) ...[
+            const SizedBox(height: AppSpacing.xl),
+            const _OrDivider(label: 'Hızlı Giriş (Dev)'),
+            const SizedBox(height: AppSpacing.md),
+            _QuickLoginButtons(
+              emailController: _emailController,
+              passwordController: _passwordController,
+              onLogin: () => _handleEmailSignIn(authController),
+              isLoading: isLoading,
+            ),
+          ],
         ],
       ),
     );
@@ -319,6 +333,73 @@ class _OrDivider extends StatelessWidget {
           ),
         ),
         Expanded(child: Divider(color: theme.colorScheme.outlineVariant)),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Quick-login buttons (debug only)
+// ---------------------------------------------------------------------------
+
+class _QuickLoginButtons extends StatelessWidget {
+  const _QuickLoginButtons({
+    required this.emailController,
+    required this.passwordController,
+    required this.onLogin,
+    required this.isLoading,
+  });
+
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final VoidCallback onLogin;
+  final bool isLoading;
+
+  static const _accounts = <({String label, IconData icon, Color color, String email})>[
+    (
+      label: 'Operasyon',
+      icon: Icons.admin_panel_settings,
+      color: Colors.indigo,
+      email: 'ops@test.com',
+    ),
+    (
+      label: 'Müşteri Personel',
+      icon: Icons.storefront,
+      color: Colors.teal,
+      email: 'musteri@test.com',
+    ),
+    (
+      label: 'Kurye',
+      icon: Icons.two_wheeler,
+      color: Colors.orange,
+      email: 'kurye@test.com',
+    ),
+  ];
+
+  static const _password = 'Test1234!';
+
+  void _fillAndLogin(String email) {
+    emailController.text = email;
+    passwordController.text = _password;
+    onLogin();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: [
+        for (final account in _accounts)
+          FilledButton.tonalIcon(
+            onPressed: isLoading ? null : () => _fillAndLogin(account.email),
+            icon: Icon(account.icon, size: 18),
+            label: Text(account.label),
+            style: FilledButton.styleFrom(
+              backgroundColor: account.color.withValues(alpha: 0.12),
+              foregroundColor: account.color,
+            ),
+          ),
       ],
     );
   }
