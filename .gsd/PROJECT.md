@@ -14,17 +14,18 @@ The core dispatch loop: customer creates order → operations assigns courier �
 
 ## Current State
 
-S01 (auth foundation) and S02 (master data CRUD) are complete:
+S01 (auth), S02 (master data CRUD), and S03 (order creation & tracking) are complete:
 - Supabase DB with 10 tables deployed
 - Auth with Supabase, role-based routing via AppAccessGuard
 - Role request/approval flow with müşteri assignment for personel role
-- 4 domain models (Musteri, Ugrama, MusteriPersonel, Kurye) with repositories and Supabase implementations
-- 4 real master-detail CRUD pages for operasyon (müşteri, uğrama, personel, kurye management)
-- Role approval screen (RolOnayPage) with müşteri dropdown for personel requests
-- Drawer navigation wired to all operasyon routes
-- 65 tests passing, 0 analysis errors
+- 5 domain models (Musteri, Ugrama, MusteriPersonel, Kurye, Siparis) with repositories and Supabase implementations
+- 4 master-detail CRUD pages for operasyon (müşteri, uğrama, personel, kurye management)
+- Customer order creation form with 4 cascading dropdowns + active orders realtime list
+- Customer history page with date range filtering
+- Supabase Realtime stream pattern established via `stream()` API
+- 76 tests passing, 0 analysis errors
 
-Next: S03 (Order creation & customer tracking) — customer order form with cascading dropdowns and realtime status.
+Next: S04 (Operations dispatch screen) — 3-panel screen with order creation, waiting queue, in-progress panel, courier assignment, and auto-pricing.
 
 ## Architecture / Key Patterns
 
@@ -34,7 +35,8 @@ Next: S03 (Order creation & customer tracking) — customer order form with casc
 - **Routing**: auto_route with `AppAccessGuard` for role-based access control
 - **DB access**: Supabase client via `SupabaseBackendModule`, service_role key for admin ops
 - **CRUD pattern**: Master-detail pages (form top, list bottom, tap to edit) with ConsumerStatefulWidget
-- **Logging**: AppLogger with LogTag.data for CRUD operations, LogTag.auth for auth
+- **Realtime**: Supabase `stream(primaryKey: ['id'])` + filter + handleError, autoDispose providers
+- **Logging**: AppLogger with LogTag.data for CRUD/stream operations, LogTag.auth for auth
 - **Entry point**: `lib/main_supabase.dart` with `--dart-define-from-file=.env`
 
 ## Capability Contract

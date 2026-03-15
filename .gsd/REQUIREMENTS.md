@@ -2,7 +2,49 @@
 
 ## Active
 
+ Read this at the start of every session. These are always available.
+
+## 1. mobile-mcp (iOS Simulator Automation)
+
+- **Server:** `mobile-mcp`
+- **Device ID:** `04E43A5F-2FD2-4405-A574-DA757E506951` (iPhone 15 Pro, iOS 18.4)
+- **Key tools:**
+  - `mobile_take_screenshot` — `{device: "<id>"}` — screenshot as base64
+  - `mobile_save_screenshot` — `{device: "<id>", saveTo: "/abs/path.png"}` — save to file
+  - `mobile_list_elements_on_screen` — `{device: "<id>"}` — accessibility tree with coordinates
+  - `mobile_click_on_screen_at_coordinates` — `{device: "<id>", x: N, y: N}` — tap
+  - `mobile_type_keys` — `{device: "<id>", text: "..."}` — type into focused element
+  - `mobile_swipe_on_screen` — `{device: "<id>", direction: "up|down|left|right"}`
+  - `mobile_launch_app` — `{device: "<id>", packageName: "com.example.bursamotokurye"}`
+  - `mobile_list_apps` — `{device: "<id>"}`
+- **Usage:** Use for UI testing after `flutter run`. Take screenshot, read elements, tap, type.
+
+## 2. supabase (Database & Backend)
+
+- **Server:** `supabase`
+- **Project ref:** `ebxvkbhrxxplauhsntda` (bursa-moto-kurye)
+- **Key tools:**
+  - `list_tables` — list all tables
+  - `execute_sql` — run SELECT/INSERT/UPDATE/DELETE queries
+  - `apply_migration` — run DDL (CREATE TABLE, ALTER, etc.)
+  - `get_logs` — get project logs by service
+  - `list_migrations` — list applied migrations
+- **Note:** Supabase MCP has wrong access token binding — use curl with service_role key as primary method:
+
+  ```bash
+  SUPABASE_URL=$(grep SUPABASE_URL .env | head -1 | cut -d= -f2)
+  SERVICE_KEY=$(grep SUPABASE_SERVICE_ROLE_KEY .env | cut -d= -f2)
+  curl -s "${SUPABASE_URL}/rest/v1/<table>?select=*" -H "apikey: ${SERVICE_KEY}" -H "Authorization: Bearer ${SERVICE_KEY}"
+  ```
+
+## 3. context7 (Library Documentation)
+
+- **Server:** `context7`
+- **Tools:** `resolve-library-id`, `query-docs`
+- **Usage:** Look up Flutter/Dart/Supabase/Riverpod docs
+
 ### R001 — Role-based auth & routing
+
 - Class: core-capability
 - Status: active
 - Description: Users authenticate via Supabase Auth and are routed to role-specific screens (müşteri/operasyon/kurye)
@@ -14,6 +56,7 @@
 - Notes: Already implemented and working
 
 ### R002 — Role request & approval flow
+
 - Class: core-capability
 - Status: active
 - Description: New users select a role, submit a request, and wait for operasyon approval before accessing the app
@@ -25,6 +68,7 @@
 - Notes: Already implemented — role_requests table, RoleSelectionPage, approval creates app_users entry
 
 ### R003 — Customer (müşteri) CRUD management
+
 - Class: primary-user-loop
 - Status: active
 - Description: Operasyon can create, edit, list customers (firms). Excel-like table view with inline editing panel.
@@ -36,6 +80,7 @@
 - Notes: Domain model + Supabase repo + CRUD page implemented. Widget tests cover form render, validation, create, edit.
 
 ### R004 — Stop (uğrama) CRUD with location
+
 - Class: primary-user-loop
 - Status: active
 - Description: Operasyon can create/edit stops per customer. Stops are pickup/delivery points used in order dropdowns. Location stored as PostGIS Geography.
@@ -47,6 +92,7 @@
 - Notes: Domain model + Supabase repo + CRUD page implemented. lokasyon Geography excluded from model (D010), deferred to M002.
 
 ### R005 — Customer staff (personel) CRUD
+
 - Class: primary-user-loop
 - Status: active
 - Description: Operasyon can create/edit customer staff per customer. Staff are linked to app_users for login.
@@ -58,6 +104,7 @@
 - Notes: Domain model + Supabase repo + CRUD page implemented. approveRequest sets musteri_id for personel role (D012).
 
 ### R006 — Courier (kurye) management
+
 - Class: primary-user-loop
 - Status: active
 - Description: Operasyon can create/edit couriers. Couriers are linked to app_users for login. Have active/passive and online/offline states.
@@ -69,6 +116,7 @@
 - Notes: Domain model + Supabase repo + CRUD page implemented. is_online toggle via updateOnlineStatus (D014).
 
 ### R007 — Order creation with cascading dropdowns
+
 - Class: primary-user-loop
 - Status: active
 - Description: Both müşteri and operasyon can create orders. Dropdowns cascade: select customer → stops load for that customer. Fields: Çıkış, Uğrama, Uğrama1 (optional), Not (dropdown), Not1 (text).
@@ -76,10 +124,11 @@
 - Source: user
 - Primary owning slice: M001/S03
 - Supporting slices: M001/S04
-- Validation: unmapped
-- Notes: If no stops exist for selected customer, prompt to create one
+- Validation: validated
+- Notes: Customer-side validated in S03 with widget tests (form render, validation, submit). Operations-side creation in S04.
 
 ### R008 — Realtime order flow across all roles
+
 - Class: core-capability
 - Status: active
 - Description: Order status changes are visible in realtime across all connected screens. No page refresh needed.
@@ -87,10 +136,11 @@
 - Source: user
 - Primary owning slice: M001/S03
 - Supporting slices: M001/S04, M001/S05, M001/S08
-- Validation: unmapped
-- Notes: Supabase Realtime publication already configured for siparisler table
+- Validation: partial
+- Notes: Supabase stream() pattern established in S03 — customer sees live updates. Cross-role realtime proof continues in S04/S05.
 
 ### R009 — Operations 3-panel dispatch screen
+
 - Class: primary-user-loop
 - Status: active
 - Description: Single page with 3 panels: (A) order creation form, (B) kurye bekleyenler (waiting for courier), (C) devam edenler (in progress). Panels update in realtime.
@@ -102,6 +152,7 @@
 - Notes: Panel B has checkboxes + courier assignment dropdown. Panel C has checkboxes + finish button.
 
 ### R010 — Courier assignment (manual)
+
 - Class: primary-user-loop
 - Status: active
 - Description: Operasyon selects orders via checkboxes in "kurye bekleyenler" panel, picks a courier, and assigns. Order moves to "devam ediyor" status.
@@ -113,6 +164,7 @@
 - Notes: Assignment sets `kurye_id` and `atanma_saat` on the order
 
 ### R011 — Courier order acceptance & timestamp punching
+
 - Class: primary-user-loop
 - Status: active
 - Description: Courier sees assigned orders, confirms acceptance, and punches timestamps at each stop (çıkış, uğrama, uğrama1).
@@ -124,6 +176,7 @@
 - Notes: Timestamp punching is tap-to-set-current-time on each stop field
 
 ### R012 — Order completion with auto-pricing
+
 - Class: primary-user-loop
 - Status: active
 - Description: Operasyon finishes orders via "bitir" button. System auto-finds the most recent completed order with same customer+route and copies its price. If no match, warns operasyon to set price manually.
@@ -135,6 +188,7 @@
 - Notes: Query: same musteri_id + cikis_id + ugrama_id, status=tamamlandi, ORDER BY created_at DESC LIMIT 1
 
 ### R013 — Customer order tracking (active + history)
+
 - Class: primary-user-loop
 - Status: active
 - Description: Müşteri sees active orders with live status updates below the order form. Completed orders drop off. Separate history page with date filtering.
@@ -142,10 +196,11 @@
 - Source: user
 - Primary owning slice: M001/S03
 - Supporting slices: none
-- Validation: unmapped
-- Notes: Customer cannot modify orders after creation (except cancel?)
+- Validation: validated
+- Notes: Implemented in S03 — active orders with realtime stream, history page with date range filtering. Widget tests cover form + submit flow.
 
 ### R014 — Operations order history with filtering & editing
+
 - Class: primary-user-loop
 - Status: active
 - Description: Excel-like table of past orders. Filter by date, customer, çıkış, uğrama. Click to edit in top panel. Running revenue total displayed.
@@ -157,6 +212,7 @@
 - Notes: Editing updates the order record, not creates a new one
 
 ### R015 — Analytics dashboard
+
 - Class: differentiator
 - Status: active
 - Description: Dashboard showing 3-month/1-month/1-week revenue totals, current month daily average, courier performance (monthly + daily job counts), and active couriers today.
@@ -168,6 +224,7 @@
 - Notes: May use Supabase RPC functions for aggregations
 
 ### R016 — Courier active/passive toggle
+
 - Class: primary-user-loop
 - Status: active
 - Description: Courier can toggle themselves active/passive. Only active couriers can receive order assignments.
@@ -179,6 +236,7 @@
 - Notes: Updates `is_online` field on kuryeler table
 
 ### R017 — Sound alerts for new orders
+
 - Class: launchability
 - Status: active
 - Description: When a new order arrives at the operations screen, play a sound alert
@@ -190,6 +248,7 @@
 - Notes: Use audioplayers or just_audio package
 
 ### R018 — Order status log tracking
+
 - Class: continuity
 - Status: active
 - Description: Every order status change is logged in siparis_log with old/new status, who changed it, and when
@@ -203,6 +262,7 @@
 ## Deferred
 
 ### R019 — Courier background location tracking
+
 - Class: differentiator
 - Status: deferred
 - Description: Track courier location in background, store daily in kurye_konum table
@@ -214,6 +274,7 @@
 - Notes: Deferred to M002 — requires background service, permissions, battery optimization
 
 ### R020 — Map-based courier tracking
+
 - Class: differentiator
 - Status: deferred
 - Description: Show courier positions on map. Hover over courier shows their active orders.
@@ -225,6 +286,7 @@
 - Notes: Deferred to M002 — depends on R019 location tracking
 
 ### R021 — Auto courier assignment (distance-based)
+
 - Class: differentiator
 - Status: deferred
 - Description: Auto/manual toggle. When auto, system assigns nearest courier or courier already on the same route.
@@ -236,6 +298,7 @@
 - Notes: Deferred to M002 — depends on R019 location data and PostGIS distance calculations
 
 ### R022 — Web responsive for operations
+
 - Class: quality-attribute
 - Status: deferred
 - Description: Operations screens work well on both web and mobile form factors
@@ -249,6 +312,7 @@
 ## Out of Scope
 
 ### R023 — Note-taking web app
+
 - Class: anti-feature
 - Status: out-of-scope
 - Description: Simple note-taking web app with React/Node mentioned at end of spec
@@ -269,13 +333,13 @@
 | R004 | primary-user-loop | active | M001/S02 | none | validated |
 | R005 | primary-user-loop | active | M001/S02 | none | validated |
 | R006 | primary-user-loop | active | M001/S02 | none | validated |
-| R007 | primary-user-loop | active | M001/S03 | M001/S04 | unmapped |
-| R008 | core-capability | active | M001/S03 | M001/S04,S05,S08 | unmapped |
+| R007 | primary-user-loop | active | M001/S03 | M001/S04 | validated |
+| R008 | core-capability | active | M001/S03 | M001/S04,S05,S08 | partial |
 | R009 | primary-user-loop | active | M001/S04 | none | unmapped |
 | R010 | primary-user-loop | active | M001/S04 | none | unmapped |
 | R011 | primary-user-loop | active | M001/S05 | none | unmapped |
 | R012 | primary-user-loop | active | M001/S04 | none | unmapped |
-| R013 | primary-user-loop | active | M001/S03 | none | unmapped |
+| R013 | primary-user-loop | active | M001/S03 | none | validated |
 | R014 | primary-user-loop | active | M001/S06 | none | unmapped |
 | R015 | differentiator | active | M001/S07 | none | unmapped |
 | R016 | primary-user-loop | active | M001/S05 | M001/S04 | unmapped |
@@ -291,5 +355,6 @@
 
 - Active requirements: 18
 - Mapped to slices: 16
-- Validated: 6 (R001, R002, R003, R004, R005, R006)
+- Validated: 8 (R001, R002, R003, R004, R005, R006, R007, R013)
+- Partially validated: 1 (R008)
 - Unmapped active requirements: 0
