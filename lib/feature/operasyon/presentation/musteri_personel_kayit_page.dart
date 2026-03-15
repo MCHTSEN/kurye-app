@@ -2,12 +2,15 @@ import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/musteri_personel/musteri_personel_providers.dart';
+import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/responsive_scaffold.dart';
 
 class MusteriPersonelKayitPage extends ConsumerStatefulWidget {
   const MusteriPersonelKayitPage({super.key});
@@ -113,8 +116,12 @@ class _MusteriPersonelKayitPageState
     final musteriAsync = ref.watch(musteriListProvider);
     final personelAsync = ref.watch(musteriPersonelListProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Personel Kayıt')),
+    return ResponsiveScaffold(
+      title: 'Personel Kayıt',
+      currentRoute: CustomRoute.musteriPersonelKayit,
+      navItems: operasyonNavItems,
+      headerTitle: 'Moto Kurye',
+      headerSubtitle: 'Operasyon',
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [

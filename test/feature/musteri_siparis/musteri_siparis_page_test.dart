@@ -61,6 +61,12 @@ void main() {
     });
 
     Future<void> pumpPage(WidgetTester tester) async {
+      // Force mobile breakpoint to avoid NavigationRail consuming space.
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       await tester.pumpApp(
         const MusteriSiparisPage(),
         overrides: [
@@ -107,6 +113,13 @@ void main() {
     testWidgets('validation rejects empty required fields', (tester) async {
       await pumpPage(tester);
 
+      // Scroll to the submit button first.
+      await tester.dragUntilVisible(
+        find.widgetWithText(ElevatedButton, 'Sipariş Oluştur'),
+        find.byType(ListView).first,
+        const Offset(0, -200),
+      );
+
       // Tap submit without selecting required dropdowns.
       await tester.tap(
         find.widgetWithText(ElevatedButton, 'Sipariş Oluştur'),
@@ -136,10 +149,24 @@ void main() {
       await tester.tap(find.text('Şube A').last);
       await tester.pumpAndSettle();
 
+      // Scroll to reveal Not1 and submit.
+      await tester.dragUntilVisible(
+        find.widgetWithText(TextFormField, 'Not1'),
+        find.byType(ListView).first,
+        const Offset(0, -200),
+      );
+
       // Enter Not1 text.
       await tester.enterText(
         find.widgetWithText(TextFormField, 'Not1'),
         'Acil gönderim',
+      );
+
+      // Scroll to submit button.
+      await tester.dragUntilVisible(
+        find.widgetWithText(ElevatedButton, 'Sipariş Oluştur'),
+        find.byType(ListView).first,
+        const Offset(0, -200),
       );
 
       // Submit.

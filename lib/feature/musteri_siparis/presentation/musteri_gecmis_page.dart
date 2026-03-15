@@ -2,12 +2,16 @@ import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/responsive_layout.dart';
+import '../../../product/widgets/responsive_scaffold.dart';
 
 class MusteriGecmisPage extends ConsumerStatefulWidget {
   const MusteriGecmisPage({super.key});
@@ -40,8 +44,12 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentUserProfileProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Geçmiş Siparişler')),
+    return ResponsiveScaffold(
+      title: 'Geçmiş Siparişler',
+      currentRoute: CustomRoute.musteriGecmis,
+      navItems: musteriNavItems,
+      headerTitle: 'Moto Kurye',
+      headerSubtitle: 'Müşteri',
       body: profileAsync.when(
         data: (profile) {
           if (profile == null || profile.musteriId == null) {
@@ -69,8 +77,10 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
       }
     }
 
+    final isDesktop = layoutTypeOf(context) != LayoutType.mobile;
+
     return ListView(
-      padding: ProjectPadding.all.normal,
+      padding: isDesktop ? ProjectPadding.all.large : ProjectPadding.all.normal,
       children: [
         // Date range filter
         AppSectionCard(

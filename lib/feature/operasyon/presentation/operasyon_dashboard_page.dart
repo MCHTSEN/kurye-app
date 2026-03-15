@@ -1,13 +1,14 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/responsive_layout.dart';
+import '../../../product/widgets/responsive_scaffold.dart';
 import '../domain/dashboard_stats.dart';
 import '../providers/dashboard_providers.dart';
 
@@ -18,38 +19,96 @@ class OperasyonDashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(currentUserProfileProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
-      drawer: const _OperasyonDrawer(),
+    return ResponsiveScaffold(
+      title: 'Dashboard',
+      currentRoute: CustomRoute.operasyonDashboard,
+      navItems: operasyonNavItems,
+      headerTitle: 'Moto Kurye',
+      headerSubtitle: 'Operasyon',
       body: profileAsync.when(
         data: (profile) {
           final name = profile?.displayName ?? 'Operasyon';
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(dashboardStatsProvider);
-              // Wait for the provider to re-resolve so the indicator
-              // stays visible until data arrives.
               await ref.read(dashboardStatsProvider.future);
             },
-            child: ListView(
-              padding: ProjectPadding.all.normal,
-              children: [
-                AppSectionCard(
-                  title: 'Hoş geldiniz, $name',
-                  child: const Text('Operasyon kontrol paneli.'),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                const _CiroAnaliziCard(),
-                const SizedBox(height: AppSpacing.md),
-                const _KuryePerformansCard(),
-                const SizedBox(height: AppSpacing.md),
-                const _AktifKuryelerCard(),
-              ],
+            child: ResponsiveBuilder(
+              mobile: _MobileDashboard(name: name),
+              desktop: _DesktopDashboard(name: name),
             ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Hata: $e')),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mobile layout — single column ListView
+// ---------------------------------------------------------------------------
+
+class _MobileDashboard extends StatelessWidget {
+  const _MobileDashboard({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: ProjectPadding.all.normal,
+      children: [
+        AppSectionCard(
+          title: 'Hoş geldiniz, $name',
+          child: const Text('Operasyon kontrol paneli.'),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        const _CiroAnaliziCard(),
+        const SizedBox(height: AppSpacing.md),
+        const _KuryePerformansCard(),
+        const SizedBox(height: AppSpacing.md),
+        const _AktifKuryelerCard(),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Desktop layout — grid with wider cards
+// ---------------------------------------------------------------------------
+
+class _DesktopDashboard extends StatelessWidget {
+  const _DesktopDashboard({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: ProjectPadding.all.large,
+      child: ContentConstraint(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AppSectionCard(
+              title: 'Hoş geldiniz, $name',
+              child: const Text('Operasyon kontrol paneli.'),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                Expanded(child: _CiroAnaliziCard()),
+                SizedBox(width: AppSpacing.lg),
+                Expanded(child: _KuryePerformansCard()),
+                SizedBox(width: AppSpacing.lg),
+                Expanded(child: _AktifKuryelerCard()),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -184,10 +243,7 @@ class _KuryePerformansContent extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
             child: Row(
               children: [
-                Expanded(
-                  flex: 3,
-                  child: Text(cs.ad),
-                ),
+                Expanded(flex: 3, child: Text(cs.ad)),
                 Expanded(
                   flex: 2,
                   child: Text(
@@ -296,114 +352,6 @@ class _CardError extends StatelessWidget {
     return Text(
       'Hata: $message',
       style: TextStyle(color: Theme.of(context).colorScheme.error),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Drawer (unchanged)
-// ---------------------------------------------------------------------------
-
-class _OperasyonDrawer extends StatelessWidget {
-  const _OperasyonDrawer();
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(color: Colors.indigo),
-            child: Text(
-              'Moto Kurye\nOperasyon',
-              style: TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
-            onTap: () => Navigator.pop(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.assignment),
-            title: const Text('Operasyon Ekranı'),
-            onTap: () {
-              Navigator.pop(context);
-              unawaited(Navigator.pushNamed(
-                context,
-                CustomRoute.operasyonEkran.path,
-              ));
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.business),
-            title: const Text('Müşteri Kayıt'),
-            onTap: () {
-              Navigator.pop(context);
-              unawaited(Navigator.pushNamed(
-                context,
-                CustomRoute.musteriKayit.path,
-              ));
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.people),
-            title: const Text('Personel Kayıt'),
-            onTap: () {
-              Navigator.pop(context);
-              unawaited(Navigator.pushNamed(
-                context,
-                CustomRoute.musteriPersonelKayit.path,
-              ));
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.location_on),
-            title: const Text('Uğrama Yönetimi'),
-            onTap: () {
-              Navigator.pop(context);
-              unawaited(Navigator.pushNamed(
-                context,
-                CustomRoute.ugramaYonetim.path,
-              ));
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.two_wheeler),
-            title: const Text('Kurye Yönetimi'),
-            onTap: () {
-              Navigator.pop(context);
-              unawaited(Navigator.pushNamed(
-                context,
-                CustomRoute.kuryeYonetim.path,
-              ));
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.how_to_reg),
-            title: const Text('Rol Onayları'),
-            onTap: () {
-              Navigator.pop(context);
-              unawaited(Navigator.pushNamed(
-                context,
-                CustomRoute.rolOnay.path,
-              ));
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.history),
-            title: const Text('Geçmiş Siparişler'),
-            onTap: () {
-              Navigator.pop(context);
-              unawaited(Navigator.pushNamed(
-                context,
-                CustomRoute.operasyonGecmis.path,
-              ));
-            },
-          ),
-        ],
-      ),
     );
   }
 }

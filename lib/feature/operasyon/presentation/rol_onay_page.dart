@@ -4,11 +4,14 @@ import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/router/custom_route.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
+import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/role_request/role_request_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/responsive_scaffold.dart';
 
 class RolOnayPage extends ConsumerStatefulWidget {
   const RolOnayPage({super.key});
@@ -25,8 +28,12 @@ class _RolOnayPageState extends ConsumerState<RolOnayPage> {
   Widget build(BuildContext context) {
     final pendingAsync = ref.watch(pendingRoleRequestsProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Rol Onayları')),
+    return ResponsiveScaffold(
+      title: 'Rol Onayları',
+      currentRoute: CustomRoute.rolOnay,
+      navItems: operasyonNavItems,
+      headerTitle: 'Moto Kurye',
+      headerSubtitle: 'Operasyon',
       body: pendingAsync.when(
         data: (requests) {
           if (requests.isEmpty) {

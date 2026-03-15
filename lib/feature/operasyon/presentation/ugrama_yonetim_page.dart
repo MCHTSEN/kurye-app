@@ -2,12 +2,15 @@ import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/musteri/musteri_providers.dart';
+import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/responsive_scaffold.dart';
 
 class UgramaYonetimPage extends ConsumerStatefulWidget {
   const UgramaYonetimPage({super.key});
@@ -102,8 +105,12 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
     final musteriAsync = ref.watch(musteriListProvider);
     final ugramaAsync = ref.watch(ugramaListProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Uğrama Yönetimi')),
+    return ResponsiveScaffold(
+      title: 'Uğrama Yönetimi',
+      currentRoute: CustomRoute.ugramaYonetim,
+      navItems: operasyonNavItems,
+      headerTitle: 'Moto Kurye',
+      headerSubtitle: 'Operasyon',
       body: ListView(
         padding: ProjectPadding.all.normal,
         children: [
