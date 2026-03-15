@@ -10,6 +10,44 @@ Moto kurye sipariş ve takip uygulaması. 3 farklı kullanıcı rolü:
 **Backend**: Supabase (PostgreSQL + Realtime + Auth + Geography)
 
 ---
+ Read this at the start of every session. These are always available.
+
+## 1. mobile-mcp (iOS Simulator Automation)
+- **Server:** `mobile-mcp`
+- **Device ID:** `04E43A5F-2FD2-4405-A574-DA757E506951` (iPhone 15 Pro, iOS 18.4)
+- **Key tools:**
+  - `mobile_take_screenshot` — `{device: "<id>"}` — screenshot as base64
+  - `mobile_save_screenshot` — `{device: "<id>", saveTo: "/abs/path.png"}` — save to file
+  - `mobile_list_elements_on_screen` — `{device: "<id>"}` — accessibility tree with coordinates
+  - `mobile_click_on_screen_at_coordinates` — `{device: "<id>", x: N, y: N}` — tap
+  - `mobile_type_keys` — `{device: "<id>", text: "..."}` — type into focused element
+  - `mobile_swipe_on_screen` — `{device: "<id>", direction: "up|down|left|right"}`
+  - `mobile_launch_app` — `{device: "<id>", packageName: "com.example.bursamotokurye"}`
+  - `mobile_list_apps` — `{device: "<id>"}`
+- **Usage:** Use for UI testing after `flutter run`. Take screenshot, read elements, tap, type.
+
+## 2. supabase (Database & Backend)
+- **Server:** `supabase`
+- **Project ref:** `ebxvkbhrxxplauhsntda` (bursa-moto-kurye)
+- **Key tools:**
+  - `list_tables` — list all tables
+  - `execute_sql` — run SELECT/INSERT/UPDATE/DELETE queries
+  - `apply_migration` — run DDL (CREATE TABLE, ALTER, etc.)
+  - `get_logs` — get project logs by service
+  - `list_migrations` — list applied migrations
+- **Note:** Supabase MCP has wrong access token binding — use curl with service_role key as primary method:
+  ```bash
+  SUPABASE_URL=$(grep SUPABASE_URL .env | head -1 | cut -d= -f2)
+  SERVICE_KEY=$(grep SUPABASE_SERVICE_ROLE_KEY .env | cut -d= -f2)
+  curl -s "${SUPABASE_URL}/rest/v1/<table>?select=*" -H "apikey: ${SERVICE_KEY}" -H "Authorization: Bearer ${SERVICE_KEY}"
+  ```
+
+## 3. context7 (Library Documentation)
+- **Server:** `context7`
+- **Tools:** `resolve-library-id`, `query-docs`
+- **Usage:** Look up Flutter/Dart/Supabase/Riverpod docs
+
+
 
 ## 2. Veritabanı Şeması (Supabase/PostgreSQL)
 

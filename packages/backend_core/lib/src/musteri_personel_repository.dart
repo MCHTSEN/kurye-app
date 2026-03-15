@@ -8,4 +8,7 @@ abstract class MusteriPersonelRepository {
   Future<MusteriPersonel> update(MusteriPersonel personel);
   Future<void> delete(String id);
   Future<List<MusteriPersonel>> getByMusteriId(String musteriId);
+
+  /// Auth user ID'sine göre personel kaydını bulur.
+  Future<MusteriPersonel?> getByUserId(String userId);
 }

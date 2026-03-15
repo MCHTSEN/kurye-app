@@ -87,4 +87,16 @@ class SupabaseMusteriPersonelRepository implements MusteriPersonelRepository {
         .order('ad');
     return data.map(MusteriPersonel.fromJson).toList();
   }
+
+  @override
+  Future<MusteriPersonel?> getByUserId(String userId) async {
+    _log.d('getByUserId: $userId');
+    final data = await _client
+        .from(_table)
+        .select()
+        .eq('user_id', userId)
+        .maybeSingle();
+    if (data == null) return null;
+    return MusteriPersonel.fromJson(data);
+  }
 }
