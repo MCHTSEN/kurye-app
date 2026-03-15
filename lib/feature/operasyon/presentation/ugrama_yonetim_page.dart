@@ -11,6 +11,7 @@ import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
+import '../../../product/widgets/searchable_dropdown.dart';
 
 class UgramaYonetimPage extends ConsumerStatefulWidget {
   const UgramaYonetimPage({super.key});
@@ -122,16 +123,14 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
                 children: [
                   musteriAsync.when(
                     data: (musteriler) =>
-                        DropdownButtonFormField<String>(
-                      initialValue: _selectedMusteriId,
-                      decoration:
-                          const InputDecoration(labelText: 'Müşteri *'),
+                        SearchableDropdown<String>(
+                      value: _selectedMusteriId,
+                      label: 'Müşteri *',
+                      placeholder: 'Müşteri Seç',
+                      searchPlaceholder: 'Müşteri ara...',
                       items: musteriler
                           .map(
-                            (m) => DropdownMenuItem(
-                              value: m.id,
-                              child: Text(m.firmaKisaAd),
-                            ),
+                            (m) => (value: m.id, label: m.firmaKisaAd),
                           )
                           .toList(),
                       onChanged: (v) =>

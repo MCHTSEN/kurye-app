@@ -18,6 +18,7 @@ import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/searchable_dropdown.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 
@@ -93,7 +94,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }
 
   Future<void> _onCreateOrder(String userId) async {
-    if (!_formKey.currentState!.validate()) return;
+    final hasDropdownErrors = _selectedMusteriId == null ||
+        _selectedCikisId == null ||
+        _selectedUgramaId == null;
+
+    if (!_formKey.currentState!.validate() || hasDropdownErrors) {
+      return;
+    }
 
     setState(() => _isCreating = true);
 
@@ -552,22 +559,19 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     required String userId,
   }) {
     final musteriItems = musteriler
-        .map(
-          (m) => DropdownMenuItem<String>(
-            value: m.id,
-            child: Text(m.firmaKisaAd),
-          ),
-        )
+        .map((m) => (value: m.id, label: m.firmaKisaAd))
         .toList();
 
     return Form(
       key: _formKey,
       child: Column(
         children: [
-          DropdownButtonFormField<String>(
+          SearchableDropdown<String>(
             key: const Key('musteri_dropdown'),
             value: _selectedMusteriId,
-            decoration: const InputDecoration(labelText: 'Müşteri *'),
+            label: 'Müşteri *',
+            placeholder: 'Müşteri Seç',
+            searchPlaceholder: 'Müşteri ara...',
             items: musteriItems,
             onChanged: _onMusteriChanged,
             validator: (v) => v == null || v.isEmpty ? 'Zorunlu alan' : null,
@@ -599,59 +603,52 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     return ugramaAsync.when(
       data: (ugramalar) {
         final items = ugramalar
-            .map(
-              (u) => DropdownMenuItem<String>(
-                value: u.id,
-                child: Text(u.ugramaAdi),
-              ),
-            )
+            .map((u) => (value: u.id, label: u.ugramaAdi))
             .toList();
 
         return Column(
           children: [
-            DropdownButtonFormField<String>(
+            SearchableDropdown<String>(
               key: const Key('cikis_dropdown'),
               value: _selectedCikisId,
-              decoration: const InputDecoration(labelText: 'Çıkış *'),
+              label: 'Çıkış *',
+              placeholder: 'Çıkış Seç',
+              searchPlaceholder: 'Uğrama ara...',
               items: items,
               onChanged: (v) => setState(() => _selectedCikisId = v),
               validator: (v) =>
                   v == null || v.isEmpty ? 'Zorunlu alan' : null,
             ),
             const SizedBox(height: AppSpacing.xs),
-            DropdownButtonFormField<String>(
+            SearchableDropdown<String>(
               key: const Key('ugrama_dropdown'),
               value: _selectedUgramaId,
-              decoration: const InputDecoration(labelText: 'Uğrama *'),
+              label: 'Uğrama *',
+              placeholder: 'Uğrama Seç',
+              searchPlaceholder: 'Uğrama ara...',
               items: items,
               onChanged: (v) => setState(() => _selectedUgramaId = v),
               validator: (v) =>
                   v == null || v.isEmpty ? 'Zorunlu alan' : null,
             ),
             const SizedBox(height: AppSpacing.xs),
-            DropdownButtonFormField<String>(
+            SearchableDropdown<String>(
               key: const Key('ugrama1_dropdown'),
               value: _selectedUgrama1Id,
-              decoration: const InputDecoration(labelText: 'Uğrama1'),
-              items: [
-                const DropdownMenuItem<String>(
-                  child: Text('— Seçilmedi —'),
-                ),
-                ...items,
-              ],
+              label: 'Uğrama1',
+              placeholder: 'Seçilmedi',
+              searchPlaceholder: 'Uğrama ara...',
+              items: items,
               onChanged: (v) => setState(() => _selectedUgrama1Id = v),
             ),
             const SizedBox(height: AppSpacing.xs),
-            DropdownButtonFormField<String>(
+            SearchableDropdown<String>(
               key: const Key('not_dropdown'),
               value: _selectedNotId,
-              decoration: const InputDecoration(labelText: 'Not'),
-              items: [
-                const DropdownMenuItem<String>(
-                  child: Text('— Seçilmedi —'),
-                ),
-                ...items,
-              ],
+              label: 'Not',
+              placeholder: 'Seçilmedi',
+              searchPlaceholder: 'Uğrama ara...',
+              items: items,
               onChanged: (v) => setState(() => _selectedNotId = v),
             ),
           ],
@@ -705,18 +702,14 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                   kuryeler.where((k) => k.isActive).toList();
               return Column(
                 children: [
-                  DropdownButtonFormField<String>(
+                  SearchableDropdown<String>(
                     key: const Key('kurye_dropdown'),
                     value: _selectedKuryeId,
-                    decoration:
-                        const InputDecoration(labelText: 'Kurye Seç'),
+                    label: 'Kurye Seç',
+                    placeholder: 'Kurye Seç',
+                    searchPlaceholder: 'Kurye ara...',
                     items: activeKuryeler
-                        .map(
-                          (k) => DropdownMenuItem<String>(
-                            value: k.id,
-                            child: Text(k.ad),
-                          ),
-                        )
+                        .map((k) => (value: k.id, label: k.ad))
                         .toList(),
                     onChanged: (v) =>
                         setState(() => _selectedKuryeId = v),

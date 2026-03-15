@@ -13,6 +13,7 @@ import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/responsive_layout.dart';
+import '../../../product/widgets/searchable_dropdown.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 
 class MusteriSiparisPage extends ConsumerStatefulWidget {
@@ -55,7 +56,20 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     required String musteriId,
     required String userId,
   }) async {
-    if (!_formKey.currentState!.validate()) return;
+    // Manual validation for SearchableDropdown fields (not FormField).
+    final hasValidationErrors = _selectedCikisId == null ||
+        _selectedCikisId!.isEmpty ||
+        _selectedUgramaId == null ||
+        _selectedUgramaId!.isEmpty;
+
+    if (!_formKey.currentState!.validate() || hasValidationErrors) {
+      if (hasValidationErrors) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Lütfen zorunlu alanları doldurunuz')),
+        );
+      }
+      return;
+    }
 
     setState(() => _isSubmitting = true);
 
@@ -262,12 +276,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     required String userId,
   }) {
     final dropdownItems = ugramalar
-        .map(
-          (u) => DropdownMenuItem<String>(
-            value: u.id,
-            child: Text(u.ugramaAdi),
-          ),
-        )
+        .map((u) => (value: u.id, label: u.ugramaAdi))
         .toList();
 
     return AppSectionCard(
@@ -276,49 +285,47 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
         key: _formKey,
         child: Column(
           children: [
-            DropdownButtonFormField<String>(
+            SearchableDropdown<String>(
               key: const Key('cikis_dropdown'),
               value: _selectedCikisId,
-              decoration: const InputDecoration(labelText: 'Çıkış *'),
+              label: 'Çıkış *',
+              placeholder: 'Çıkış Seç',
+              searchPlaceholder: 'Uğrama ara...',
               items: dropdownItems,
               onChanged: (v) => setState(() => _selectedCikisId = v),
               validator: (v) =>
                   v == null || v.isEmpty ? 'Zorunlu alan' : null,
             ),
             const SizedBox(height: AppSpacing.xs),
-            DropdownButtonFormField<String>(
+            SearchableDropdown<String>(
               key: const Key('ugrama_dropdown'),
               value: _selectedUgramaId,
-              decoration: const InputDecoration(labelText: 'Uğrama *'),
+              label: 'Uğrama *',
+              placeholder: 'Uğrama Seç',
+              searchPlaceholder: 'Uğrama ara...',
               items: dropdownItems,
               onChanged: (v) => setState(() => _selectedUgramaId = v),
               validator: (v) =>
                   v == null || v.isEmpty ? 'Zorunlu alan' : null,
             ),
             const SizedBox(height: AppSpacing.xs),
-            DropdownButtonFormField<String>(
+            SearchableDropdown<String>(
               key: const Key('ugrama1_dropdown'),
               value: _selectedUgrama1Id,
-              decoration: const InputDecoration(labelText: 'Uğrama1'),
-              items: [
-                const DropdownMenuItem<String>(
-                  child: Text('— Seçilmedi —'),
-                ),
-                ...dropdownItems,
-              ],
+              label: 'Uğrama1',
+              placeholder: 'Seçilmedi',
+              searchPlaceholder: 'Uğrama ara...',
+              items: dropdownItems,
               onChanged: (v) => setState(() => _selectedUgrama1Id = v),
             ),
             const SizedBox(height: AppSpacing.xs),
-            DropdownButtonFormField<String>(
+            SearchableDropdown<String>(
               key: const Key('not_dropdown'),
               value: _selectedNotId,
-              decoration: const InputDecoration(labelText: 'Not'),
-              items: [
-                const DropdownMenuItem<String>(
-                  child: Text('— Seçilmedi —'),
-                ),
-                ...dropdownItems,
-              ],
+              label: 'Not',
+              placeholder: 'Seçilmedi',
+              searchPlaceholder: 'Uğrama ara...',
+              items: dropdownItems,
               onChanged: (v) => setState(() => _selectedNotId = v),
             ),
             const SizedBox(height: AppSpacing.xs),
