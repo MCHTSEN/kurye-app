@@ -34,7 +34,6 @@ class UgramaTalepYonetimPage extends ConsumerWidget {
       title: 'Uğrama Talepleri',
       currentRoute: CustomRoute.ugramaTalepYonetim,
       navItems: operasyonNavItems,
-      headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
       body: taleplerAsync.when(

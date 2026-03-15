@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
@@ -11,19 +13,18 @@ import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
+import '../../../product/musteri_personel/musteri_personel_providers.dart';
+import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/services/order_alert_service.dart';
 import '../../../product/siparis/siparis_log_providers.dart';
 import '../../../product/siparis/siparis_providers.dart';
-import '../../../product/musteri_personel/musteri_personel_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
-import '../../../product/widgets/app_section_card.dart';
-import '../../../product/widgets/searchable_dropdown.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
-import '../../../product/navigation/logout_helper.dart';
+import '../../../product/widgets/searchable_dropdown.dart';
 
 final _log = Logger();
 
@@ -34,8 +35,7 @@ class OperasyonEkranPage extends ConsumerStatefulWidget {
   final OrderAlertService? alertService;
 
   @override
-  ConsumerState<OperasyonEkranPage> createState() =>
-      _OperasyonEkranPageState();
+  ConsumerState<OperasyonEkranPage> createState() => _OperasyonEkranPageState();
 }
 
 class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
@@ -97,9 +97,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }
 
   Future<void> _onCreateOrder(String userId) async {
-    final hasDropdownErrors = _selectedMusteriId == null ||
-        _selectedCikisId == null ||
-        _selectedUgramaId == null;
+    final hasDropdownErrors =
+        _selectedMusteriId == null || _selectedCikisId == null || _selectedUgramaId == null;
 
     if (!_formKey.currentState!.validate() || hasDropdownErrors) {
       return;
@@ -115,9 +114,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         ugramaId: _selectedUgramaId!,
         ugrama1Id: _selectedUgrama1Id,
         notId: _selectedNotId,
-        not1: _not1Controller.text.trim().isNotEmpty
-            ? _not1Controller.text.trim()
-            : null,
+        not1: _not1Controller.text.trim().isNotEmpty ? _not1Controller.text.trim() : null,
         olusturanId: userId,
       );
 
@@ -304,7 +301,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final result = await showDialog<double>(
       context: context,
       builder: (ctx) {
-        return _ManualPricingDialog(key: const Key('manual_price_dialog'));
+        return const _ManualPricingDialog(key: Key('manual_price_dialog'));
       },
     );
     return result;
@@ -320,18 +317,22 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       title: 'Operasyon Ekranı',
       currentRoute: CustomRoute.operasyonEkran,
       navItems: operasyonNavItems,
-      headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
-      body: profileAsync.when(
-        data: (profile) {
-          if (profile == null) {
-            return const Center(child: Text('Profil bulunamadı.'));
-          }
-          return _buildBody(profile);
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Hata: $e')),
+      body: Stack(
+        children: [
+          const _BackgroundEffect(),
+          profileAsync.when(
+            data: (profile) {
+              if (profile == null) {
+                return const Center(child: Text('Profil bulunamadı.'));
+              }
+              return _buildBody(profile);
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => Center(child: Text('Hata: $e')),
+          ),
+        ],
       ),
     );
   }
@@ -380,13 +381,14 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   ) {
     return ListView(
       padding: ProjectPadding.all.normal,
+      physics: const BouncingScrollPhysics(),
       children: [
         _buildOrderCreationPanel(userId),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.lg),
         streamAsync.when(
           data: (orders) => _buildDispatchPanelsMobile(orders, userId),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => AppSectionCard(
+          error: (e, _) => _PremiumCard(
             title: 'Siparişler',
             child: Text('Hata: $e'),
           ),
@@ -406,20 +408,20 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         children: [
           // Panel 1: Order creation
           Expanded(
+            flex: 3,
             child: SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 40),
               child: _buildOrderCreationPanel(userId),
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
+          const SizedBox(width: AppSpacing.lg),
           // Panel 2 + 3: Dispatch
           Expanded(
-            flex: 2,
+            flex: 7,
             child: streamAsync.when(
-              data: (orders) =>
-                  _buildDispatchPanelsDesktop(orders, userId),
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (e, _) => AppSectionCard(
+              data: (orders) => _buildDispatchPanelsDesktop(orders, userId),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => _PremiumCard(
                 title: 'Siparişler',
                 child: Text('Hata: $e'),
               ),
@@ -437,13 +439,10 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     Map<String, String> kuryeMap,
     Map<String, String> musteriMap,
     Map<String, String> personelMap,
-  }) _resolveDispatchData(List<Siparis> allOrders) {
-    final waiting = allOrders
-        .where((s) => s.durum == SiparisDurum.kuryeBekliyor)
-        .toList();
-    final active = allOrders
-        .where((s) => s.durum == SiparisDurum.devamEdiyor)
-        .toList();
+  })
+  _resolveDispatchData(List<Siparis> allOrders) {
+    final waiting = allOrders.where((s) => s.durum == SiparisDurum.kuryeBekliyor).toList();
+    final active = allOrders.where((s) => s.durum == SiparisDurum.devamEdiyor).toList();
 
     // Build name-resolution maps (D027 pattern).
     final ugramaListAsync = ref.watch(ugramaListProvider);
@@ -503,7 +502,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           musteriMap: data.musteriMap,
           personelMap: data.personelMap,
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.lg),
         _buildActivePanel(
           data.active,
           userId,
@@ -523,25 +522,21 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: SingleChildScrollView(
-            child: _buildWaitingPanel(
-              data.waiting,
-              userId,
-              ugramaMap: data.ugramaMap,
-              musteriMap: data.musteriMap,
-              personelMap: data.personelMap,
-            ),
+          child: _buildWaitingPanel(
+            data.waiting,
+            userId,
+            ugramaMap: data.ugramaMap,
+            musteriMap: data.musteriMap,
+            personelMap: data.personelMap,
           ),
         ),
-        const SizedBox(width: AppSpacing.md),
+        const SizedBox(width: AppSpacing.lg),
         Expanded(
-          child: SingleChildScrollView(
-            child: _buildActivePanel(
-              data.active,
-              userId,
-              ugramaMap: data.ugramaMap,
-              kuryeMap: data.kuryeMap,
-            ),
+          child: _buildActivePanel(
+            data.active,
+            userId,
+            ugramaMap: data.ugramaMap,
+            kuryeMap: data.kuryeMap,
           ),
         ),
       ],
@@ -553,15 +548,14 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   Widget _buildOrderCreationPanel(String userId) {
     final musteriListAsync = ref.watch(musteriListProvider);
 
-    return AppSectionCard(
-      title: 'Siparis Olusturma',
-      icon: Icons.add_circle_outline_rounded,
+    return _PremiumCard(
+      title: 'Sipariş Oluştur',
+      icon: Icons.add_rounded,
       accentColor: AppColors.primary,
       child: musteriListAsync.when(
-        data: (musteriler) =>
-            _buildOrderForm(musteriler: musteriler, userId: userId),
+        data: (musteriler) => _buildOrderForm(musteriler: musteriler, userId: userId),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Text('Müşteri listesi yüklenemedi: $e'),
+        error: (e, _) => const Text('Müşteriler alınamadı.'),
       ),
     );
   }
@@ -570,9 +564,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     required List<Musteri> musteriler,
     required String userId,
   }) {
-    final musteriItems = musteriler
-        .map((m) => (value: m.id, label: m.firmaKisaAd))
-        .toList();
+    final musteriItems = musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList();
 
     return Form(
       key: _formKey,
@@ -581,24 +573,34 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           SearchableDropdown<String>(
             key: const Key('musteri_dropdown'),
             value: _selectedMusteriId,
-            label: 'Müşteri *',
+            label: 'Müşteri',
             placeholder: 'Müşteri Seç',
             searchPlaceholder: 'Müşteri ara...',
             items: musteriItems,
             onChanged: _onMusteriChanged,
-            validator: (v) => v == null || v.isEmpty ? 'Zorunlu alan' : null,
+            validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
           ),
-          const SizedBox(height: AppSpacing.xs),
+          const SizedBox(height: AppSpacing.sm),
           if (_selectedMusteriId != null) ...[
             _buildStopDropdowns(),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: AppSpacing.sm),
             TextFormField(
               controller: _not1Controller,
-              decoration: const InputDecoration(labelText: 'Not1'),
+              decoration: InputDecoration(
+                labelText: 'Ek Not',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+              ),
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.lg),
             AppPrimaryButton(
-              label: 'Sipariş Oluştur',
+              label: 'SİPARİŞİ TAMAMLA',
               onPressed: () => _onCreateOrder(userId),
               isLoading: _isCreating,
             ),
@@ -609,65 +611,63 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }
 
   Widget _buildStopDropdowns() {
-    final ugramaAsync =
-        ref.watch(ugramaListByMusteriProvider(_selectedMusteriId!));
+    final ugramaAsync = ref.watch(ugramaListByMusteriProvider(_selectedMusteriId!));
 
     return ugramaAsync.when(
       data: (ugramalar) {
-        final items = ugramalar
-            .map((u) => (value: u.id, label: u.ugramaAdi))
-            .toList();
+        final items = ugramalar.map((u) => (value: u.id, label: u.ugramaAdi)).toList();
 
         return Column(
           children: [
             SearchableDropdown<String>(
               key: const Key('cikis_dropdown'),
               value: _selectedCikisId,
-              label: 'Çıkış *',
-              placeholder: 'Çıkış Seç',
-              searchPlaceholder: 'Uğrama ara...',
+              label: 'Çıkış',
+              placeholder: 'Çıkış Noktası',
+              searchPlaceholder: 'Ara...',
               items: items,
               onChanged: (v) => setState(() => _selectedCikisId = v),
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'Zorunlu alan' : null,
+              validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
             ),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: AppSpacing.sm),
             SearchableDropdown<String>(
               key: const Key('ugrama_dropdown'),
               value: _selectedUgramaId,
-              label: 'Uğrama *',
-              placeholder: 'Uğrama Seç',
-              searchPlaceholder: 'Uğrama ara...',
+              label: 'Varış',
+              placeholder: 'Varış Noktası',
+              searchPlaceholder: 'Ara...',
               items: items,
               onChanged: (v) => setState(() => _selectedUgramaId = v),
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'Zorunlu alan' : null,
+              validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
             ),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: AppSpacing.sm),
             SearchableDropdown<String>(
               key: const Key('ugrama1_dropdown'),
               value: _selectedUgrama1Id,
-              label: 'Uğrama1',
+              label: 'Ara Uğrama (Opsiyonel)',
               placeholder: 'Seçilmedi',
-              searchPlaceholder: 'Uğrama ara...',
+              searchPlaceholder: 'Ara...',
               items: items,
               onChanged: (v) => setState(() => _selectedUgrama1Id = v),
             ),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: AppSpacing.sm),
             SearchableDropdown<String>(
               key: const Key('not_dropdown'),
               value: _selectedNotId,
-              label: 'Not',
+              label: 'Özel Not',
               placeholder: 'Seçilmedi',
-              searchPlaceholder: 'Uğrama ara...',
+              searchPlaceholder: 'Ara...',
               items: items,
               onChanged: (v) => setState(() => _selectedNotId = v),
             ),
           ],
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Text('Uğrama listesi yüklenemedi: $e'),
+      loading: () => const Padding(
+        padding: EdgeInsets.all(AppSpacing.md),
+        child: CircularProgressIndicator(),
+      ),
+      error: (e, _) => const Text('Uğramalar yüklenemedi.'),
     );
   }
 
@@ -682,84 +682,124 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }) {
     final kuryeListAsync = ref.watch(kuryeListProvider);
 
-    return AppSectionCard(
-      title: 'Kurye Bekleyenler (${waiting.length})',
-      icon: Icons.hourglass_top_rounded,
+    return _PremiumCard(
+      title: 'Bekleyenler',
+      subtitle: '${waiting.length} Sipariş Bekliyor',
+      icon: Icons.timer_rounded,
       accentColor: AppColors.secondary,
       child: Column(
         children: [
           if (waiting.isEmpty)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Text('Bekleyen sipariş yok.'),
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+              child: Opacity(
+                opacity: 0.5,
+                child: Column(
+                  children: [
+                    Icon(Icons.check_circle_outline_rounded, size: 48),
+                    SizedBox(height: 8),
+                    Text('Her şey yolunda, bekleyen yok.'),
+                  ],
+                ),
+              ),
             )
           else
             ...waiting.map(
               (s) {
                 final musteriAd = musteriMap[s.musteriId] ?? s.musteriId;
-                final personelAd = s.personelId != null
-                    ? personelMap[s.personelId!]
-                    : null;
+                final personelAd = s.personelId != null ? personelMap[s.personelId!] : null;
                 final subtitle = [
-                  if (personelAd != null) '$musteriAd / $personelAd'
-                  else musteriAd,
+                  if (personelAd != null) '$musteriAd / $personelAd' else musteriAd,
                   if (s.not1 != null) s.not1!,
                 ].join(' — ');
 
-                return CheckboxListTile(
-                key: Key('waiting_${s.id}'),
-                title: Text(_routeLabel(s, ugramaMap: ugramaMap)),
-                subtitle: Text(subtitle),
-                value: _waitingSelected.contains(s.id),
-                onChanged: (checked) {
-                  setState(() {
-                    if (checked == true) {
-                      _waitingSelected.add(s.id);
-                    } else {
-                      _waitingSelected.remove(s.id);
-                    }
-                  });
-                },
-              );
+                final isSelected = _waitingSelected.contains(s.id);
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.secondary.withValues(alpha: 0.1)
+                        : Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? AppColors.secondary : Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: CheckboxListTile(
+                    key: Key('waiting_${s.id}'),
+                    title: Text(
+                      _routeLabel(s, ugramaMap: ugramaMap),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    value: isSelected,
+                    onChanged: (checked) {
+                      setState(() {
+                        if (checked == true) {
+                          _waitingSelected.add(s.id);
+                        } else {
+                          _waitingSelected.remove(s.id);
+                        }
+                      });
+                    },
+                    checkboxShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    activeColor: AppColors.secondary,
+                    checkColor: AppColors.textPrimary,
+                  ),
+                );
               },
             ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.md),
           kuryeListAsync.when(
             data: (kuryeler) {
-              final activeKuryeler =
-                  kuryeler.where((k) => k.isActive).toList();
+              final activeKuryeler = kuryeler.where((k) => k.isActive).toList();
               return Column(
                 children: [
                   SearchableDropdown<String>(
                     key: const Key('kurye_dropdown'),
                     value: _selectedKuryeId,
-                    label: 'Kurye Seç',
+                    label: 'Kurye Ata',
                     placeholder: 'Kurye Seç',
                     searchPlaceholder: 'Kurye ara...',
-                    items: activeKuryeler
-                        .map((k) => (value: k.id, label: k.ad))
-                        .toList(),
-                    onChanged: (v) =>
-                        setState(() => _selectedKuryeId = v),
+                    items: activeKuryeler.map((k) => (value: k.id, label: k.ad)).toList(),
+                    onChanged: (v) => setState(() => _selectedKuryeId = v),
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  AppPrimaryButton(
-                    label: 'Ata',
-                    onPressed: _waitingSelected.isNotEmpty &&
-                            _selectedKuryeId != null &&
-                            !_isAssigning
-                        ? () => _onAssign(
+                  const SizedBox(height: AppSpacing.md),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed:
+                          _waitingSelected.isNotEmpty && _selectedKuryeId != null && !_isAssigning
+                          ? () => _onAssign(
                               userId: userId,
                               waitingOrders: waiting,
                             )
-                        : null,
-                    isLoading: _isAssigning,
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.secondary,
+                        foregroundColor: AppColors.textPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: _isAssigning
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.textPrimary,
+                              ),
+                            )
+                          : const Text('KURYE ATA', style: TextStyle(fontWeight: FontWeight.w800)),
+                    ),
                   ),
                 ],
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Text('Kurye listesi yüklenemedi: $e'),
+            error: (e, _) => const Text('Kuryeler alınamadı.'),
           ),
         ],
       ),
@@ -774,48 +814,93 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     required Map<String, String> ugramaMap,
     required Map<String, String> kuryeMap,
   }) {
-    return AppSectionCard(
-      title: 'Devam Edenler (${active.length})',
-      icon: Icons.local_shipping_rounded,
+    return _PremiumCard(
+      title: 'Devam Edenler',
+      subtitle: '${active.length} Kurye Yolda',
+      icon: Icons.delivery_dining_rounded,
       accentColor: AppColors.primary,
       child: Column(
         children: [
           if (active.isEmpty)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppSpacing.sm),
-              child: Text('Devam eden sipariş yok.'),
+              padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
+              child: Opacity(
+                opacity: 0.5,
+                child: Column(
+                  children: [
+                    Icon(Icons.directions_bike_rounded, size: 48),
+                    SizedBox(height: 8),
+                    Text('Şu an aktif teslimat yok.'),
+                  ],
+                ),
+              ),
             )
           else
             ...active.map(
-              (s) => CheckboxListTile(
-                key: Key('active_${s.id}'),
-                title: Text(_routeLabel(s, ugramaMap: ugramaMap)),
-                subtitle: Text(
-                  'Kurye: ${kuryeMap[s.kuryeId] ?? s.kuryeId ?? '-'}',
-                ),
-                value: _activeSelected.contains(s.id),
-                onChanged: (checked) {
-                  setState(() {
-                    if (checked == true) {
-                      _activeSelected.add(s.id);
-                    } else {
-                      _activeSelected.remove(s.id);
-                    }
-                  });
-                },
-              ),
+              (s) {
+                final isSelected = _activeSelected.contains(s.id);
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.primary.withValues(alpha: 0.1)
+                        : Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? AppColors.primary : Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: CheckboxListTile(
+                    key: Key('active_${s.id}'),
+                    title: Text(
+                      _routeLabel(s, ugramaMap: ugramaMap),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(
+                      'Kurye: ${kuryeMap[s.kuryeId] ?? s.kuryeId ?? '-'}',
+                    ),
+                    value: isSelected,
+                    onChanged: (checked) {
+                      setState(() {
+                        if (checked == true) {
+                          _activeSelected.add(s.id);
+                        } else {
+                          _activeSelected.remove(s.id);
+                        }
+                      });
+                    },
+                    checkboxShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    activeColor: AppColors.primary,
+                  ),
+                );
+              },
             ),
-          const SizedBox(height: AppSpacing.sm),
-          AppPrimaryButton(
-            label: 'Bitir',
-            onPressed:
-                _activeSelected.isNotEmpty && !_isFinishing
-                    ? () => _onFinish(
-                          userId: userId,
-                          activeOrders: active,
-                        )
-                    : null,
-            isLoading: _isFinishing,
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _activeSelected.isNotEmpty && !_isFinishing
+                  ? () => _onFinish(
+                      userId: userId,
+                      activeOrders: active,
+                    )
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 4,
+                shadowColor: AppColors.primary.withValues(alpha: 0.4),
+              ),
+              child: _isFinishing
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('TESLİMATI BİTİR', style: TextStyle(fontWeight: FontWeight.w800)),
+            ),
           ),
         ],
       ),
@@ -828,9 +913,166 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     Siparis s, {
     required Map<String, String> ugramaMap,
   }) {
-    final cikis = ugramaMap[s.cikisId] ?? s.cikisId;
-    final ugrama = ugramaMap[s.ugramaId] ?? s.ugramaId;
+    final cikis = ugramaMap[s.cikisId] ?? '?';
+    final ugrama = ugramaMap[s.ugramaId] ?? '?';
     return '$cikis → $ugrama';
+  }
+}
+
+class _BackgroundEffect extends StatelessWidget {
+  const _BackgroundEffect();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Container(
+            color: const Color(0xFFF0F2F5),
+          ),
+        ),
+        Positioned(
+          top: -100,
+          right: -100,
+          child: _BlurredCircle(
+            color: AppColors.primary.withValues(alpha: 0.08),
+            size: 400,
+          ),
+        ),
+        Positioned(
+          bottom: -50,
+          left: -100,
+          child: _BlurredCircle(
+            color: AppColors.secondary.withValues(alpha: 0.12),
+            size: 350,
+          ),
+        ),
+        Positioned(
+          top: 200,
+          left: 100,
+          child: _BlurredCircle(
+            color: AppColors.primary.withValues(alpha: 0.04),
+            size: 200,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BlurredCircle extends StatelessWidget {
+  const _BlurredCircle({required this.color, required this.size});
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+          child: const SizedBox.shrink(),
+        )
+        .animate(onPlay: (controller) => controller.repeat(reverse: true))
+        .scale(
+          duration: 5.seconds,
+          begin: const Offset(1, 1),
+          end: const Offset(1.2, 1.2),
+          curve: Curves.easeInOut,
+        );
+  }
+}
+
+class _PremiumCard extends StatelessWidget {
+  const _PremiumCard({
+    required this.title,
+    required this.child,
+    this.subtitle,
+    this.icon,
+    this.accentColor,
+  });
+
+  final String title;
+  final String? subtitle;
+  final Widget child;
+  final IconData? icon;
+  final Color? accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  if (icon != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: (accentColor ?? AppColors.primary).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(icon, color: accentColor ?? AppColors.primary, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        if (subtitle != null)
+                          Text(
+                            subtitle!,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textMuted,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Divider(height: 1, color: Color(0x1A000000)),
+              ),
+              child,
+            ],
+          ),
+        ),
+      ),
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);
   }
 }
 

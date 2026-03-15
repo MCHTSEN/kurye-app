@@ -7,11 +7,11 @@ import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
-import '../../../product/navigation/logout_helper.dart';
 import '../domain/dashboard_stats.dart';
 import '../providers/dashboard_providers.dart';
 
@@ -26,7 +26,6 @@ class OperasyonDashboardPage extends ConsumerWidget {
       title: 'Dashboard',
       currentRoute: CustomRoute.operasyonDashboard,
       navItems: operasyonNavItems,
-      headerTitle: 'Moto Kurye',
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
       body: profileAsync.when(
@@ -101,11 +100,11 @@ class _DesktopDashboard extends StatelessWidget {
             const Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(flex: 2, child: _CiroAnaliziCard()),
+                Expanded(flex: 3, child: _CiroAnaliziCard()),
                 SizedBox(width: AppSpacing.md),
-                Expanded(child: _KuryePerformansCard()),
+                Expanded(flex: 2, child: _KuryePerformansCard()),
                 SizedBox(width: AppSpacing.md),
-                Expanded(child: _AktifKuryelerCard()),
+                Expanded(flex: 2, child: _AktifKuryelerCard()),
               ],
             ),
           ],
@@ -127,63 +126,110 @@ class _WelcomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Row(
+      child: Stack(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Icon(
               Icons.dashboard_rounded,
-              color: Colors.white,
+              size: 100,
+              color: Colors.white.withValues(alpha: 0.05),
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Hos geldiniz, $name',
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+          Row(
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'Operasyon kontrol paneli',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: Colors.white.withValues(alpha: 0.8),
-                  ),
+                child: const Icon(
+                  Icons.person_rounded,
+                  color: Colors.white,
+                  size: 28,
                 ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.secondary,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'Aktif',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
               ),
-            ),
+              const SizedBox(width: AppSpacing.lg),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hos geldiniz,',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Text(
+                      name,
+                      style: GoogleFonts.inter(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.secondary,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.secondary.withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Aktif',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -203,32 +249,34 @@ class _CiroAnaliziCard extends ConsumerWidget {
     final statsAsync = ref.watch(dashboardStatsProvider);
 
     return ShadCard(
+      padding: const EdgeInsets.all(20),
       title: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
-              Icons.trending_up_rounded,
-              size: 18,
+              Icons.insights_rounded,
+              size: 20,
               color: AppColors.primary,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Text(
             'Ciro Analizi',
             style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
             ),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.only(top: 16),
+        padding: const EdgeInsets.only(top: 20),
         child: statsAsync.when(
           data: (stats) => _CiroContent(stats: stats),
           loading: _CardLoading.new,
@@ -249,61 +297,93 @@ class _CiroContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _RevenueCell(
-                label: '3 Aylik',
-                amount: stats.revenue3mo,
-                color: AppColors.primary,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            return Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white10 : AppColors.surfaceMid,
+                borderRadius: BorderRadius.circular(16),
               ),
-            ),
-            Expanded(
-              child: _RevenueCell(
-                label: '1 Aylik',
-                amount: stats.revenue1mo,
-                color: AppColors.primaryLight,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _RevenueCell(
+                      label: '3 Aylik',
+                      amount: stats.revenue3mo,
+                      isPrimary: true,
+                    ),
+                  ),
+                  Expanded(
+                    child: _RevenueCell(
+                      label: '1 Aylik',
+                      amount: stats.revenue1mo,
+                      isPrimary: false,
+                    ),
+                  ),
+                  Expanded(
+                    child: _RevenueCell(
+                      label: '1 Haftalik',
+                      amount: stats.revenue1wk,
+                      isPrimary: false,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            Expanded(
-              child: _RevenueCell(
-                label: '1 Haftalik',
-                amount: stats.revenue1wk,
-                color: AppColors.primary,
-              ),
-            ),
-          ],
+            );
+          },
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.lg),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surfaceMid,
-            borderRadius: BorderRadius.circular(8),
+            color: AppColors.primary.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.08),
+            ),
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.calendar_today_rounded,
-                size: 14,
-                color: AppColors.textMuted,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Gunluk Ortalama',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  color: AppColors.textMuted,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
+                child: const Icon(
+                  Icons.calendar_today_rounded,
+                  size: 16,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Gunluk Ortalama',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  Text(
+                    _formatCurrency(stats.dailyAvg),
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ],
               ),
               const Spacer(),
-              Text(
-                _formatCurrency(stats.dailyAvg),
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textMuted,
               ),
             ],
           ),
@@ -317,34 +397,55 @@ class _RevenueCell extends StatelessWidget {
   const _RevenueCell({
     required this.label,
     required this.amount,
-    required this.color,
+    required this.isPrimary,
   });
 
   final String label;
   final double amount;
-  final Color color;
+  final bool isPrimary;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            color: AppColors.textMuted,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: isPrimary
+          ? BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            )
+          : null,
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: isPrimary ? AppColors.primary : AppColors.textMuted,
+            ),
           ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          _formatCurrency(amount),
-          style: GoogleFonts.inter(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: color,
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              _formatCurrency(amount),
+              style: GoogleFonts.inter(
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
+                color: isPrimary ? AppColors.primary : AppColors.textPrimary,
+                letterSpacing: -0.5,
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -361,32 +462,34 @@ class _KuryePerformansCard extends ConsumerWidget {
     final statsAsync = ref.watch(dashboardStatsProvider);
 
     return ShadCard(
+      padding: const EdgeInsets.all(20),
       title: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: AppColors.secondary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
-              Icons.speed_rounded,
-              size: 18,
-              color: AppColors.secondary,
+              Icons.sports_motorsports_rounded,
+              size: 20,
+              color: AppColors.primary,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Text(
             'Kurye Performansi',
             style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
             ),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.only(top: 16),
+        padding: const EdgeInsets.only(top: 20),
         child: statsAsync.when(
           data: (stats) => _KuryePerformansContent(stats: stats),
           loading: _CardLoading.new,
@@ -405,90 +508,121 @@ class _KuryePerformansContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (stats.courierStats.isEmpty) {
-      return Row(
-        children: [
-          const Icon(Icons.info_outline, size: 16, color: AppColors.textMuted),
-          const SizedBox(width: 8),
-          Text(
-            'Veri yok',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: AppColors.textMuted,
-            ),
+      return Container(
+        height: 100,
+        alignment: Alignment.center,
+        child: Text(
+          'Henüz veri bulunamadı',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            color: AppColors.textMuted,
           ),
-        ],
+        ),
       );
     }
 
     return Column(
       children: [
-        for (final cs in stats.courierStats)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Row(
+        for (int i = 0; i < stats.courierStats.length; i++) ...[
+          _CourierPerformanceItem(cs: stats.courierStats[i]),
+          if (i != stats.courierStats.length - 1)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: Divider(
+                height: 1,
+                thickness: 1,
+                color: AppColors.surfaceMid,
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+}
+
+class _CourierPerformanceItem extends StatelessWidget {
+  const _CourierPerformanceItem({required this.cs});
+
+  final CourierStat cs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                cs.ad.isNotEmpty ? cs.ad[0].toUpperCase() : '?',
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      cs.ad.isNotEmpty ? cs.ad[0].toUpperCase() : '?',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
+                Text(
+                  cs.ad,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    cs.ad,
-                    style: GoogleFonts.inter(fontSize: 13),
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceMid,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    'Ay: ${cs.monthlyJobs}',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    'Bugun: ${cs.dailyJobs}',
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
+                Text(
+                  'Kdv Dahil Performans',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: AppColors.textMuted,
                   ),
                 ),
               ],
             ),
           ),
-      ],
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Bugun: ${cs.dailyJobs}',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Ay: ${cs.monthlyJobs}',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -505,32 +639,34 @@ class _AktifKuryelerCard extends ConsumerWidget {
     final statsAsync = ref.watch(dashboardStatsProvider);
 
     return ShadCard(
+      padding: const EdgeInsets.all(20),
       title: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: AppColors.secondary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
-              Icons.people_rounded,
-              size: 18,
-              color: AppColors.secondary,
+              Icons.online_prediction_rounded,
+              size: 20,
+              color: AppColors.secondaryDark,
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Text(
             'Aktif Kuryeler',
             style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.5,
             ),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.only(top: 16),
+        padding: const EdgeInsets.only(top: 20),
         child: statsAsync.when(
           data: (stats) => _AktifKuryelerContent(stats: stats),
           loading: _CardLoading.new,
@@ -549,79 +685,142 @@ class _AktifKuryelerContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (stats.activeCourierCount == 0) {
-      return Row(
-        children: [
-          const Icon(Icons.info_outline, size: 16, color: AppColors.textMuted),
-          const SizedBox(width: 8),
-          Text(
-            'Aktif kurye yok',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: AppColors.textMuted,
+      return Container(
+        height: 120,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.location_off_rounded, size: 32, color: AppColors.textMuted),
+            const SizedBox(height: 8),
+            Text(
+              'Aktif kurye yok',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: AppColors.textMuted,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '${stats.activeCourierCount}',
-              style: GoogleFonts.inter(
-                fontSize: 36,
-                fontWeight: FontWeight.w800,
-                color: AppColors.secondary,
-                height: 1,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Text(
-                'aktif',
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceMid,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.5)),
+          ),
+          child: Column(
+            children: [
+              Text(
+                '${stats.activeCourierCount}',
                 style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: AppColors.textMuted,
+                  fontSize: 48,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textPrimary,
+                  height: 1,
+                  letterSpacing: -2,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                'SAHADAKİ KURYE',
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textMuted,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: AppSpacing.md),
+        const SizedBox(height: 20),
         for (final name in stats.activeCourierNames)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+          Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.border.withValues(alpha: 0.3)),
+            ),
             child: Row(
               children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.secondary.withValues(alpha: 0.4),
-                        blurRadius: 6,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
+                _PulseDot(),
+                const SizedBox(width: 12),
                 Text(
                   name,
-                  style: GoogleFonts.inter(fontSize: 14),
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
           ),
       ],
+    );
+  }
+}
+
+class _PulseDot extends StatefulWidget {
+  @override
+  State<_PulseDot> createState() => _PulseDotState();
+}
+
+class _PulseDotState extends State<_PulseDot> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.secondary.withValues(alpha: 1 - _controller.value),
+            border: Border.all(
+              color: AppColors.secondary,
+              width: 1.5,
+            ),
+          ),
+          child: Center(
+            child: Container(
+              width: 6,
+              height: 6,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

@@ -7,9 +7,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 /// type-to-search dropdown experience.
 class SearchableDropdown<T> extends StatefulWidget {
   const SearchableDropdown({
-    super.key,
-    required this.items,
-    required this.onChanged,
+    required this.items, required this.onChanged, super.key,
     this.value,
     this.label,
     this.placeholder,

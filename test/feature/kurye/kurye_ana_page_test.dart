@@ -19,7 +19,6 @@ const _testKurye = Kurye(
   id: _testKuryeId,
   ad: 'Test Kurye',
   userId: _testUserId,
-  isOnline: false,
 );
 
 final _testUgramalar = [

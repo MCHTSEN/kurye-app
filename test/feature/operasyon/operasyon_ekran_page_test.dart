@@ -13,9 +13,9 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../helpers/fakes/fake_kurye_repository.dart';
 import '../../helpers/fakes/fake_musteri_repository.dart';
+import '../../helpers/fakes/fake_order_alert_service.dart';
 import '../../helpers/fakes/fake_siparis_log_repository.dart';
 import '../../helpers/fakes/fake_siparis_repository.dart';
-import '../../helpers/fakes/fake_order_alert_service.dart';
 import '../../helpers/fakes/fake_ugrama_repository.dart';
 import '../../helpers/widgets/test_app.dart';
 
@@ -116,7 +116,6 @@ void main() {
         musteriId: 'musteri-1',
         cikisId: 'ugrama-1',
         ugramaId: 'ugrama-2',
-        durum: SiparisDurum.kuryeBekliyor,
       );
 
       await pumpPage(tester);
@@ -142,7 +141,6 @@ void main() {
         musteriId: 'musteri-1',
         cikisId: 'ugrama-1',
         ugramaId: 'ugrama-2',
-        durum: SiparisDurum.kuryeBekliyor,
       );
 
       await pumpPage(tester);
@@ -336,7 +334,6 @@ void main() {
         musteriId: 'musteri-1',
         cikisId: 'ugrama-1',
         ugramaId: 'ugrama-2',
-        durum: SiparisDurum.kuryeBekliyor,
       );
 
       await pumpPage(tester, alertService: fakeAlert);
@@ -351,14 +348,12 @@ void main() {
           musteriId: 'musteri-1',
           cikisId: 'ugrama-1',
           ugramaId: 'ugrama-2',
-          durum: SiparisDurum.kuryeBekliyor,
         ),
         const Siparis(
           id: 's-new',
           musteriId: 'musteri-1',
           cikisId: 'ugrama-2',
           ugramaId: 'ugrama-3',
-          durum: SiparisDurum.kuryeBekliyor,
         ),
       ]);
       await tester.pumpAndSettle();
@@ -373,14 +368,12 @@ void main() {
           musteriId: 'musteri-1',
           cikisId: 'ugrama-1',
           ugramaId: 'ugrama-2',
-          durum: SiparisDurum.kuryeBekliyor,
         ),
         const Siparis(
           id: 's-new',
           musteriId: 'musteri-1',
           cikisId: 'ugrama-2',
           ugramaId: 'ugrama-3',
-          durum: SiparisDurum.kuryeBekliyor,
         ),
       ]);
       await tester.pumpAndSettle();

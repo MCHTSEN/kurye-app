@@ -92,7 +92,6 @@ class _MusteriUgramaTalepPageState
       title: 'Uğrama Talepleri',
       currentRoute: CustomRoute.musteriUgramaTalep,
       navItems: musteriNavItems,
-      headerTitle: 'Moto Kurye',
       headerSubtitle: 'Müşteri',
       onLogout: logoutCallback(ref),
       body: profileAsync.when(
@@ -209,7 +208,7 @@ class _MusteriUgramaTalepPageState
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
                   'Red notu: ${talep.redNotu}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: AppColors.primaryDark,
                     fontStyle: FontStyle.italic,
                   ),
