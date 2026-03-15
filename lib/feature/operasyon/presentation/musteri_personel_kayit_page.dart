@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/musteri_personel/musteri_personel_providers.dart';
 import '../../../product/navigation/role_nav_items.dart';
@@ -226,7 +227,7 @@ class _MusteriPersonelKayitPageState
                                   Icons.circle,
                                   size: 12,
                                   color:
-                                      p.isActive ? Colors.green : Colors.grey,
+                                      p.isActive ? AppColors.secondary : AppColors.textMuted,
                                 ),
                                 onTap: () => _populateForm(p),
                               ),

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/widgets/app_primary_button.dart';
@@ -223,7 +224,7 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
                                 Icons.circle,
                                 size: 12,
                                 color:
-                                    m.isActive ? Colors.green : Colors.grey,
+                                    m.isActive ? AppColors.secondary : AppColors.textMuted,
                               ),
                               onTap: () => _populateForm(m),
                             ),

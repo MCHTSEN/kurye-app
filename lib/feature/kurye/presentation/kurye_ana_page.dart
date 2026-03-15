@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/navigation/logout_helper.dart';
 import '../../../product/siparis/siparis_providers.dart';
@@ -134,15 +135,39 @@ class _OnlineToggleCardState extends ConsumerState<_OnlineToggleCard> {
 
     return AppSectionCard(
       title: 'Durum',
+      icon: Icons.power_settings_new_rounded,
+      accentColor: _isOnline ? AppColors.secondary : AppColors.textMuted,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            statusText,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: _isOnline ? Colors.green : Colors.grey,
-                  fontWeight: FontWeight.w600,
+          Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: _isOnline ? AppColors.secondary : AppColors.textMuted,
+                  shape: BoxShape.circle,
+                  boxShadow: _isOnline
+                      ? [
+                          BoxShadow(
+                            color: AppColors.secondary.withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          ),
+                        ]
+                      : null,
                 ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                statusText,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: _isOnline ? AppColors.secondary : AppColors.textMuted,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+            ],
           ),
           Switch(
             key: const Key('online_toggle'),

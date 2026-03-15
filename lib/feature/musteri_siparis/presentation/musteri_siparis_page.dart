@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/musteri_personel/musteri_personel_providers.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/siparis/siparis_providers.dart';
@@ -282,7 +283,9 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
         .toList();
 
     return AppSectionCard(
-      title: 'Sipariş Formu',
+      title: 'Siparis Formu',
+      icon: Icons.edit_note_rounded,
+      accentColor: AppColors.primary,
       child: Form(
         key: _formKey,
         child: Column(
@@ -427,10 +430,10 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
 
   Color _durumColor(SiparisDurum durum) {
     return switch (durum) {
-      SiparisDurum.kuryeBekliyor => Colors.orange,
-      SiparisDurum.devamEdiyor => Colors.blue,
-      SiparisDurum.tamamlandi => Colors.green,
-      SiparisDurum.iptal => Colors.red,
+      SiparisDurum.kuryeBekliyor => AppColors.secondary,
+      SiparisDurum.devamEdiyor => AppColors.primary,
+      SiparisDurum.tamamlandi => AppColors.secondaryDark,
+      SiparisDurum.iptal => AppColors.primaryDark,
     };
   }
 

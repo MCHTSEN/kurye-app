@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/role_request/role_request_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
@@ -66,7 +67,7 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
       children: [
         const SizedBox(height: AppSpacing.xl),
         if (request.status == RoleRequestStatus.beklemede) ...[
-          Icon(Icons.hourglass_top, size: 80, color: Colors.orange.shade400),
+          const Icon(Icons.hourglass_top, size: 80, color: AppColors.secondary),
           const SizedBox(height: AppSpacing.lg),
           Text(
             'Talebiniz İnceleniyor',
@@ -104,13 +105,13 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
             label: const Text('Durumu Kontrol Et'),
           ),
         ] else if (request.status == RoleRequestStatus.onaylandi) ...[
-          Icon(Icons.check_circle, size: 80, color: Colors.green.shade400),
+          const Icon(Icons.check_circle, size: 80, color: AppColors.secondary),
           const SizedBox(height: AppSpacing.lg),
           Text(
             'Talebiniz Onaylandı!',
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.green.shade700,
+              color: AppColors.secondary,
             ),
             textAlign: TextAlign.center,
           ),
@@ -128,13 +129,13 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
             },
           ),
         ] else if (request.status == RoleRequestStatus.reddedildi) ...[
-          Icon(Icons.cancel, size: 80, color: Colors.red.shade400),
+          const Icon(Icons.cancel, size: 80, color: AppColors.primaryDark),
           const SizedBox(height: AppSpacing.lg),
           Text(
             'Talebiniz Reddedildi',
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.red.shade700,
+              color: AppColors.primaryDark,
             ),
             textAlign: TextAlign.center,
           ),

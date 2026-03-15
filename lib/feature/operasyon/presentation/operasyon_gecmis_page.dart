@@ -6,6 +6,7 @@ import 'package:logger/logger.dart';
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/navigation/role_nav_items.dart';
@@ -300,11 +301,14 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
 
     return AppSectionCard(
       title: 'Toplam Ciro',
+      icon: Icons.trending_up_rounded,
+      accentColor: AppColors.primary,
       child: Text(
         key: const Key('revenue_total'),
-        '₺${total.toStringAsFixed(2)}',
+        '${total.toStringAsFixed(2)} TL',
         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
+              color: AppColors.primary,
             ),
       ),
     );

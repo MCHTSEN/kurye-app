@@ -89,8 +89,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withValues(alpha: 0.2),
-                  Colors.black.withValues(alpha: 0.9),
+                  const Color(0xFF0721E8).withValues(alpha: 0.15),
+                  Colors.black.withValues(alpha: 0.85),
                 ],
               ),
             ),
