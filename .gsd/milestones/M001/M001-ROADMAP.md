@@ -73,7 +73,7 @@ This milestone is complete only when all are true:
 - [x] **S06: Order history & editing** `risk:low` `depends:[S04]`
   > After this: Operations can view past orders in table format, filter by date/customer/route, edit orders, see running revenue totals.
 
-- [ ] **S07: Analytics dashboard** `risk:low` `depends:[S04]`
+- [x] **S07: Analytics dashboard** `risk:low` `depends:[S04]`
   > After this: Operations dashboard shows revenue totals (3mo/1mo/1wk), daily average, courier job counts, and active couriers today.
 
 - [ ] **S08: Cross-role integration & polish** `risk:low` `depends:[S03,S04,S05,S06,S07]`

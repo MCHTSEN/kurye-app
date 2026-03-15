@@ -1,7 +1,7 @@
 # GSD State
 
 **Active Milestone:** M001 — Core Dispatch App
-**Active Slice:** S07 — Analytics dashboard
+**Active Slice:** S08 — Cross-role integration & polish
 **Phase:** planning
 **Requirements Status:** 0 active · 0 validated · 4 deferred · 1 out of scope
 
@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Plan slice S07 (Analytics dashboard).
+Plan slice S08 (Cross-role integration & polish).
