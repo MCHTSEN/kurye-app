@@ -19,9 +19,9 @@ const _testMusteriler = [
 ];
 
 const _testUgramalar = [
-  Ugrama(id: 'ugrama-1', musteriId: 'musteri-1', ugramaAdi: 'Merkez Ofis'),
-  Ugrama(id: 'ugrama-2', musteriId: 'musteri-1', ugramaAdi: 'Şube A'),
-  Ugrama(id: 'ugrama-3', musteriId: 'musteri-2', ugramaAdi: 'Depo B'),
+  Ugrama(id: 'ugrama-1', ugramaAdi: 'Merkez Ofis'),
+  Ugrama(id: 'ugrama-2', ugramaAdi: 'Şube A'),
+  Ugrama(id: 'ugrama-3', ugramaAdi: 'Depo B'),
 ];
 
 const _testKuryeler = [

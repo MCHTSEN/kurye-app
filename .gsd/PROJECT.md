@@ -35,7 +35,14 @@ What's built:
 - Cross-role integration test proving full order lifecycle
 - Supabase Realtime stream pattern: single stream feeds panels, split client-side by status
 
-Remaining before production: UAT on iOS simulator (manual cross-role test), then M002 for deferred features (location tracking, map tracking, auto-assignment, web responsive).
+M002 complete — uğrama modeli many-to-many'ye geçirildi, talep sistemi eklendi:
+- Uğramalar bağımsız havuzda, müşterilerle `musteri_ugrama` köprü tablosu üzerinden many-to-many ilişki
+- Operasyon bir uğramayı birden fazla müşteriye atayabilir (FilterChip multi-select)
+- Müşteri personeli yeni uğrama talebi gönderebilir (ugrama_adi + adres)
+- Operasyon talepleri kabul (→ otomatik ugrama + köprü insert) veya red (not ile) edebilir
+- RLS politikaları köprü tablosu üzerinden çalışıyor
+
+Remaining before production: UAT on iOS simulator (manual cross-role test), deferred features (location tracking, map tracking, auto-assignment, web responsive, Access DB import).
 
 ## Architecture / Key Patterns
 
@@ -58,3 +65,4 @@ See `.gsd/REQUIREMENTS.md` for the explicit capability contract, requirement sta
 ## Milestone Sequence
 
 - [x] M001: Core dispatch app — All 3 roles functional with order lifecycle, CRUD, analytics, and realtime sync (8/8 slices done, all 18 requirements validated)
+- [x] M002: Many-to-many uğrama modeli ve talep sistemi — Uğramalar bağımsız havuz, müşteri bazlı atama, talep sistemi (4/4 slices done, 128 tests passing)

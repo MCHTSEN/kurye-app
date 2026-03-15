@@ -6,7 +6,6 @@ void main() {
     test('fromJson/toJson roundtrip', () {
       final json = {
         'id': 'ugrama-1',
-        'musteri_id': 'musteri-1',
         'ugrama_adi': 'Merkez Depo',
         'adres': 'Ataşehir, İstanbul',
         'is_active': true,
@@ -15,15 +14,15 @@ void main() {
 
       final ugrama = Ugrama.fromJson(json);
       expect(ugrama.id, 'ugrama-1');
-      expect(ugrama.musteriId, 'musteri-1');
       expect(ugrama.ugramaAdi, 'Merkez Depo');
       expect(ugrama.adres, 'Ataşehir, İstanbul');
       expect(ugrama.isActive, true);
       expect(ugrama.createdAt, isNotNull);
 
       final output = ugrama.toJson();
-      expect(output['musteri_id'], 'musteri-1');
       expect(output['ugrama_adi'], 'Merkez Depo');
+      // musteri_id no longer part of Ugrama model (many-to-many via bridge)
+      expect(output.containsKey('musteri_id'), false);
     });
 
     test('lokasyon null handling — field not present in model', () {
@@ -31,7 +30,6 @@ void main() {
       // JSON from Supabase with explicit column selection won't include it.
       final json = {
         'id': 'ugrama-2',
-        'musteri_id': 'musteri-1',
         'ugrama_adi': 'Şube',
         'adres': null,
         'is_active': true,

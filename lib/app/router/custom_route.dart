@@ -14,6 +14,7 @@ enum CustomRoute {
   // Müşteri rotaları
   musteriSiparis('/musteri/siparis'),
   musteriGecmis('/musteri/gecmis'),
+  musteriUgramaTalep('/musteri/ugrama-talep'),
 
   // Operasyon rotaları
   operasyonDashboard('/operasyon/dashboard'),
@@ -22,6 +23,9 @@ enum CustomRoute {
   musteriPersonelKayit('/operasyon/personel-kayit'),
   operasyonGecmis('/operasyon/gecmis'),
   ugramaYonetim('/operasyon/ugrama'),
+
+  // Operasyon — Talep Yönetimi
+  ugramaTalepYonetim('/operasyon/ugrama-talep'),
 
   // Operasyon — Kurye Yönetimi
   kuryeYonetim('/operasyon/kurye'),
@@ -62,6 +66,8 @@ enum CustomRoute {
         return 'MusteriSiparisRoute';
       case CustomRoute.musteriGecmis:
         return 'MusteriGecmisRoute';
+      case CustomRoute.musteriUgramaTalep:
+        return 'MusteriUgramaTalepRoute';
       case CustomRoute.operasyonDashboard:
         return 'OperasyonDashboardRoute';
       case CustomRoute.operasyonEkran:
@@ -74,6 +80,8 @@ enum CustomRoute {
         return 'OperasyonGecmisRoute';
       case CustomRoute.ugramaYonetim:
         return 'UgramaYonetimRoute';
+      case CustomRoute.ugramaTalepYonetim:
+        return 'UgramaTalepYonetimRoute';
       case CustomRoute.kuryeYonetim:
         return 'KuryeYonetimRoute';
       case CustomRoute.rolOnay:

@@ -23,9 +23,9 @@ const _testKurye = Kurye(
 );
 
 final _testUgramalar = [
-  const Ugrama(id: 'cikis-a', musteriId: 'musteri-1', ugramaAdi: 'Depo A'),
-  const Ugrama(id: 'ugrama-b', musteriId: 'musteri-1', ugramaAdi: 'Şube B'),
-  const Ugrama(id: 'ugrama-c', musteriId: 'musteri-1', ugramaAdi: 'Şube C'),
+  const Ugrama(id: 'cikis-a', ugramaAdi: 'Depo A'),
+  const Ugrama(id: 'ugrama-b', ugramaAdi: 'Şube B'),
+  const Ugrama(id: 'ugrama-c', ugramaAdi: 'Şube C'),
 ];
 
 void main() {

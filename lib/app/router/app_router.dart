@@ -8,6 +8,7 @@ import '../../feature/home/presentation/home_page.dart';
 import '../../feature/kurye/presentation/kurye_ana_page.dart';
 import '../../feature/musteri_siparis/presentation/musteri_gecmis_page.dart';
 import '../../feature/musteri_siparis/presentation/musteri_siparis_page.dart';
+import '../../feature/musteri_siparis/presentation/musteri_ugrama_talep_page.dart';
 import '../../feature/not_found/presentation/not_found_page.dart';
 import '../../feature/onboarding/presentation/onboarding_page.dart';
 import '../../feature/operasyon/presentation/kurye_yonetim_page.dart';
@@ -17,6 +18,7 @@ import '../../feature/operasyon/presentation/operasyon_dashboard_page.dart';
 import '../../feature/operasyon/presentation/operasyon_ekran_page.dart';
 import '../../feature/operasyon/presentation/operasyon_gecmis_page.dart';
 import '../../feature/operasyon/presentation/rol_onay_page.dart';
+import '../../feature/operasyon/presentation/ugrama_talep_yonetim_page.dart';
 import '../../feature/operasyon/presentation/ugrama_yonetim_page.dart';
 import '../../feature/profile/presentation/profile_page.dart';
 import '../../feature/role_selection/presentation/role_selection_page.dart';
@@ -92,6 +94,11 @@ RootStackRouter appRouter(Ref ref) {
         path: CustomRoute.musteriGecmis.path,
         builder: (context, data) => const MusteriGecmisPage(),
       ),
+      NamedRouteDef(
+        name: CustomRoute.musteriUgramaTalep.routeName,
+        path: CustomRoute.musteriUgramaTalep.path,
+        builder: (context, data) => const MusteriUgramaTalepPage(),
+      ),
 
       // --- Operasyon rotaları ---
       NamedRouteDef(
@@ -123,6 +130,11 @@ RootStackRouter appRouter(Ref ref) {
         name: CustomRoute.ugramaYonetim.routeName,
         path: CustomRoute.ugramaYonetim.path,
         builder: (context, data) => const UgramaYonetimPage(),
+      ),
+      NamedRouteDef(
+        name: CustomRoute.ugramaTalepYonetim.routeName,
+        path: CustomRoute.ugramaTalepYonetim.path,
+        builder: (context, data) => const UgramaTalepYonetimPage(),
       ),
 
       NamedRouteDef(

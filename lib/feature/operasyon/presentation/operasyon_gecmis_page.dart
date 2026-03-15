@@ -321,10 +321,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     final ugramalar =
         ugramaListAsync is AsyncData<List<Ugrama>> ? ugramaListAsync.value : <Ugrama>[];
 
-    // Filter stops by selected edit müşteri.
-    final filteredStops = _editMusteriId != null
-        ? ugramalar.where((u) => u.musteriId == _editMusteriId).toList()
-        : ugramalar;
+    // All stops shown — operasyon sees the full ugrama pool.
+    // Müşteri-based stop filtering will use the köprü table (S02).
+    final filteredStops = ugramalar;
 
     final musteriItems = musteriler
         .map((m) => (value: m.id, label: m.firmaKisaAd))
@@ -443,10 +442,8 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     final ugramalar =
         ugramaListAsync is AsyncData<List<Ugrama>> ? ugramaListAsync.value : <Ugrama>[];
 
-    // Filter stops by selected filter müşteri.
-    final filteredStops = _filterMusteriId != null
-        ? ugramalar.where((u) => u.musteriId == _filterMusteriId).toList()
-        : ugramalar;
+    // All stops shown — operasyon sees the full ugrama pool.
+    final filteredStops = ugramalar;
 
     return AppSectionCard(
       title: 'Filtreler',

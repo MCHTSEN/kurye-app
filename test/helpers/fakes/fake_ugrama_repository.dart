@@ -24,7 +24,6 @@ class FakeUgramaRepository implements UgramaRepository {
     final id = 'fake-ugrama-${_nextId++}';
     final created = Ugrama(
       id: id,
-      musteriId: ugrama.musteriId,
       ugramaAdi: ugrama.ugramaAdi,
       adres: ugrama.adres,
       isActive: ugrama.isActive,
@@ -44,9 +43,71 @@ class FakeUgramaRepository implements UgramaRepository {
   Future<void> delete(String id) async {
     store.remove(id);
   }
+}
+
+/// In-memory [MusteriUgramaRepository] for widget testing.
+class FakeMusteriUgramaRepository implements MusteriUgramaRepository {
+  final _assignments = <String, Set<String>>{}; // musteriId → Set<ugramaId>
+
+  /// Provide a FakeUgramaRepository to resolve ugrama objects.
+  FakeUgramaRepository? ugramaRepo;
 
   @override
-  Future<List<Ugrama>> getByMusteriId(String musteriId) async {
-    return store.values.where((u) => u.musteriId == musteriId).toList();
+  Future<void> assign(String musteriId, String ugramaId) async {
+    _assignments.putIfAbsent(musteriId, () => {}).add(ugramaId);
+  }
+
+  @override
+  Future<void> unassign(String musteriId, String ugramaId) async {
+    _assignments[musteriId]?.remove(ugramaId);
+  }
+
+  @override
+  Future<List<Ugrama>> getUgramaByMusteriId(String musteriId) async {
+    final ids = _assignments[musteriId] ?? {};
+    if (ugramaRepo == null) return [];
+    return ugramaRepo!.store.values
+        .where((u) => ids.contains(u.id))
+        .toList();
+  }
+
+  @override
+  Future<List<String>> getMusteriIdsByUgramaId(String ugramaId) async {
+    return _assignments.entries
+        .where((e) => e.value.contains(ugramaId))
+        .map((e) => e.key)
+        .toList();
+  }
+
+  @override
+  Future<void> assignBatch(String musteriId, List<String> ugramaIds) async {
+    for (final uid in ugramaIds) {
+      await assign(musteriId, uid);
+    }
+  }
+
+  @override
+  Future<void> assignUgramaToBatch(
+    String ugramaId,
+    List<String> musteriIds,
+  ) async {
+    for (final mid in musteriIds) {
+      await assign(mid, ugramaId);
+    }
+  }
+
+  @override
+  Future<void> syncMusterilerForUgrama(
+    String ugramaId,
+    List<String> musteriIds,
+  ) async {
+    // Remove from all
+    for (final entry in _assignments.values) {
+      entry.remove(ugramaId);
+    }
+    // Add to new
+    for (final mid in musteriIds) {
+      _assignments.putIfAbsent(mid, () => {}).add(ugramaId);
+    }
   }
 }

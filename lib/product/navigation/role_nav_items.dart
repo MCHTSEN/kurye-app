@@ -31,6 +31,11 @@ const operasyonNavItems = <NavItem>[
     route: CustomRoute.ugramaYonetim,
   ),
   NavItem(
+    icon: Icons.playlist_add_check,
+    label: 'Uğrama Talepleri',
+    route: CustomRoute.ugramaTalepYonetim,
+  ),
+  NavItem(
     icon: Icons.two_wheeler,
     label: 'Kurye Yönetimi',
     route: CustomRoute.kuryeYonetim,
@@ -58,5 +63,10 @@ const musteriNavItems = <NavItem>[
     icon: Icons.history,
     label: 'Geçmiş Siparişler',
     route: CustomRoute.musteriGecmis,
+  ),
+  NavItem(
+    icon: Icons.add_location_alt,
+    label: 'Uğrama Talebi',
+    route: CustomRoute.musteriUgramaTalep,
   ),
 ];

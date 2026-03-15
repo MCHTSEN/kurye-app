@@ -27,17 +27,14 @@ const _testProfile = AppUserProfile(
 final _testUgramalar = [
   const Ugrama(
     id: 'ugrama-1',
-    musteriId: _testMusteriId,
     ugramaAdi: 'Merkez Ofis',
   ),
   const Ugrama(
     id: 'ugrama-2',
-    musteriId: _testMusteriId,
     ugramaAdi: 'Şube A',
   ),
   const Ugrama(
     id: 'ugrama-3',
-    musteriId: _testMusteriId,
     ugramaAdi: 'Şube B',
   ),
 ];
@@ -53,11 +50,18 @@ void main() {
   group('MusteriSiparisPage', () {
     late FakeSiparisRepository fakeSiparisRepo;
     late FakeUgramaRepository fakeUgramaRepo;
+    late FakeMusteriUgramaRepository fakeMusteriUgramaRepo;
     late FakeMusteriPersonelRepository fakePersonelRepo;
 
     setUp(() {
       fakeSiparisRepo = FakeSiparisRepository();
       fakeUgramaRepo = FakeUgramaRepository(seed: _testUgramalar);
+      fakeMusteriUgramaRepo = FakeMusteriUgramaRepository()
+        ..ugramaRepo = fakeUgramaRepo;
+      // Assign all test uğramalar to the test müşteri
+      for (final u in _testUgramalar) {
+        fakeMusteriUgramaRepo.assign(_testMusteriId, u.id);
+      }
       fakePersonelRepo =
           FakeMusteriPersonelRepository(seed: [_testPersonel]);
     });
@@ -76,6 +80,8 @@ void main() {
             (ref, notifier) => _testProfile,
           ),
           ugramaRepositoryProvider.overrideWithValue(fakeUgramaRepo),
+          musteriUgramaRepositoryProvider
+              .overrideWithValue(fakeMusteriUgramaRepo),
           siparisRepositoryProvider.overrideWithValue(fakeSiparisRepo),
           musteriPersonelRepositoryProvider
               .overrideWithValue(fakePersonelRepo),
@@ -210,6 +216,8 @@ void main() {
             (ref, notifier) => profileWithoutMusteri,
           ),
           ugramaRepositoryProvider.overrideWithValue(fakeUgramaRepo),
+          musteriUgramaRepositoryProvider
+              .overrideWithValue(fakeMusteriUgramaRepo),
           siparisRepositoryProvider.overrideWithValue(fakeSiparisRepo),
           musteriPersonelRepositoryProvider
               .overrideWithValue(fakePersonelRepo),
