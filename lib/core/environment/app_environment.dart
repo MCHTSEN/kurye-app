@@ -31,6 +31,7 @@ class AppEnvironment {
     required this.mixpanelToken,
     required this.analyticsEnabled,
     required this.sentryDsn,
+    required this.operasyonReportsPassword,
   });
 
   factory AppEnvironment.fromDartDefine() {
@@ -68,6 +69,9 @@ class AppEnvironment {
       ),
       analyticsEnabled: analyticsRaw.toLowerCase() != 'false',
       sentryDsn: const String.fromEnvironment(AppEnvironmentKeys.sentryDsn),
+      operasyonReportsPassword: const String.fromEnvironment(
+        AppEnvironmentKeys.operasyonReportsPassword,
+      ),
     );
   }
 
@@ -80,6 +84,7 @@ class AppEnvironment {
   final String mixpanelToken;
   final bool analyticsEnabled;
   final String sentryDsn;
+  final String operasyonReportsPassword;
 
   AppEnvironment copyWith({
     AppFlavor? flavor,
@@ -91,6 +96,7 @@ class AppEnvironment {
     String? mixpanelToken,
     bool? analyticsEnabled,
     String? sentryDsn,
+    String? operasyonReportsPassword,
   }) {
     return AppEnvironment(
       flavor: flavor ?? this.flavor,
@@ -102,6 +108,8 @@ class AppEnvironment {
       mixpanelToken: mixpanelToken ?? this.mixpanelToken,
       analyticsEnabled: analyticsEnabled ?? this.analyticsEnabled,
       sentryDsn: sentryDsn ?? this.sentryDsn,
+      operasyonReportsPassword:
+          operasyonReportsPassword ?? this.operasyonReportsPassword,
     );
   }
 }

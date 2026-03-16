@@ -1,7 +1,7 @@
 # Feature: Operasyon
 
 ## Scope
-Operasyon personelinin sipariş yönetimi, kurye atama, analiz ve yönetim
+Operasyon personelinin sipariş yönetimi, kurye atama, raporlama ve yönetim
 ekranlarını içerir. Mobilde ana akış 4 sekmeli bir shell içinden çalışır;
 tablet ve desktop'ta tam operasyon menüsü web-öncelikli bir sol sidebar ile
 korunur. Web'de ekranlar hızlı tarama, split-view düzenleme ve keyboard-first
@@ -9,7 +9,7 @@ aksiyonlar için optimize edilir.
 
 ## Routes
 - `CustomRoute.operasyonShell.path` — Mobil operasyon giriş shell'i
-- `CustomRoute.operasyonDashboard.path` — Ciro analizi + kurye performans + aktif kuryeler
+- `CustomRoute.operasyonDashboard.path` — Şifre kapılı raporlar (ciro + kurye performans + aktif kuryeler)
 - `CustomRoute.operasyonEkran.path` — 3-panel operasyon ekranı (sipariş form + bekleyenler + devam edenler)
 - `CustomRoute.ugramaYonetim.path` — Uğrama yönetimi (lokasyon dahil)
 - `CustomRoute.operasyonAyarlar.path` — Mobil ayarlar hub ekranı
@@ -21,9 +21,10 @@ aksiyonlar için optimize edilir.
 - `CustomRoute.rolOnay.path` — Ayarlar altından açılan rol onayları
 
 ## States
-- **OperasyonShell**: Mobilde `AutoTabsScaffold` ile state-preserving sekme yapısı
-- **Dashboard**: Ciro toplamları, kurye performans, aktif kuryeler
-  ve desktop hızlı geçiş kartları
+- **OperasyonShell**: Mobilde `AutoTabsScaffold` ile state-preserving sekme yapısı;
+  varsayılan açılış sekmesi `Operasyon Ekranı`
+- **Raporlar**: Ciro toplamları, kurye performans, aktif kuryeler;
+  sayfaya erişim operasyon rapor şifresi ile açılır
 - **OperasyonEkran**: 3 panel realtime yönetim; desktop'ta bağımsız scroll alanlı kontrol merkezi
 - **UgramaYonetim**: Lokasyon/uğrama yönetimi
 - **OperasyonAyarlar**: Yönetim sayfalarına giriş, hesap özeti ve çıkış aksiyonu
@@ -42,6 +43,7 @@ aksiyonlar için optimize edilir.
 ## Extension Points
 - Mobil ayarlar hub gruplarına yeni operasyon araçları eklenebilir.
 - Operasyon tab analytics eventleri genişletilebilir.
+- Rapor şifresi `OPERASYON_REPORTS_PASSWORD` dart-define/env değeriyle değiştirilebilir.
 - Ayarlar içinde profil detay ekranı sonradan nested route olarak ayrılabilir.
 - Web kısayolları komut paleti veya global arama ile genişletilebilir.
 

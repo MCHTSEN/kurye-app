@@ -100,6 +100,10 @@ abstract final class AppEvents {
         properties: {'item_name': itemName},
       );
 
+  static const operasyonReportsUnlocked = AnalyticsEvent(
+    name: 'operasyon_reports_unlocked',
+  );
+
   // ── Promo ─────────────────────────────────────────────
   static AnalyticsEvent promoRedeemed(String code) => AnalyticsEvent(
     name: 'promo_redeemed',

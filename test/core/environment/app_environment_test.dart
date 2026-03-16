@@ -71,11 +71,13 @@ void main() {
         mixpanelToken: 'mp-token',
         analyticsEnabled: true,
         sentryDsn: '',
+        operasyonReportsPassword: 'rapor123',
       );
 
       expect(env.flavor, AppFlavor.prod);
       expect(env.backendProvider, BackendProvider.mock);
       expect(env.analyticsEnabled, isTrue);
+      expect(env.operasyonReportsPassword, 'rapor123');
     });
   });
 }

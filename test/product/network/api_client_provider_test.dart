@@ -23,6 +23,7 @@ void main() {
             mixpanelToken: '',
             analyticsEnabled: false,
             sentryDsn: '',
+            operasyonReportsPassword: '',
           ),
         ),
         backendModuleProvider.overrideWithValue(MockBackendModule()),

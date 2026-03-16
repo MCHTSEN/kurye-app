@@ -18,6 +18,7 @@ void main() {
       mixpanelToken: '',
       analyticsEnabled: false,
       sentryDsn: '',
+      operasyonReportsPassword: '',
     );
   }
 

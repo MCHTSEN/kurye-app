@@ -2,6 +2,26 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "moto-kurye-supabase-web-dev",
+      "request": "launch",
+      "type": "dart",
+      "deviceId": "chrome",
+      "program": "lib/main_supabase.dart",
+      "toolArgs": [
+        "--web-hostname",
+        "127.0.0.1",
+        "--web-port",
+        "8080",
+        "--dart-define-from-file=.env",
+        "--dart-define=APP_ENV=dev",
+        "--dart-define=CREDIT_ACCESS_PROVIDER=backend",
+        "--dart-define=ANALYTICS_ENABLED=false",
+        "--web-browser-flag=--disable-web-security",
+        "--web-browser-flag=--disable-site-isolation-trials",
+        "--web-browser-flag=--user-data-dir=/tmp/kurye-app-chrome-dev"
+      ]
+    },
+    {
       "name": "moto-kurye-supabase",
       "request": "launch",
       "type": "dart",
