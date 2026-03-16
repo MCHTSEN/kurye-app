@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:auto_route/auto_route.dart' hide CustomRoute;
+import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +11,7 @@ import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../product/analytics/analytics_provider.dart';
 import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
@@ -40,7 +45,24 @@ class OperasyonDashboardPage extends ConsumerWidget {
             },
             child: ResponsiveBuilder(
               mobile: _MobileDashboard(name: name),
-              desktop: _DesktopDashboard(name: name),
+              desktop: _DesktopDashboard(
+                name: name,
+                onNavigate: (route, label) {
+                  unawaited(
+                    ref
+                        .read(analyticsServiceProvider)
+                        .track(
+                          AppEvents.operasyonTabSelected(label),
+                        ),
+                  );
+                  unawaited(
+                    context.navigateToPath(
+                      route.path,
+                      includePrefixMatches: true,
+                    ),
+                  );
+                },
+              ),
             ),
           );
         },
@@ -84,9 +106,13 @@ class _MobileDashboard extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _DesktopDashboard extends StatelessWidget {
-  const _DesktopDashboard({required this.name});
+  const _DesktopDashboard({
+    required this.name,
+    required this.onNavigate,
+  });
 
   final String name;
+  final void Function(CustomRoute route, String label) onNavigate;
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +123,8 @@ class _DesktopDashboard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _WelcomeHeader(name: name),
+            const SizedBox(height: AppSpacing.lg),
+            _QuickActionsPanel(onNavigate: onNavigate),
             const SizedBox(height: AppSpacing.lg),
             const Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,6 +137,152 @@ class _DesktopDashboard extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QuickActionsPanel extends StatelessWidget {
+  const _QuickActionsPanel({required this.onNavigate});
+
+  final void Function(CustomRoute route, String label) onNavigate;
+
+  @override
+  Widget build(BuildContext context) {
+    const actions = [
+      (
+        label: 'Operasyon Ekranı',
+        subtitle: 'Canlı sipariş ve kurye akışını yönet',
+        icon: Icons.assignment_rounded,
+        route: CustomRoute.operasyonEkran,
+      ),
+      (
+        label: 'Geçmiş Siparişler',
+        subtitle: 'Filtrele, düzenle ve ciroyu incele',
+        icon: Icons.history_rounded,
+        route: CustomRoute.operasyonGecmis,
+      ),
+      (
+        label: 'Müşteri Kayıt',
+        subtitle: 'Yeni firma ve operasyon ilişkilerini düzenle',
+        icon: Icons.business_rounded,
+        route: CustomRoute.musteriKayit,
+      ),
+      (
+        label: 'Kurye Yönetimi',
+        subtitle: 'Aktif ekip ve araç havuzunu güncelle',
+        icon: Icons.two_wheeler_rounded,
+        route: CustomRoute.kuryeYonetim,
+      ),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Hızlı Geçiş',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'En sık kullanılan operasyon iş akışlarını dashboard üzerinden açın.',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textMuted,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              for (final action in actions) ...[
+                Expanded(
+                  child: _QuickActionTile(
+                    label: action.label,
+                    subtitle: action.subtitle,
+                    icon: action.icon,
+                    onTap: () => onNavigate(action.route, action.label),
+                  ),
+                ),
+                if (action != actions.last)
+                  const SizedBox(width: AppSpacing.md),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickActionTile extends StatelessWidget {
+  const _QuickActionTile({
+    required this.label,
+    required this.subtitle,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final String subtitle;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surfaceMid.withValues(alpha: 0.95),
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: AppColors.primary),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                subtitle,
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  height: 1.45,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -482,12 +656,16 @@ class _KuryePerformansCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            'Kurye Performansi',
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
+          Expanded(
+            child: Text(
+              'Kurye Performansi',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+              ),
             ),
           ),
         ],
@@ -659,12 +837,16 @@ class _AktifKuryelerCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            'Aktif Kuryeler',
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.5,
+          Expanded(
+            child: Text(
+              'Aktif Kuryeler',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+              ),
             ),
           ),
         ],
@@ -795,7 +977,8 @@ class _PulseDotState extends State<_PulseDot>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
-    )..repeat();
+    );
+    unawaited(_controller.forward());
   }
 
   @override

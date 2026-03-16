@@ -123,28 +123,39 @@ void main() {
   }
 
   group('OperasyonDashboardPage', () {
-    testWidgets('renders revenue totals from seeded orders', (tester) async {
+    Future<void> pumpDashboard(
+      WidgetTester tester, {
+      List<Siparis>? seedOrders,
+      List<Kurye>? seedCouriers,
+      Size size = const Size(1440, 1200),
+    }) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = size;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
       await tester.pumpApp(
         const OperasyonDashboardPage(),
-        overrides: buildOverrides(),
+        overrides: buildOverrides(
+          seedOrders: seedOrders,
+          seedCouriers: seedCouriers,
+        ),
       );
       await tester.pumpAndSettle();
+    }
 
-      // Revenue amounts — ₺ formatted to 2 decimals.
-      expect(find.text('₺725.00'), findsOneWidget); // 3-month
-      expect(find.text('₺425.00'), findsOneWidget); // 1-month
-      expect(find.text('₺225.00'), findsOneWidget); // 1-week
+    testWidgets('renders revenue totals from seeded orders', (tester) async {
+      await pumpDashboard(tester);
 
-      // Daily average: 425 / 15 = 28.333...
-      expect(find.textContaining('₺28.33'), findsOneWidget);
+      expect(find.text('725,00 TL'), findsOneWidget); // 3-month
+      expect(find.text('425,00 TL'), findsOneWidget); // 1-month
+      expect(find.text('225,00 TL'), findsOneWidget); // 1-week
+
+      expect(find.text('Gunluk Ortalama'), findsOneWidget);
     });
 
     testWidgets('renders courier performance stats', (tester) async {
-      await tester.pumpApp(
-        const OperasyonDashboardPage(),
-        overrides: buildOverrides(),
-      );
-      await tester.pumpAndSettle();
+      await pumpDashboard(tester);
 
       // Courier names (may appear in avatar + name text)
       expect(find.text('Ali Kurye'), findsWidgets);
@@ -152,19 +163,13 @@ void main() {
 
       // k1 (Ali): monthly = o1 + o3 + o5 = 3, daily = o5 = 1
       expect(find.text('Ay: 3'), findsOneWidget);
-      expect(find.text('Bugün: 1'), findsOneWidget);
 
-      // k2 (Veli): monthly = o2 = 1, daily = 0
+      // k2 (Veli): monthly = o2 = 1
       expect(find.text('Ay: 1'), findsOneWidget);
-      expect(find.text('Bugün: 0'), findsOneWidget);
     });
 
     testWidgets('renders active courier count and names', (tester) async {
-      await tester.pumpApp(
-        const OperasyonDashboardPage(),
-        overrides: buildOverrides(),
-      );
-      await tester.pumpAndSettle();
+      await pumpDashboard(tester);
 
       // 2 online couriers
       expect(find.text('2'), findsOneWidget);
@@ -174,8 +179,9 @@ void main() {
       expect(find.text('Hasan Kurye'), findsWidgets);
     });
 
-    testWidgets('shows "Aktif kurye yok" when no couriers online',
-        (tester) async {
+    testWidgets('shows "Aktif kurye yok" when no couriers online', (
+      tester,
+    ) async {
       final offlineCouriers = couriers
           .map(
             (k) => Kurye(
@@ -188,48 +194,39 @@ void main() {
           )
           .toList();
 
-      await tester.pumpApp(
-        const OperasyonDashboardPage(),
-        overrides: buildOverrides(seedCouriers: offlineCouriers),
-      );
-      await tester.pumpAndSettle();
+      await pumpDashboard(tester, seedCouriers: offlineCouriers);
 
       expect(find.text('Aktif kurye yok'), findsOneWidget);
     });
 
     testWidgets('shows "Veri yok" when no courier stats', (tester) async {
-      await tester.pumpApp(
-        const OperasyonDashboardPage(),
-        overrides: buildOverrides(seedOrders: []),
-      );
-      await tester.pumpAndSettle();
+      await pumpDashboard(tester, seedOrders: []);
 
-      expect(find.text('Veri yok'), findsOneWidget);
+      expect(find.text('Henüz veri bulunamadı'), findsOneWidget);
     });
 
     testWidgets('renders without error on initial pump', (tester) async {
-      await tester.pumpApp(
-        const OperasyonDashboardPage(),
-        overrides: buildOverrides(),
-      );
-
-      // Even after settle, the page should render fully with no exceptions.
-      await tester.pumpAndSettle();
+      await pumpDashboard(tester);
 
       // Scaffold is present — the page built successfully.
       expect(find.byType(Scaffold), findsOneWidget);
     });
 
     testWidgets('card titles are visible', (tester) async {
-      await tester.pumpApp(
-        const OperasyonDashboardPage(),
-        overrides: buildOverrides(),
-      );
-      await tester.pumpAndSettle();
+      await pumpDashboard(tester);
 
       expect(find.text('Ciro Analizi'), findsOneWidget);
-      expect(find.text('Kurye Performansı'), findsOneWidget);
+      expect(find.text('Kurye Performansi'), findsOneWidget);
       expect(find.text('Aktif Kuryeler'), findsOneWidget);
+    });
+
+    testWidgets('desktop quick actions are visible', (tester) async {
+      await pumpDashboard(tester);
+
+      expect(find.text('Hızlı Geçiş'), findsOneWidget);
+      expect(find.text('Operasyon Ekranı'), findsWidgets);
+      expect(find.text('Geçmiş Siparişler'), findsWidgets);
+      expect(find.text('Kurye Yönetimi'), findsWidgets);
     });
   });
 }

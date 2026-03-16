@@ -30,24 +30,48 @@ class AppSectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget card = ShadCard(
-      title: Row(
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 18, color: AppColors.primary),
-            const SizedBox(width: 10),
-          ],
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+      title: LayoutBuilder(
+        builder: (context, constraints) {
+          final titleLabel = Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
-          ),
-          ?trailing,
-        ],
+          );
+
+          final leading = <Widget>[
+            if (icon != null) ...[
+              Icon(icon, size: 18, color: AppColors.primary),
+              const SizedBox(width: 10),
+            ],
+            Expanded(child: titleLabel),
+          ];
+
+          if (trailing == null) {
+            return Row(children: leading);
+          }
+
+          if (constraints.maxWidth < 320) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: leading),
+                const SizedBox(height: 12),
+                trailing!,
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              ...leading,
+              const SizedBox(width: 12),
+              Flexible(child: trailing!),
+            ],
+          );
+        },
       ),
       description: description != null ? Text(description!) : null,
       footer: footer,

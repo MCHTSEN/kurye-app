@@ -12,6 +12,40 @@ Project audit log for major changes.
 ## Entries
 
 ### 2026-03-16
+- Scope: Operasyon web UX hardening and desktop workflow polish
+- Summary:
+  - Desktop operasyon sidebar gruplu navigasyon ve kısayol odaklı kullanım için güçlendirildi.
+  - `OperasyonDashboardPage` içine desktop hızlı geçiş kartları eklendi; dar kolon taşmaları düzeltildi.
+  - `OperasyonEkranPage` desktop özet metrikleri korunurken tablet/mobil davranışı testlerle uyumlu şekilde stabilize edildi.
+  - `OperasyonGecmisPage` split-view workbench, arama alanı, durum chip'leri ve side editor paneli ile yenilendi.
+  - CRUD workbench list panelleri mobilde sonsuz yükseklik istemeyecek şekilde düzenlendi; `AppSectionCard` dar alanlarda taşmayacak hale getirildi.
+  - Operasyon dashboard, dispatch, geçmiş ve müşteri kayıt testleri yeni desktop/mobile kontratına göre güncellendi; desktop geçmiş coverage eklendi.
+- Files:
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_dashboard_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_gecmis_page.dart`
+  - `lib/feature/operasyon/presentation/musteri_kayit_page.dart`
+  - `lib/feature/operasyon/presentation/musteri_personel_kayit_page.dart`
+  - `lib/feature/operasyon/presentation/kurye_yonetim_page.dart`
+  - `lib/feature/operasyon/presentation/ugrama_yonetim_page.dart`
+  - `lib/product/widgets/app_section_card.dart`
+  - `lib/product/widgets/responsive_scaffold.dart`
+  - `test/feature/operasyon/operasyon_dashboard_page_test.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `test/feature/operasyon/operasyon_gecmis_page_test.dart`
+  - `test/feature/operasyon/musteri_kayit_page_test.dart`
+  - `integration_test/operasyon_navigation_smoke_test.dart`
+- Validation:
+  - `flutter test test/feature/operasyon/operasyon_dashboard_page_test.dart test/feature/operasyon/operasyon_ekran_page_test.dart test/feature/operasyon/operasyon_gecmis_page_test.dart` passed.
+  - `flutter test test/feature/operasyon/musteri_kayit_page_test.dart` passed.
+  - `flutter test test/feature/operasyon/operasyon_shell_page_test.dart test/feature/operasyon/operasyon_ayarlar_page_test.dart` passed.
+  - `flutter test integration_test/operasyon_navigation_smoke_test.dart` passed.
+  - `flutter analyze` failed due existing repo info-level issues; latest run reported 32 issues and no new blocking error.
+  - `flutter test` failed only on existing `test/feature/example_feed/example_feed_page_golden_test.dart` golden mismatch.
+
+### 2026-03-16
 - Scope: Operasyon mobile bottom navigation shell
 - Summary:
   - Operasyon rolü için mobil drawer akışı `AutoTabsScaffold` tab shell yapısına taşındı.

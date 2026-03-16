@@ -72,8 +72,8 @@ void main() {
     expect(find.text('Kurye Yönetimi'), findsWidgets);
 
     await tester.tap(find.text('Operasyon'));
-    await _pumpUntilFound(tester, find.text('Sipariş Oluştur'));
-    expect(find.text('Sipariş Oluştur'), findsOneWidget);
+    await _pumpUntilFound(tester, find.text('Sipariş Oluşturma Paneli'));
+    expect(find.text('Sipariş Oluşturma Paneli'), findsOneWidget);
   });
 }
 

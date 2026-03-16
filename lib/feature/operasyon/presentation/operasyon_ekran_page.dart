@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
@@ -316,6 +317,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentUserProfileProvider);
+    final isDesktop = layoutTypeOf(context) == LayoutType.desktop;
 
     return ResponsiveScaffold(
       title: 'Operasyon Ekranı',
@@ -324,20 +326,42 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
       showMobileDrawer: false,
-      body: Stack(
-        children: [
-          const _BackgroundEffect(),
-          profileAsync.when(
-            data: (profile) {
-              if (profile == null) {
-                return const Center(child: Text('Profil bulunamadı.'));
+      body: Shortcuts(
+        shortcuts: isDesktop
+            ? const {
+                SingleActivator(LogicalKeyboardKey.escape):
+                    _ClearDeskSelectionIntent(),
               }
-              return _buildBody(profile);
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Center(child: Text('Hata: $e')),
+            : const {},
+        child: Actions(
+          actions: {
+            _ClearDeskSelectionIntent:
+                CallbackAction<_ClearDeskSelectionIntent>(
+                  onInvoke: (_) {
+                    setState(() {
+                      _waitingSelected.clear();
+                      _activeSelected.clear();
+                    });
+                    return null;
+                  },
+                ),
+          },
+          child: Stack(
+            children: [
+              const _BackgroundEffect(),
+              profileAsync.when(
+                data: (profile) {
+                  if (profile == null) {
+                    return const Center(child: Text('Profil bulunamadı.'));
+                  }
+                  return _buildBody(profile);
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => Center(child: Text('Hata: $e')),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -374,7 +398,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     });
 
     final type = layoutTypeOf(context);
-    if (type == LayoutType.mobile) {
+    if (type != LayoutType.desktop) {
       return _buildMobileBody(streamAsync, profile.id);
     }
     return _buildDesktopBody(streamAsync, profile.id);
@@ -407,33 +431,125 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     String userId,
   ) {
     return Padding(
-      padding: ProjectPadding.all.normal,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Panel 1: Order creation
-          Expanded(
-            flex: 3,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 40),
-              child: _buildOrderCreationPanel(userId),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.lg),
-          // Panel 2 + 3: Dispatch
-          Expanded(
-            flex: 7,
-            child: streamAsync.when(
-              data: (orders) => _buildDispatchPanelsDesktop(orders, userId),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => _PremiumCard(
-                title: 'Siparişler',
-                child: Text('Hata: $e'),
+      padding: ProjectPadding.all.large,
+      child: ContentConstraint(
+        maxWidth: 1680,
+        child: Column(
+          children: [
+            _buildDesktopSummaryBar(streamAsync),
+            const SizedBox(height: AppSpacing.lg),
+            Expanded(
+              child: streamAsync.when(
+                data: (orders) => _buildDesktopWorkbench(orders, userId),
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, _) => _PremiumCard(
+                  title: 'Siparişler',
+                  child: Text('Hata: $e'),
+                ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopSummaryBar(AsyncValue<List<Siparis>> streamAsync) {
+    final waitingCount = streamAsync.maybeWhen(
+      data: (orders) => orders
+          .where((item) => item.durum == SiparisDurum.kuryeBekliyor)
+          .length,
+      orElse: () => 0,
+    );
+    final activeCount = streamAsync.maybeWhen(
+      data: (orders) =>
+          orders.where((item) => item.durum == SiparisDurum.devamEdiyor).length,
+      orElse: () => 0,
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white),
+      ),
+      child: Row(
+        children: [
+          _DeskMetricChip(
+            label: 'Kurye Bekleyen',
+            value: '$waitingCount',
+            color: AppColors.secondary,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          _DeskMetricChip(
+            label: 'Devam Eden',
+            value: '$activeCount',
+            color: AppColors.primary,
+          ),
+          const SizedBox(width: AppSpacing.md),
+          _DeskMetricChip(
+            label: 'Seçili',
+            value: '${_waitingSelected.length + _activeSelected.length}',
+            color: AppColors.textPrimary,
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: const Text(
+              'Esc seçimleri temizler',
+              style: TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDesktopWorkbench(List<Siparis> orders, String userId) {
+    final data = _resolveDispatchData(orders);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 4,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 32),
+            child: _buildOrderCreationPanel(userId),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.lg),
+        Expanded(
+          flex: 3,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 32),
+            child: _buildWaitingPanel(
+              data.waiting,
+              userId,
+              ugramaMap: data.ugramaMap,
+              musteriMap: data.musteriMap,
+              personelMap: data.personelMap,
+            ),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.lg),
+        Expanded(
+          flex: 3,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 32),
+            child: _buildActivePanel(
+              data.active,
+              userId,
+              ugramaMap: data.ugramaMap,
+              kuryeMap: data.kuryeMap,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -522,43 +638,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     );
   }
 
-  Widget _buildDispatchPanelsDesktop(
-    List<Siparis> allOrders,
-    String userId,
-  ) {
-    final data = _resolveDispatchData(allOrders);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: _buildWaitingPanel(
-            data.waiting,
-            userId,
-            ugramaMap: data.ugramaMap,
-            musteriMap: data.musteriMap,
-            personelMap: data.personelMap,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.lg),
-        Expanded(
-          child: _buildActivePanel(
-            data.active,
-            userId,
-            ugramaMap: data.ugramaMap,
-            kuryeMap: data.kuryeMap,
-          ),
-        ),
-      ],
-    );
-  }
-
   // ──────────── Panel 1: Order Creation ────────────
 
   Widget _buildOrderCreationPanel(String userId) {
     final musteriListAsync = ref.watch(musteriListProvider);
 
     return _PremiumCard(
-      title: 'Sipariş Oluştur',
+      title: 'Sipariş Oluşturma Paneli',
       icon: Icons.add_rounded,
       accentColor: AppColors.primary,
       child: musteriListAsync.when(
@@ -699,8 +785,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final kuryeListAsync = ref.watch(kuryeListProvider);
 
     return _PremiumCard(
-      title: 'Bekleyenler',
-      subtitle: '${waiting.length} Sipariş Bekliyor',
+      title: 'Kurye Bekleyenler (${waiting.length})',
+      subtitle: 'Kurye ataması bekleyen siparişler',
       icon: Icons.timer_rounded,
       accentColor: AppColors.secondary,
       child: Column(
@@ -853,8 +939,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     required Map<String, String> kuryeMap,
   }) {
     return _PremiumCard(
-      title: 'Devam Edenler',
-      subtitle: '${active.length} Kurye Yolda',
+      title: 'Devam Edenler (${active.length})',
+      subtitle: 'Teslimata çıkmış aktif siparişler',
       icon: Icons.delivery_dining_rounded,
       accentColor: AppColors.primary,
       child: Column(
@@ -963,10 +1049,58 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     Siparis s, {
     required Map<String, String> ugramaMap,
   }) {
-    final cikis = ugramaMap[s.cikisId] ?? '?';
-    final ugrama = ugramaMap[s.ugramaId] ?? '?';
+    final cikis = ugramaMap[s.cikisId] ?? s.cikisId;
+    final ugrama = ugramaMap[s.ugramaId] ?? s.ugramaId;
     return '$cikis → $ugrama';
   }
+}
+
+class _DeskMetricChip extends StatelessWidget {
+  const _DeskMetricChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ClearDeskSelectionIntent extends Intent {
+  const _ClearDeskSelectionIntent();
 }
 
 class _BackgroundEffect extends StatelessWidget {
@@ -1018,21 +1152,19 @@ class _BlurredCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-          child: const SizedBox.shrink(),
-        )
-        .animate(onPlay: (controller) => controller.repeat(reverse: true))
-        .scale(
-          duration: 5.seconds,
-          begin: const Offset(1, 1),
-          end: const Offset(1.2, 1.2),
-          curve: Curves.easeInOut,
-        );
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+      ),
+      child: const SizedBox.shrink(),
+    ).animate().scale(
+      duration: 5.seconds,
+      begin: const Offset(1, 1),
+      end: const Offset(1.06, 1.06),
+      curve: Curves.easeInOut,
+    );
   }
 }
 
