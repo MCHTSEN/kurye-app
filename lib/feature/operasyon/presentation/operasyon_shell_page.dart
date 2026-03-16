@@ -15,9 +15,9 @@ class OperasyonShellPage extends ConsumerWidget {
   const OperasyonShellPage({super.key});
 
   static final _tabRoutes = <PageRouteInfo>[
-    PageRouteInfo(CustomRoute.operasyonDashboard.routeName),
     PageRouteInfo(CustomRoute.operasyonEkran.routeName),
     PageRouteInfo(CustomRoute.ugramaYonetim.routeName),
+    PageRouteInfo(CustomRoute.operasyonDashboard.routeName),
     PageRouteInfo(CustomRoute.operasyonAyarlar.routeName),
   ];
 

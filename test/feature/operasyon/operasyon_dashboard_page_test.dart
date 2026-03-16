@@ -1,4 +1,7 @@
 import 'package:backend_core/backend_core.dart';
+import 'package:bursamotokurye/core/environment/app_environment.dart';
+import 'package:bursamotokurye/core/environment/backend_provider.dart';
+import 'package:bursamotokurye/core/environment/credit_access_provider.dart';
 import 'package:bursamotokurye/feature/operasyon/presentation/operasyon_dashboard_page.dart';
 import 'package:bursamotokurye/product/kurye/kurye_providers.dart';
 import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
@@ -128,6 +131,7 @@ void main() {
       List<Siparis>? seedOrders,
       List<Kurye>? seedCouriers,
       Size size = const Size(1440, 1200),
+      AppEnvironment? environment,
     }) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = size;
@@ -136,6 +140,20 @@ void main() {
 
       await tester.pumpApp(
         const OperasyonDashboardPage(),
+        environment:
+            environment ??
+            const AppEnvironment(
+              flavor: AppFlavor.dev,
+              backendProvider: BackendProvider.mock,
+              creditAccessProvider: CreditAccessProvider.navigationSignal,
+              customApiBaseUrl: 'https://api.example.com',
+              supabaseUrl: '',
+              supabaseAnonKey: '',
+              mixpanelToken: '',
+              analyticsEnabled: false,
+              sentryDsn: '',
+              operasyonReportsPassword: '',
+            ),
         overrides: buildOverrides(
           seedOrders: seedOrders,
           seedCouriers: seedCouriers,
@@ -227,6 +245,48 @@ void main() {
       expect(find.text('Operasyon Ekranı'), findsWidgets);
       expect(find.text('Geçmiş Siparişler'), findsWidgets);
       expect(find.text('Kurye Yönetimi'), findsWidgets);
+    });
+
+    testWidgets('shows password gate when reports password is configured', (
+      tester,
+    ) async {
+      await pumpDashboard(
+        tester,
+        environment: const AppEnvironment(
+          flavor: AppFlavor.dev,
+          backendProvider: BackendProvider.mock,
+          creditAccessProvider: CreditAccessProvider.navigationSignal,
+          customApiBaseUrl: 'https://api.example.com',
+          supabaseUrl: '',
+          supabaseAnonKey: '',
+          mixpanelToken: '',
+          analyticsEnabled: false,
+          sentryDsn: '',
+          operasyonReportsPassword: 'rapor123',
+        ),
+      );
+
+      expect(find.text('Raporlar şifre ile korunuyor'), findsOneWidget);
+      expect(find.byKey(const Key('reports_password_field')), findsOneWidget);
+      expect(find.text('Ciro Analizi'), findsNothing);
+
+      await tester.enterText(
+        find.byKey(const Key('reports_password_field')),
+        'yanlis',
+      );
+      await tester.tap(find.byKey(const Key('reports_unlock_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Şifre hatalı. Tekrar deneyin.'), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const Key('reports_password_field')),
+        'rapor123',
+      );
+      await tester.tap(find.byKey(const Key('reports_unlock_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ciro Analizi'), findsOneWidget);
     });
   });
 }

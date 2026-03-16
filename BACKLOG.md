@@ -303,6 +303,74 @@ Project audit log for major changes.
 
 ---
 
+### 2026-03-16 — Operasyon ekranı mobile row stability fixes
+- Scope: `feature/operasyon`
+- Summary: Fixed `OperasyonEkranPage` runtime issues caused by unconstrained action buttons and unsafe active-order lookups. Active rows now degrade safely in narrow widths, use stable keys for actions, and customer/personnel rendering falls back without `firstWhere` crashes.
+- Files:
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+- Validation:
+  - `dart analyze lib/feature/operasyon/presentation/operasyon_ekran_page.dart` completed with 4 existing info-level lints.
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` passed.
+
+---
+
+### 2026-03-16 — Operasyon geçmiş desktop/mobile layout stabilization
+- Scope: `feature/operasyon`
+- Summary: Fixed `OperasyonGecmisPage` render crashes caused by unbounded button widths and fragile scroll pane layout in the workbench view. Desktop panes now use bounded list views, filter controls degrade responsively, and test selectors were aligned with the current screen contract.
+- Files:
+  - `lib/feature/operasyon/presentation/operasyon_gecmis_page.dart`
+  - `test/feature/operasyon/operasyon_gecmis_page_test.dart`
+- Validation:
+  - `dart analyze lib/feature/operasyon/presentation/operasyon_gecmis_page.dart` passed.
+  - `flutter test test/feature/operasyon/operasyon_gecmis_page_test.dart` passed.
+
+---
+
+### 2026-03-16 — Local web debug CSP workaround
+- Scope: `tooling`, `docs`
+- Summary: Added a dedicated VS Code Chrome launch config and README command for local Flutter web debug in CSP-constrained environments. The workaround uses Chrome development flags only for localhost so production CSP behavior remains unchanged.
+- Files:
+  - `.vscode/launch.json`
+  - `README.md`
+- Validation:
+  - `python3 -m json.tool .vscode/launch.json` passed.
+  - `flutter analyze` completed with the repo's existing 33 info-level issues; no new analyzer error/warning blocker introduced by this tooling change.
+  - `flutter test` was started and progressed through 47 passing tests before being stopped manually to avoid waiting on the full suite during tooling verification.
+
+---
+
+### 2026-03-16 — Operasyon default landing + password-gated reports
+- Scope: `feature/operasyon`, `app/router`, `core/environment`
+- Summary: Changed operasyon default landing to `Operasyon Ekranı`, renamed dashboard access to `Raporlar`, and added a password gate for ciro / kurye performans metrics via `OPERASYON_REPORTS_PASSWORD`. Updated mobile/desktop nav order and refreshed operasyon smoke/widget coverage.
+- Files:
+  - `lib/core/environment/app_environment.dart`
+  - `lib/core/environment/app_environment_keys.dart`
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_dashboard_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_shell_page.dart`
+  - `lib/feature/operasyon/providers/report_access_providers.dart`
+  - `lib/product/navigation/role_nav_items.dart`
+  - `lib/app/router/app_router.dart`
+  - `packages/backend_core/lib/src/domain/app_events.dart`
+  - `pubspec.yaml`
+  - `.env`
+  - `test/feature/operasyon/operasyon_dashboard_page_test.dart`
+  - `test/feature/operasyon/operasyon_shell_page_test.dart`
+  - `integration_test/operasyon_navigation_smoke_test.dart`
+  - `test/helpers/widgets/test_app.dart`
+  - `test/helpers/providers/test_provider_container.dart`
+  - `test/core/environment/app_environment_test.dart`
+  - `test/product/network/api_client_provider_test.dart`
+  - `test/product/credit/credit_providers_test.dart`
+- Validation:
+  - `flutter test test/core/environment/app_environment_test.dart test/app/router/custom_route_test.dart test/app/router/guard_role_routing_test.dart test/product/widgets/responsive_scaffold_test.dart test/feature/operasyon/operasyon_shell_page_test.dart test/feature/operasyon/operasyon_dashboard_page_test.dart` passed.
+  - `flutter analyze` was attempted; repo still reports existing info-level lint set and should be re-run after long-running integration/device jobs finish.
+  - `flutter test integration_test/app_smoke_test.dart integration_test/operasyon_navigation_smoke_test.dart -d macos` was attempted but stalled in CocoaPods/macOS build preparation on this machine.
+
+---
+
 ### 2026-03-15 — S04/T02: 3-panel dispatch screen with assignment and finish flows
 - Scope: `feature/operasyon`
 - Summary: Replaced placeholder OperasyonEkranPage with real 3-panel dispatch screen — order creation (müşteri dropdown → cascading stops), kurye bekleyenler (checkbox + assign), devam edenler (checkbox + finish with auto-pricing/manual fallback). SiparisLog created on every transition. Created FakeSiparisLogRepository.

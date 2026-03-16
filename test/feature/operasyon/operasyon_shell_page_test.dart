@@ -20,18 +20,15 @@ void main() {
       await _pumpShell(tester, analytics: analytics);
 
       expect(find.byType(NavigationBar), findsOneWidget);
-      expect(find.text('Dashboard'), findsOneWidget);
       expect(find.text('Operasyon'), findsOneWidget);
       expect(find.text('Uğrama'), findsOneWidget);
+      expect(find.text('Raporlar'), findsOneWidget);
       expect(find.text('Ayarlar'), findsOneWidget);
-      expect(find.text('Dashboard tab'), findsOneWidget);
+      expect(find.text('Operasyon tab'), findsOneWidget);
     });
 
     testWidgets('preserves tab state when switching tabs', (tester) async {
       await _pumpShell(tester, analytics: analytics);
-
-      await tester.tap(find.text('Operasyon'));
-      await tester.pumpAndSettle();
 
       await tester.enterText(
         find.byKey(const Key('operasyon_form_field')),
@@ -39,9 +36,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Dashboard'));
+      await tester.tap(find.text('Raporlar'));
       await tester.pumpAndSettle();
-      expect(find.text('Dashboard tab'), findsOneWidget);
+
+      expect(find.text('Raporlar tab'), findsOneWidget);
 
       await tester.tap(find.text('Operasyon'));
       await tester.pumpAndSettle();
@@ -51,7 +49,7 @@ void main() {
         analytics.trackedEvents
             .where((event) => event.name == 'operasyon_tab_selected')
             .length,
-        3,
+        2,
       );
     });
   });
@@ -76,16 +74,16 @@ Future<void> _pumpShell(
           NamedRouteDef(
             name: CustomRoute.operasyonDashboard.routeName,
             path: 'dashboard',
-            initial: true,
             builder: (context, data) => const Scaffold(
-              body: Center(child: Text('Dashboard tab')),
+              body: Center(child: Text('Raporlar tab')),
             ),
           ),
           NamedRouteDef(
             name: CustomRoute.operasyonEkran.routeName,
             path: 'ekran',
+            initial: true,
             builder: (context, data) => const Scaffold(
-              body: _FakeOperasyonTab(),
+              body: Center(child: _FakeOperasyonTabLabel()),
             ),
           ),
           NamedRouteDef(
@@ -128,6 +126,22 @@ class _FakeOperasyonTab extends StatefulWidget {
 
   @override
   State<_FakeOperasyonTab> createState() => _FakeOperasyonTabState();
+}
+
+class _FakeOperasyonTabLabel extends StatelessWidget {
+  const _FakeOperasyonTabLabel();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        Text('Operasyon tab'),
+        SizedBox(height: 12),
+        _FakeOperasyonTab(),
+      ],
+    );
+  }
 }
 
 class _FakeOperasyonTabState extends State<_FakeOperasyonTab> {

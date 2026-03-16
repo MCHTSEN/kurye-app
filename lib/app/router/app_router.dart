@@ -125,7 +125,6 @@ RootStackRouter appRouter(Ref ref) {
               CustomRoute.operasyonDashboard.path,
               CustomRoute.operasyonShell.path,
             ),
-            initial: true,
             builder: (context, data) => const OperasyonDashboardPage(),
           ),
           NamedRouteDef(
@@ -134,6 +133,7 @@ RootStackRouter appRouter(Ref ref) {
               CustomRoute.operasyonEkran.path,
               CustomRoute.operasyonShell.path,
             ),
+            initial: true,
             builder: (context, data) => const OperasyonEkranPage(),
           ),
           NamedRouteDef(

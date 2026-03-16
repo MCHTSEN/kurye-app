@@ -6,16 +6,16 @@ import '../widgets/responsive_scaffold.dart';
 /// Navigation items for operasyon role.
 const operasyonDesktopNavItems = <NavItem>[
   NavItem(
-    icon: Icons.dashboard,
-    label: 'Dashboard',
-    route: CustomRoute.operasyonDashboard,
-    section: 'Ana',
-  ),
-  NavItem(
     icon: Icons.assignment,
     label: 'Operasyon Ekranı',
     route: CustomRoute.operasyonEkran,
     section: 'Ana',
+  ),
+  NavItem(
+    icon: Icons.bar_chart_rounded,
+    label: 'Raporlar',
+    route: CustomRoute.operasyonDashboard,
+    section: 'Raporlama',
   ),
   NavItem(
     icon: Icons.business,
@@ -66,11 +66,6 @@ const List<NavItem> operasyonNavItems = operasyonDesktopNavItems;
 /// Primary mobile tabs for operasyon role.
 const operasyonPrimaryMobileNavItems = <NavItem>[
   NavItem(
-    icon: Icons.dashboard_rounded,
-    label: 'Dashboard',
-    route: CustomRoute.operasyonDashboard,
-  ),
-  NavItem(
     icon: Icons.assignment_rounded,
     label: 'Operasyon',
     route: CustomRoute.operasyonEkran,
@@ -79,6 +74,11 @@ const operasyonPrimaryMobileNavItems = <NavItem>[
     icon: Icons.location_on_rounded,
     label: 'Uğrama',
     route: CustomRoute.ugramaYonetim,
+  ),
+  NavItem(
+    icon: Icons.bar_chart_rounded,
+    label: 'Raporlar',
+    route: CustomRoute.operasyonDashboard,
   ),
   NavItem(
     icon: Icons.settings_rounded,

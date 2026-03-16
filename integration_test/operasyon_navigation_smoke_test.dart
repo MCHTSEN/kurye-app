@@ -38,6 +38,7 @@ void main() {
               mixpanelToken: '',
               analyticsEnabled: false,
               sentryDsn: '',
+              operasyonReportsPassword: '',
             ),
           ),
           backendModuleProvider.overrideWithValue(MockBackendModule()),
@@ -64,16 +65,17 @@ void main() {
       ),
     );
 
-    await _pumpUntilFound(tester, find.text('Dashboard'));
+    await _pumpUntilFound(tester, find.text('Operasyon'));
     expect(find.text('Ayarlar'), findsOneWidget);
+    expect(find.text('Sipariş Oluşturma Paneli'), findsOneWidget);
 
     await tester.tap(find.text('Ayarlar'));
     await _pumpUntilFound(tester, find.text('Kurye Yönetimi'));
     expect(find.text('Kurye Yönetimi'), findsWidgets);
 
-    await tester.tap(find.text('Operasyon'));
-    await _pumpUntilFound(tester, find.text('Sipariş Oluşturma Paneli'));
-    expect(find.text('Sipariş Oluşturma Paneli'), findsOneWidget);
+    await tester.tap(find.text('Raporlar'));
+    await _pumpUntilFound(tester, find.text('Ciro Analizi'));
+    expect(find.text('Ciro Analizi'), findsOneWidget);
   });
 }
 

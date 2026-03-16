@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +21,6 @@ import '../../../product/siparis/siparis_log_providers.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
-import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 import '../../../product/widgets/searchable_dropdown.dart';
@@ -99,9 +97,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
   Future<void> _onCreateOrder(String userId) async {
     final hasDropdownErrors =
-        _selectedMusteriId == null ||
-        _selectedCikisId == null ||
-        _selectedUgramaId == null;
+        _selectedMusteriId == null || _selectedCikisId == null || _selectedUgramaId == null;
 
     if (!_formKey.currentState!.validate() || hasDropdownErrors) {
       return;
@@ -117,9 +113,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         ugramaId: _selectedUgramaId!,
         ugrama1Id: _selectedUgrama1Id,
         notId: _selectedNotId,
-        not1: _not1Controller.text.trim().isNotEmpty
-            ? _not1Controller.text.trim()
-            : null,
+        not1: _not1Controller.text.trim().isNotEmpty ? _not1Controller.text.trim() : null,
         olusturanId: userId,
       );
 
@@ -231,7 +225,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       final selectedIds = Set<String>.of(_activeSelected);
 
       for (final orderId in selectedIds) {
-        final order = activeOrders.firstWhere((s) => s.id == orderId);
+        final matchingOrders = activeOrders.where((s) => s.id == orderId);
+        if (matchingOrders.isEmpty) {
+          _log.w('Finish skipped: active order not found for $orderId');
+          continue;
+        }
+        final order = matchingOrders.first;
 
         // Auto-pricing lookup.
         final pricingMatch = await repo.getRecentPricing(
@@ -329,22 +328,20 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       body: Shortcuts(
         shortcuts: isDesktop
             ? const {
-                SingleActivator(LogicalKeyboardKey.escape):
-                    _ClearDeskSelectionIntent(),
+                SingleActivator(LogicalKeyboardKey.escape): _ClearDeskSelectionIntent(),
               }
             : const {},
         child: Actions(
           actions: {
-            _ClearDeskSelectionIntent:
-                CallbackAction<_ClearDeskSelectionIntent>(
-                  onInvoke: (_) {
-                    setState(() {
-                      _waitingSelected.clear();
-                      _activeSelected.clear();
-                    });
-                    return null;
-                  },
-                ),
+            _ClearDeskSelectionIntent: CallbackAction<_ClearDeskSelectionIntent>(
+              onInvoke: (_) {
+                setState(() {
+                  _waitingSelected.clear();
+                  _activeSelected.clear();
+                });
+                return null;
+              },
+            ),
           },
           child: Stack(
             children: [
@@ -455,55 +452,112 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }
 
   Widget _buildDesktopSummaryBar(AsyncValue<List<Siparis>> streamAsync) {
-    final waitingCount = streamAsync.maybeWhen(
-      data: (orders) => orders
-          .where((item) => item.durum == SiparisDurum.kuryeBekliyor)
-          .length,
-      orElse: () => 0,
-    );
-    final activeCount = streamAsync.maybeWhen(
-      data: (orders) =>
-          orders.where((item) => item.durum == SiparisDurum.devamEdiyor).length,
-      orElse: () => 0,
-    );
-
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white),
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          _DeskMetricChip(
-            label: 'Kurye Bekleyen',
-            value: '$waitingCount',
-            color: AppColors.secondary,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          _DeskMetricChip(
-            label: 'Devam Eden',
-            value: '$activeCount',
-            color: AppColors.primary,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          _DeskMetricChip(
-            label: 'Seçili',
-            value: '${_waitingSelected.length + _activeSelected.length}',
-            color: AppColors.textPrimary,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0FDF4),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: const Color(0xFFDCFCE7)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF22C55E),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'SİSTEM AKTİF',
+                  style: TextStyle(
+                    color: Color(0xFF166534),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
           ),
           const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(999),
+              color: const Color(0xFFF0FDF4),
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
-              'Esc seçimleri temizler',
-              style: TextStyle(fontWeight: FontWeight.w700),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF22C55E),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.trending_up,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'BUGÜNKÜ KAZANÇ',
+                      style: TextStyle(
+                        color: Color(0xFF166534),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    Text(
+                      '0 TL',
+                      style: TextStyle(
+                        color: Color(0xFF166534),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+              ],
             ),
+          ),
+          const SizedBox(width: 16),
+          IconButton(
+            onPressed: logoutCallback(ref),
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.textPrimary,
+              padding: const EdgeInsets.all(12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: AppColors.border),
+              ),
+            ),
+            icon: const Icon(Icons.logout_rounded),
           ),
         ],
       ),
@@ -512,41 +566,35 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
   Widget _buildDesktopWorkbench(List<Siparis> orders, String userId) {
     final data = _resolveDispatchData(orders);
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
       children: [
+        _buildOrderCreationPanel(userId),
+        const SizedBox(height: AppSpacing.lg),
         Expanded(
-          flex: 4,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 32),
-            child: _buildOrderCreationPanel(userId),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.lg),
-        Expanded(
-          flex: 3,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 32),
-            child: _buildWaitingPanel(
-              data.waiting,
-              userId,
-              ugramaMap: data.ugramaMap,
-              musteriMap: data.musteriMap,
-              personelMap: data.personelMap,
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.lg),
-        Expanded(
-          flex: 3,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 32),
-            child: _buildActivePanel(
-              data.active,
-              userId,
-              ugramaMap: data.ugramaMap,
-              kuryeMap: data.kuryeMap,
-            ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildWaitingPanel(
+                  data.waiting,
+                  userId,
+                  ugramaMap: data.ugramaMap,
+                  musteriMap: data.musteriMap,
+                  personelMap: data.personelMap,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.lg),
+              Expanded(
+                child: _buildActivePanel(
+                  data.active,
+                  userId,
+                  ugramaMap: data.ugramaMap,
+                  kuryeMap: data.kuryeMap,
+                  musteriMap: data.musteriMap,
+                  personelMap: data.personelMap,
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -562,12 +610,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     Map<String, String> personelMap,
   })
   _resolveDispatchData(List<Siparis> allOrders) {
-    final waiting = allOrders
-        .where((s) => s.durum == SiparisDurum.kuryeBekliyor)
-        .toList();
-    final active = allOrders
-        .where((s) => s.durum == SiparisDurum.devamEdiyor)
-        .toList();
+    final waiting = allOrders.where((s) => s.durum == SiparisDurum.kuryeBekliyor).toList();
+    final active = allOrders.where((s) => s.durum == SiparisDurum.devamEdiyor).toList();
 
     // Build name-resolution maps (D027 pattern).
     final ugramaListAsync = ref.watch(ugramaListProvider);
@@ -633,6 +677,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           userId,
           ugramaMap: data.ugramaMap,
           kuryeMap: data.kuryeMap,
+          musteriMap: data.musteriMap,
+          personelMap: data.personelMap,
         ),
       ],
     );
@@ -644,12 +690,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final musteriListAsync = ref.watch(musteriListProvider);
 
     return _PremiumCard(
-      title: 'Sipariş Oluşturma Paneli',
+      title: 'YENİ SİPARİŞ',
       icon: Icons.add_rounded,
-      accentColor: AppColors.primary,
+      isDarkHeader: true,
+      accentColor: Colors.white,
       child: musteriListAsync.when(
-        data: (musteriler) =>
-            _buildOrderForm(musteriler: musteriler, userId: userId),
+        data: (musteriler) => _buildOrderForm(musteriler: musteriler, userId: userId),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => const Text('Müşteriler alınamadı.'),
       ),
@@ -660,49 +706,82 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     required List<Musteri> musteriler,
     required String userId,
   }) {
-    final musteriItems = musteriler
-        .map((m) => (value: m.id, label: m.firmaKisaAd))
-        .toList();
+    final musteriItems = musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList();
 
     return Form(
       key: _formKey,
       child: Column(
         children: [
-          SearchableDropdown<String>(
-            key: const Key('musteri_dropdown'),
-            value: _selectedMusteriId,
-            label: 'Müşteri',
-            placeholder: 'Müşteri Seç',
-            searchPlaceholder: 'Müşteri ara...',
-            items: musteriItems,
-            onChanged: _onMusteriChanged,
-            validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          if (_selectedMusteriId != null) ...[
-            _buildStopDropdowns(),
-            const SizedBox(height: AppSpacing.sm),
-            TextFormField(
-              controller: _not1Controller,
-              decoration: InputDecoration(
-                labelText: 'Ek Not',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.border),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.border),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                flex: 2,
+                child: SearchableDropdown<String>(
+                  key: const Key('musteri_dropdown'),
+                  value: _selectedMusteriId,
+                  label: 'MÜŞTERİ',
+                  placeholder: 'Seçiniz',
+                  searchPlaceholder: 'Müşteri ara...',
+                  items: musteriItems,
+                  onChanged: _onMusteriChanged,
+                  validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
                 ),
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppPrimaryButton(
-              label: 'SİPARİŞİ TAMAMLA',
-              onPressed: () => _onCreateOrder(userId),
-              isLoading: _isCreating,
-            ),
-          ],
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2,
+                child: SearchableDropdown<String>(
+                  key: const Key('personel_dropdown'),
+                  label: 'PERSONEL',
+                  placeholder: 'Seçiniz',
+                  searchPlaceholder: 'Personel ara...',
+                  items: const [], // Placeholder for now
+                  onChanged: (_) {},
+                ),
+              ),
+              if (_selectedMusteriId != null) ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 6,
+                  child: _buildStopDropdowns(),
+                ),
+              ],
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 180,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => _onCreateOrder(userId),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _isCreating
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'SİPARİŞ OLUŞTUR',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -715,61 +794,77 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
     return ugramaAsync.when(
       data: (ugramalar) {
-        final items = ugramalar
-            .map((u) => (value: u.id, label: u.ugramaAdi))
-            .toList();
+        final items = ugramalar.map((u) => (value: u.id, label: u.ugramaAdi)).toList();
 
-        return Column(
+        return Row(
           children: [
-            SearchableDropdown<String>(
-              key: const Key('cikis_dropdown'),
-              value: _selectedCikisId,
-              label: 'Çıkış',
-              placeholder: 'Çıkış Noktası',
-              searchPlaceholder: 'Ara...',
-              items: items,
-              onChanged: (v) => setState(() => _selectedCikisId = v),
-              validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
+            Expanded(
+              child: SearchableDropdown<String>(
+                key: const Key('cikis_dropdown'),
+                value: _selectedCikisId,
+                label: 'ÇIKIŞ',
+                placeholder: 'Nereden?',
+                searchPlaceholder: 'Ara...',
+                items: items,
+                onChanged: (v) => setState(() => _selectedCikisId = v),
+                validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
+              ),
             ),
-            const SizedBox(height: AppSpacing.sm),
-            SearchableDropdown<String>(
-              key: const Key('ugrama_dropdown'),
-              value: _selectedUgramaId,
-              label: 'Varış',
-              placeholder: 'Varış Noktası',
-              searchPlaceholder: 'Ara...',
-              items: items,
-              onChanged: (v) => setState(() => _selectedUgramaId = v),
-              validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
+            const SizedBox(width: 8),
+            Expanded(
+              child: SearchableDropdown<String>(
+                key: const Key('ugrama_dropdown'),
+                value: _selectedUgramaId,
+                label: 'UĞRAMA',
+                placeholder: 'Nereye?',
+                searchPlaceholder: 'Ara...',
+                items: items,
+                onChanged: (v) => setState(() => _selectedUgramaId = v),
+                validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
+              ),
             ),
-            const SizedBox(height: AppSpacing.sm),
-            SearchableDropdown<String>(
-              key: const Key('ugrama1_dropdown'),
-              value: _selectedUgrama1Id,
-              label: 'Ara Uğrama (Opsiyonel)',
-              placeholder: 'Seçilmedi',
-              searchPlaceholder: 'Ara...',
-              items: items,
-              onChanged: (v) => setState(() => _selectedUgrama1Id = v),
+            const SizedBox(width: 8),
+            Expanded(
+              child: SearchableDropdown<String>(
+                key: const Key('ugrama1_dropdown'),
+                value: _selectedUgrama1Id,
+                label: 'UĞRAMA 1',
+                placeholder: 'Nereye? (2)',
+                searchPlaceholder: 'Ara...',
+                items: items,
+                onChanged: (v) => setState(() => _selectedUgrama1Id = v),
+              ),
             ),
-            const SizedBox(height: AppSpacing.sm),
-            SearchableDropdown<String>(
-              key: const Key('not_dropdown'),
-              value: _selectedNotId,
-              label: 'Özel Not',
-              placeholder: 'Seçilmedi',
-              searchPlaceholder: 'Ara...',
-              items: items,
-              onChanged: (v) => setState(() => _selectedNotId = v),
+            const SizedBox(width: 8),
+            Expanded(
+              child: SearchableDropdown<String>(
+                key: const Key('not_dropdown'),
+                value: _selectedNotId,
+                label: 'NOT (REHBER)',
+                placeholder: 'Seçim Yok',
+                searchPlaceholder: 'Ara...',
+                items: items,
+                onChanged: (v) => setState(() => _selectedNotId = v),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: TextButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.add, size: 16),
+                label: const Text('NOT'),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.textMuted,
+                  textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ],
         );
       },
-      loading: () => const Padding(
-        padding: EdgeInsets.all(AppSpacing.md),
-        child: CircularProgressIndicator(),
-      ),
-      error: (e, _) => const Text('Uğramalar yüklenemedi.'),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => const Text('Hata'),
     );
   }
 
@@ -785,146 +880,70 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final kuryeListAsync = ref.watch(kuryeListProvider);
 
     return _PremiumCard(
-      title: 'Kurye Bekleyenler (${waiting.length})',
-      subtitle: 'Kurye ataması bekleyen siparişler',
-      icon: Icons.timer_rounded,
-      accentColor: AppColors.secondary,
-      child: Column(
-        children: [
-          if (waiting.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
-              child: Opacity(
-                opacity: 0.5,
-                child: Column(
-                  children: [
-                    Icon(Icons.check_circle_outline_rounded, size: 48),
-                    SizedBox(height: 8),
-                    Text('Her şey yolunda, bekleyen yok.'),
-                  ],
+      title: 'KURYE BEKLEYENLER (${waiting.length})',
+      icon: Icons.access_time_filled_rounded,
+      accentColor: const Color(0xFFF59E0B),
+      action: kuryeListAsync.maybeWhen(
+        data: (kuryeler) {
+          final activeKuryeler = kuryeler.where((k) => k.isActive).toList();
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 140,
+                child: SearchableDropdown<String>(
+                  key: const Key('kurye_dropdown'),
+                  items: activeKuryeler.map((k) => (value: k.id, label: k.ad)).toList(),
+                  onChanged: (v) => setState(() => _selectedKuryeId = v),
+                  value: _selectedKuryeId,
+                  placeholder: 'Kurye Seç',
                 ),
               ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 88,
+                height: 38,
+                child: ElevatedButton(
+                  key: const Key('assign_courier_button'),
+                  onPressed:
+                      _waitingSelected.isNotEmpty && _selectedKuryeId != null && !_isAssigning
+                      ? () => _onAssign(userId: userId, waitingOrders: waiting)
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE2E8F0),
+                    foregroundColor: AppColors.textPrimary,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900),
+                  ),
+                  child: _isAssigning
+                      ? const SizedBox(
+                          height: 16,
+                          width: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.textPrimary,
+                          ),
+                        )
+                      : Text('ATA (${_waitingSelected.length})'),
+                ),
+              ),
+            ],
+          );
+        },
+        orElse: () => const SizedBox.shrink(),
+      ),
+      child: Column(
+        children: [
+          _buildTableHeader(['MÜŞTERİ', 'SAAT', 'GÜZERGAH', 'İŞLEM']),
+          const Divider(height: 1),
+          if (waiting.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: Text('Bekleyen sipariş yok', style: TextStyle(color: AppColors.textMuted)),
             )
           else
-            ...waiting.map(
-              (s) {
-                final musteriAd = musteriMap[s.musteriId] ?? s.musteriId;
-                final personelAd = s.personelId != null
-                    ? personelMap[s.personelId!]
-                    : null;
-                final subtitle = [
-                  if (personelAd != null)
-                    '$musteriAd / $personelAd'
-                  else
-                    musteriAd,
-                  if (s.not1 != null) s.not1!,
-                ].join(' — ');
-
-                final isSelected = _waitingSelected.contains(s.id);
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.secondary.withValues(alpha: 0.1)
-                        : Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.secondary
-                          : Colors.white.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  child: CheckboxListTile(
-                    key: Key('waiting_${s.id}'),
-                    title: Text(
-                      _routeLabel(s, ugramaMap: ugramaMap),
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    value: isSelected,
-                    onChanged: (checked) {
-                      setState(() {
-                        if (checked == true) {
-                          _waitingSelected.add(s.id);
-                        } else {
-                          _waitingSelected.remove(s.id);
-                        }
-                      });
-                    },
-                    checkboxShape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    activeColor: AppColors.secondary,
-                    checkColor: AppColors.textPrimary,
-                  ),
-                );
-              },
-            ),
-          const SizedBox(height: AppSpacing.md),
-          kuryeListAsync.when(
-            data: (kuryeler) {
-              final activeKuryeler = kuryeler.where((k) => k.isActive).toList();
-              return Column(
-                children: [
-                  SearchableDropdown<String>(
-                    key: const Key('kurye_dropdown'),
-                    value: _selectedKuryeId,
-                    label: 'Kurye Ata',
-                    placeholder: 'Kurye Seç',
-                    searchPlaceholder: 'Kurye ara...',
-                    items: activeKuryeler
-                        .map((k) => (value: k.id, label: k.ad))
-                        .toList(),
-                    onChanged: (v) => setState(() => _selectedKuryeId = v),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed:
-                          _waitingSelected.isNotEmpty &&
-                              _selectedKuryeId != null &&
-                              !_isAssigning
-                          ? () => _onAssign(
-                              userId: userId,
-                              waitingOrders: waiting,
-                            )
-                          : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.secondary,
-                        foregroundColor: AppColors.textPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: _isAssigning
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppColors.textPrimary,
-                              ),
-                            )
-                          : const Text(
-                              'KURYE ATA',
-                              style: TextStyle(fontWeight: FontWeight.w800),
-                            ),
-                    ),
-                  ),
-                ],
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => const Text('Kuryeler alınamadı.'),
-          ),
+            ...waiting.map((s) => _buildWaitingRow(s, musteriMap, personelMap, ugramaMap)),
         ],
       ),
     );
@@ -937,105 +956,288 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     String userId, {
     required Map<String, String> ugramaMap,
     required Map<String, String> kuryeMap,
+    required Map<String, String> musteriMap,
+    required Map<String, String> personelMap,
   }) {
     return _PremiumCard(
-      title: 'Devam Edenler (${active.length})',
-      subtitle: 'Teslimata çıkmış aktif siparişler',
-      icon: Icons.delivery_dining_rounded,
-      accentColor: AppColors.primary,
+      title: 'DEVAM EDEN İŞLER (${active.length})',
+      icon: Icons.directions_bike_rounded,
+      accentColor: const Color(0xFF6366F1),
       child: Column(
         children: [
+          _buildTableHeader(['FİRMA/PERSONEL', 'SAAT', 'GÜZERGAH', 'DÜZENLE', 'KURYE & İŞLEM']),
+          const Divider(height: 1),
           if (active.isEmpty)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: AppSpacing.xl),
-              child: Opacity(
-                opacity: 0.5,
-                child: Column(
-                  children: [
-                    Icon(Icons.directions_bike_rounded, size: 48),
-                    SizedBox(height: 8),
-                    Text('Şu an aktif teslimat yok.'),
-                  ],
-                ),
-              ),
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: Text('Aktif iş yok', style: TextStyle(color: AppColors.textMuted)),
             )
           else
             ...active.map(
-              (s) {
-                final isSelected = _activeSelected.contains(s.id);
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.primary.withValues(alpha: 0.1)
-                        : Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : Colors.white.withValues(alpha: 0.1),
-                    ),
+              (s) => _buildActiveRow(
+                s,
+                userId,
+                ugramaMap,
+                kuryeMap,
+                musteriMap,
+                personelMap,
+                active,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableHeader(List<String> labels) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      child: Row(
+        children: labels
+            .map(
+              (l) => Expanded(
+                child: Text(
+                  l,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textMuted,
+                    letterSpacing: 0.5,
                   ),
-                  child: CheckboxListTile(
-                    key: Key('active_${s.id}'),
-                    title: Text(
-                      _routeLabel(s, ugramaMap: ugramaMap),
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      'Kurye: ${kuryeMap[s.kuryeId] ?? s.kuryeId ?? '-'}',
-                    ),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildWaitingRow(
+    Siparis s,
+    Map<String, String> musteriMap,
+    Map<String, String> personelMap,
+    Map<String, String> ugramaMap,
+  ) {
+    final isSelected = _waitingSelected.contains(s.id);
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Checkbox(
+                    key: Key('waiting_${s.id}'),
                     value: isSelected,
-                    onChanged: (checked) {
+                    onChanged: (v) {
                       setState(() {
-                        if (checked == true) {
-                          _activeSelected.add(s.id);
-                        } else {
-                          _activeSelected.remove(s.id);
-                        }
+                        if (v == true)
+                          _waitingSelected.add(s.id);
+                        else
+                          _waitingSelected.remove(s.id);
                       });
                     },
-                    checkboxShape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        musteriMap[s.musteriId] ?? s.musteriId,
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                      ),
+                      if (s.personelId != null)
+                        Text(
+                          personelMap[s.personelId!] ?? '',
+                          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Text(
+              s.createdAt != null
+                  ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
+                  : '--:--',
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              _routeLabel(s, ugramaMap: ugramaMap),
+              style: const TextStyle(
+                color: Color(0xFF6366F1),
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ),
+          const Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Icon(Icons.edit_note_rounded, color: Color(0xFFF59E0B), size: 22),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveRow(
+    Siparis s,
+    String userId,
+    Map<String, String> ugramaMap,
+    Map<String, String> kuryeMap,
+    Map<String, String> musteriMap,
+    Map<String, String> personelMap,
+    List<Siparis> active,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CheckboxListTile(
+                  key: Key('active_${s.id}'),
+                  value: _activeSelected.contains(s.id),
+                  onChanged: (v) {
+                    setState(() {
+                      if (v == true) {
+                        _activeSelected.add(s.id);
+                      } else {
+                        _activeSelected.remove(s.id);
+                      }
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  title: Text(
+                    musteriMap[s.musteriId] ?? s.musteriId,
+                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                  ),
+                  subtitle: s.personelId != null
+                      ? Text(
+                          personelMap[s.personelId!] ?? s.personelId!,
+                          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                        )
+                      : null,
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Text(
+              s.createdAt != null
+                  ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
+                  : '--:--',
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              _routeLabel(s, ugramaMap: ugramaMap),
+              style: const TextStyle(
+                color: Color(0xFF6366F1),
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+          ),
+          const Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Icon(Icons.edit_note_rounded, color: Color(0xFFF59E0B), size: 22),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isCompact = constraints.maxWidth < 150;
+                final badge = Container(
+                  width: isCompact ? double.infinity : null,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isCompact ? 8 : 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    (kuryeMap[s.kuryeId] ?? 'Atanmadı').toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
                     ),
-                    activeColor: AppColors.primary,
                   ),
                 );
-              },
-            ),
-          const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _activeSelected.isNotEmpty && !_isFinishing
-                  ? () => _onFinish(
-                      userId: userId,
-                      activeOrders: active,
-                    )
-                  : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 4,
-                shadowColor: AppColors.primary.withValues(alpha: 0.4),
-              ),
-              child: _isFinishing
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text(
-                      'TESLİMATI BİTİR',
-                      style: TextStyle(fontWeight: FontWeight.w800),
+                final finishButton = SizedBox(
+                  width: isCompact ? 36 : 72,
+                  height: 32,
+                  child: ElevatedButton(
+                    key: Key('finish_${s.id}'),
+                    onPressed: !_isFinishing
+                        ? () {
+                            _activeSelected.clear();
+                            _activeSelected.add(s.id);
+                            _onFinish(userId: userId, activeOrders: active);
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
+                    child: _isFinishing
+                        ? const SizedBox(
+                            height: 14,
+                            width: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                        : isCompact
+                        ? const Icon(Icons.check_rounded, size: 16)
+                        : const Text(
+                            'BİTTİ',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900),
+                          ),
+                  ),
+                );
+
+                return Row(
+                  children: [
+                    Flexible(child: badge),
+                    SizedBox(width: isCompact ? 4 : 8),
+                    finishButton,
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -1052,50 +1254,6 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final cikis = ugramaMap[s.cikisId] ?? s.cikisId;
     final ugrama = ugramaMap[s.ugramaId] ?? s.ugramaId;
     return '$cikis → $ugrama';
-  }
-}
-
-class _DeskMetricChip extends StatelessWidget {
-  const _DeskMetricChip({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -1172,93 +1330,78 @@ class _PremiumCard extends StatelessWidget {
   const _PremiumCard({
     required this.title,
     required this.child,
-    this.subtitle,
     this.icon,
     this.accentColor,
+    this.isDarkHeader = false,
+    this.action,
   });
 
   final String title;
-  final String? subtitle;
   final Widget child;
   final IconData? icon;
   final Color? accentColor;
+  final bool isDarkHeader;
+  final Widget? action;
 
   @override
   Widget build(BuildContext context) {
+    final headerColor = isDarkHeader ? const Color(0xFF1D1B41) : Colors.white;
+    final titleColor = isDarkHeader ? Colors.white : AppColors.textPrimary;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.7),
+        color: Colors.white.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 30,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  if (icon != null) ...[
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: (accentColor ?? AppColors.primary).withValues(
-                          alpha: 0.1,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        icon,
-                        color: accentColor ?? AppColors.primary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                  ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        if (subtitle != null)
-                          Text(
-                            subtitle!,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textMuted,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                      ],
-                    ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            color: headerColor,
+            child: Row(
+              children: [
+                if (icon != null) ...[
+                  Icon(
+                    icon,
+                    color: accentColor ?? (isDarkHeader ? Colors.white : AppColors.primary),
+                    size: 20,
                   ),
+                  const SizedBox(width: 12),
                 ],
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 20),
-                child: Divider(height: 1, color: Color(0x1A000000)),
-              ),
-              child,
-            ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: titleColor,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ?action,
+              ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: child,
+          ),
+        ],
       ),
     ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);
   }

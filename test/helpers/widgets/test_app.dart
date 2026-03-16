@@ -42,6 +42,7 @@ extension TestAppPump on WidgetTester {
               mixpanelToken: '',
               analyticsEnabled: false,
               sentryDsn: '',
+              operasyonReportsPassword: '',
             ),
       ),
       backendModuleProvider.overrideWithValue(

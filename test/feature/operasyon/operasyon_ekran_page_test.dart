@@ -70,9 +70,10 @@ void main() {
     Future<void> pumpPage(
       WidgetTester tester, {
       OrderAlertService? alertService,
+      Size size = const Size(390, 844),
     }) async {
       tester.view.devicePixelRatio = 1;
-      tester.view.physicalSize = const Size(390, 844);
+      tester.view.physicalSize = size;
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpApp(
@@ -114,14 +115,14 @@ void main() {
     testWidgets('(a) renders 3 panels with correct titles', (tester) async {
       await pumpPage(tester);
 
-      expect(find.text('Sipariş Oluşturma Paneli'), findsOneWidget);
+      expect(find.text('YENİ SİPARİŞ'), findsOneWidget);
 
       // Scroll down to see bottom panels.
-      await reveal(tester, find.textContaining('Kurye Bekleyenler'));
-      expect(find.textContaining('Kurye Bekleyenler'), findsOneWidget);
+      await reveal(tester, find.textContaining('KURYE BEKLEYENLER'));
+      expect(find.textContaining('KURYE BEKLEYENLER'), findsOneWidget);
 
-      await reveal(tester, find.textContaining('Devam Edenler'));
-      expect(find.textContaining('Devam Edenler'), findsOneWidget);
+      await reveal(tester, find.textContaining('DEVAM EDEN İŞLER'));
+      expect(find.textContaining('DEVAM EDEN İŞLER'), findsOneWidget);
     });
 
     testWidgets('(b) kurye bekleyenler shows waiting orders', (tester) async {
@@ -136,9 +137,9 @@ void main() {
       await pumpPage(tester);
 
       // Scroll to the waiting panel.
-      await reveal(tester, find.textContaining('Kurye Bekleyenler'));
+      await reveal(tester, find.textContaining('KURYE BEKLEYENLER'));
 
-      expect(find.textContaining('Kurye Bekleyenler (1)'), findsOneWidget);
+      expect(find.textContaining('KURYE BEKLEYENLER (1)'), findsOneWidget);
       // Name resolution: ugrama-1 → 'Merkez Ofis', ugrama-2 → 'Şube A'
       expect(find.text('Merkez Ofis → Şube A'), findsOneWidget);
     });
@@ -174,10 +175,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Scroll to see the Ata button.
-      await reveal(tester, find.widgetWithText(ElevatedButton, 'KURYE ATA'));
+      await reveal(tester, find.byKey(const Key('assign_courier_button')));
 
       // Tap Ata button.
-      await tester.tap(find.widgetWithText(ElevatedButton, 'KURYE ATA'));
+      await tester.tap(find.byKey(const Key('assign_courier_button')));
       await tester.pumpAndSettle();
 
       // Verify update was called with correct fields.
@@ -222,18 +223,15 @@ void main() {
       await pumpPage(tester);
 
       // Scroll to active panel.
-      await reveal(tester, find.textContaining('Devam Edenler'));
+      await reveal(tester, find.textContaining('DEVAM EDEN İŞLER'));
 
       // Select the active order.
       await tester.tap(find.byKey(const Key('active_s2')));
       await tester.pumpAndSettle();
 
       // Scroll to and tap Bitir button.
-      await reveal(
-        tester,
-        find.widgetWithText(ElevatedButton, 'TESLİMATI BİTİR'),
-      );
-      await tester.tap(find.widgetWithText(ElevatedButton, 'TESLİMATI BİTİR'));
+      await reveal(tester, find.byKey(const Key('finish_s2')));
+      await tester.tap(find.byKey(const Key('finish_s2')));
       await tester.pumpAndSettle();
 
       // Verify auto-pricing was applied.
@@ -267,18 +265,15 @@ void main() {
       await pumpPage(tester);
 
       // Scroll to active panel.
-      await reveal(tester, find.textContaining('Devam Edenler'));
+      await reveal(tester, find.textContaining('DEVAM EDEN İŞLER'));
 
       // Select the order.
       await tester.tap(find.byKey(const Key('active_s3')));
       await tester.pumpAndSettle();
 
       // Scroll to and tap Bitir.
-      await reveal(
-        tester,
-        find.widgetWithText(ElevatedButton, 'TESLİMATI BİTİR'),
-      );
-      await tester.tap(find.widgetWithText(ElevatedButton, 'TESLİMATI BİTİR'));
+      await reveal(tester, find.byKey(const Key('finish_s3')));
+      await tester.tap(find.byKey(const Key('finish_s3')));
       // Use pump() instead of pumpAndSettle() — the async _onFinish is
       // awaiting the dialog, so the widget tree won't settle until the
       // dialog is dismissed.
@@ -388,12 +383,12 @@ void main() {
       await pumpPage(tester);
 
       // Scroll to active panel.
-      await reveal(tester, find.textContaining('Devam Edenler'));
+      await reveal(tester, find.textContaining('DEVAM EDEN İŞLER'));
 
       // Route label should show resolved stop names.
       expect(find.text('Merkez Ofis → Şube B'), findsOneWidget);
-      // Subtitle should show resolved courier name.
-      expect(find.text('Kurye: Ali Kurye'), findsOneWidget);
+      // Action badge should show resolved courier name.
+      expect(find.text('ALI KURYE'), findsOneWidget);
     });
 
     testWidgets('(h) unknown IDs fall back to raw UUID strings', (
@@ -412,14 +407,40 @@ void main() {
       await pumpPage(tester);
 
       // Scroll to active panel.
-      await reveal(tester, find.textContaining('Devam Edenler'));
+      await reveal(tester, find.textContaining('DEVAM EDEN İŞLER'));
 
       // Fallback: raw IDs should appear.
       expect(
         find.text('unknown-stop-x → unknown-stop-y'),
         findsOneWidget,
       );
-      expect(find.text('Kurye: unknown-courier-z'), findsOneWidget);
+      expect(find.text('ATANMADI'), findsOneWidget);
+    });
+
+    testWidgets('(i) desktop active row is resilient to missing customer/personnel data', (
+      tester,
+    ) async {
+      fakeSiparisRepo.store['s-desktop'] = const Siparis(
+        id: 's-desktop',
+        musteriId: 'missing-musteri',
+        personelId: 'missing-personel',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+        kuryeId: 'kurye-1',
+        durum: SiparisDurum.devamEdiyor,
+      );
+
+      await pumpPage(
+        tester,
+        size: const Size(1440, 1200),
+      );
+
+      await reveal(tester, find.textContaining('DEVAM EDEN İŞLER'));
+
+      expect(find.text('missing-musteri'), findsOneWidget);
+      expect(find.text('missing-personel'), findsOneWidget);
+      expect(find.byKey(const Key('finish_s-desktop')), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 }

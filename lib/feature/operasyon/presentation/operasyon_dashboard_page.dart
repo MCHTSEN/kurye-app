@@ -19,24 +19,86 @@ import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 import '../domain/dashboard_stats.dart';
 import '../providers/dashboard_providers.dart';
+import '../providers/report_access_providers.dart';
 
-class OperasyonDashboardPage extends ConsumerWidget {
+class OperasyonDashboardPage extends ConsumerStatefulWidget {
   const OperasyonDashboardPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OperasyonDashboardPage> createState() =>
+      _OperasyonDashboardPageState();
+}
+
+class _OperasyonDashboardPageState
+    extends ConsumerState<OperasyonDashboardPage> {
+  final _passwordController = TextEditingController();
+  String? _errorText;
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _unlockReports() {
+    final expectedPassword = ref.read(operasyonReportsPasswordProvider);
+    if (expectedPassword.isEmpty ||
+        _passwordController.text.trim() == expectedPassword) {
+      ref.read(operasyonReportsUnlockedProvider.notifier).unlock();
+      setState(() => _errorText = null);
+      unawaited(
+        ref
+            .read(analyticsServiceProvider)
+            .track(AppEvents.operasyonReportsUnlocked),
+      );
+      return;
+    }
+
+    setState(() => _errorText = 'Şifre hatalı. Tekrar deneyin.');
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentUserProfileProvider);
+    final expectedPassword = ref.watch(operasyonReportsPasswordProvider);
+    final isUnlocked = ref.watch(operasyonReportsUnlockedProvider);
+    final shouldLockReports = expectedPassword.isNotEmpty && !isUnlocked;
 
     return ResponsiveScaffold(
-      title: 'Dashboard',
+      title: 'Raporlar',
       currentRoute: CustomRoute.operasyonDashboard,
       navItems: operasyonDesktopNavItems,
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
       showMobileDrawer: false,
+      actions: shouldLockReports
+          ? null
+          : [
+              IconButton(
+                tooltip: 'Raporları Kilitle',
+                onPressed: expectedPassword.isEmpty
+                    ? null
+                    : () {
+                        ref
+                            .read(operasyonReportsUnlockedProvider.notifier)
+                            .lock();
+                        _passwordController.clear();
+                        setState(() => _errorText = null);
+                      },
+                icon: const Icon(Icons.lock_outline_rounded),
+              ),
+            ],
       body: profileAsync.when(
         data: (profile) {
           final name = profile?.displayName ?? 'Operasyon';
+          if (shouldLockReports) {
+            return _ReportsPasswordGate(
+              controller: _passwordController,
+              errorText: _errorText,
+              onSubmit: _unlockReports,
+            );
+          }
+
           return RefreshIndicator(
             color: AppColors.primary,
             onRefresh: () async {
@@ -71,6 +133,115 @@ class OperasyonDashboardPage extends ConsumerWidget {
         ),
         error: (e, _) => Center(child: Text('Hata: $e')),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Password gate
+// ---------------------------------------------------------------------------
+
+class _ReportsPasswordGate extends StatelessWidget {
+  const _ReportsPasswordGate({
+    required this.controller,
+    required this.errorText,
+    required this.onSubmit,
+  });
+
+  final TextEditingController controller;
+  final String? errorText;
+  final VoidCallback onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          padding: ProjectPadding.all.large,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
+            ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 460),
+                child: Container(
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.08),
+                        blurRadius: 24,
+                        offset: const Offset(0, 16),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(
+                          Icons.lock_rounded,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(
+                        'Raporlar şifre ile korunuyor',
+                        style: GoogleFonts.inter(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'Ciro, kurye performansı ve aktif kurye özetini görmek için operasyon rapor şifresini girin.',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          height: 1.5,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      TextField(
+                        key: const Key('reports_password_field'),
+                        controller: controller,
+                        obscureText: true,
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => onSubmit(),
+                        decoration: InputDecoration(
+                          labelText: 'Rapor Şifresi',
+                          errorText: errorText,
+                          prefixIcon: const Icon(Icons.password_rounded),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      FilledButton.icon(
+                        key: const Key('reports_unlock_button'),
+                        onPressed: onSubmit,
+                        icon: const Icon(Icons.lock_open_rounded),
+                        label: const Text('Raporları Aç'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

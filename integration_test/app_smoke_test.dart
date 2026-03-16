@@ -35,6 +35,7 @@ void main() {
               mixpanelToken: '',
               analyticsEnabled: false,
               sentryDsn: '',
+              operasyonReportsPassword: '',
             ),
           ),
           backendModuleProvider.overrideWithValue(MockBackendModule()),
@@ -118,8 +119,9 @@ class _SignedInAuthRepository implements AuthRepository {
   }) async => _session;
 
   @override
-  Set<SocialLoginMethod> get supportedSocialLogins =>
-      const {SocialLoginMethod.google};
+  Set<SocialLoginMethod> get supportedSocialLogins => const {
+    SocialLoginMethod.google,
+  };
 
   @override
   Future<void> signOut() async {}

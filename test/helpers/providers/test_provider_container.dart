@@ -35,6 +35,7 @@ ProviderContainer createTestProviderContainer({
             mixpanelToken: '',
             analyticsEnabled: false,
             sentryDsn: '',
+            operasyonReportsPassword: '',
           ),
     ),
     backendModuleProvider.overrideWithValue(

@@ -1,6 +1,7 @@
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
@@ -27,8 +28,7 @@ class OperasyonGecmisPage extends ConsumerStatefulWidget {
   const OperasyonGecmisPage({super.key});
 
   @override
-  ConsumerState<OperasyonGecmisPage> createState() =>
-      _OperasyonGecmisPageState();
+  ConsumerState<OperasyonGecmisPage> createState() => _OperasyonGecmisPageState();
 }
 
 class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
@@ -158,9 +158,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       _editCikisId = order.cikisId;
       _editUgramaId = order.ugramaId;
       _editDurum = order.durum.value;
-      _editUcretController.text = order.ucret != null
-          ? order.ucret!.toStringAsFixed(2)
-          : '';
+      _editUcretController.text = order.ucret != null ? order.ucret!.toStringAsFixed(2) : '';
       _editNot1Controller.text = order.not1 ?? '';
     });
   }
@@ -188,9 +186,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
         'cikis_id': _editCikisId,
         'ugrama_id': _editUgramaId,
         'durum': _editDurum,
-        'not1': _editNot1Controller.text.trim().isNotEmpty
-            ? _editNot1Controller.text.trim()
-            : null,
+        'not1': _editNot1Controller.text.trim().isNotEmpty ? _editNot1Controller.text.trim() : null,
       };
 
       final parsedUcret = double.tryParse(_editUcretController.text);
@@ -198,9 +194,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
         fields['ucret'] = parsedUcret;
       }
 
-      await ref
-          .read(siparisRepositoryProvider)
-          .update(_selectedOrder!.id, fields);
+      await ref.read(siparisRepositoryProvider).update(_selectedOrder!.id, fields);
 
       ref.invalidate(siparisHistoryProvider);
       _clearEditPanel();
@@ -312,9 +306,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       ),
     );
 
-    if (filteredHistoryAsync case AsyncData(value: final orders)
-        when _selectedOrder != null &&
-            orders.every((item) => item.id != _selectedOrder!.id)) {
+    if (filteredHistoryAsync case AsyncData(
+      value: final orders,
+    ) when _selectedOrder != null && orders.every((item) => item.id != _selectedOrder!.id)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _selectedOrder != null) {
           _clearEditPanel();
@@ -332,28 +326,24 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       body: Shortcuts(
         shortcuts: isDesktop
             ? const {
-                SingleActivator(LogicalKeyboardKey.slash):
-                    _FocusHistorySearchIntent(),
-                SingleActivator(LogicalKeyboardKey.escape):
-                    _ClearHistorySelectionIntent(),
+                SingleActivator(LogicalKeyboardKey.slash): _FocusHistorySearchIntent(),
+                SingleActivator(LogicalKeyboardKey.escape): _ClearHistorySelectionIntent(),
               }
             : const {},
         child: Actions(
           actions: {
-            _FocusHistorySearchIntent:
-                CallbackAction<_FocusHistorySearchIntent>(
-                  onInvoke: (_) {
-                    _searchFocusNode.requestFocus();
-                    return null;
-                  },
-                ),
-            _ClearHistorySelectionIntent:
-                CallbackAction<_ClearHistorySelectionIntent>(
-                  onInvoke: (_) {
-                    _clearEditPanel();
-                    return null;
-                  },
-                ),
+            _FocusHistorySearchIntent: CallbackAction<_FocusHistorySearchIntent>(
+              onInvoke: (_) {
+                _searchFocusNode.requestFocus();
+                return null;
+              },
+            ),
+            _ClearHistorySelectionIntent: CallbackAction<_ClearHistorySelectionIntent>(
+              onInvoke: (_) {
+                _clearEditPanel();
+                return null;
+              },
+            ),
           },
           child: isDesktop
               ? WorkbenchSplitView(
@@ -367,22 +357,20 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                     musteriListAsync,
                     ugramaListAsync,
                   ),
-                  contentPane: SingleChildScrollView(
+                  contentPane: ListView(
                     padding: const EdgeInsets.only(bottom: 32),
-                    child: Column(
-                      children: [
-                        _buildSearchAndStatusCard(historyAsync),
-                        const SizedBox(height: AppSpacing.md),
-                        _buildFilterBar(musteriListAsync, ugramaListAsync),
-                        const SizedBox(height: AppSpacing.md),
-                        _buildDataTableCard(
-                          filteredHistoryAsync,
-                          musteriMap: musteriMap,
-                          ugramaMap: ugramaMap,
-                          kuryeMap: kuryeMap,
-                        ),
-                      ],
-                    ),
+                    children: [
+                      _buildSearchAndStatusCard(historyAsync),
+                      const SizedBox(height: AppSpacing.md),
+                      _buildFilterBar(musteriListAsync, ugramaListAsync),
+                      const SizedBox(height: AppSpacing.md),
+                      _buildDataTableCard(
+                        filteredHistoryAsync,
+                        musteriMap: musteriMap,
+                        ugramaMap: ugramaMap,
+                        kuryeMap: kuryeMap,
+                      ),
+                    ],
                   ),
                 )
               : ListView(
@@ -390,10 +378,8 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                   children: [
                     _buildRevenueCard(filteredHistoryAsync),
                     const SizedBox(height: AppSpacing.md),
-                    if (_selectedOrder != null)
-                      _buildEditPanel(musteriListAsync, ugramaListAsync),
-                    if (_selectedOrder != null)
-                      const SizedBox(height: AppSpacing.md),
+                    if (_selectedOrder != null) _buildEditPanel(musteriListAsync, ugramaListAsync),
+                    if (_selectedOrder != null) const SizedBox(height: AppSpacing.md),
                     _buildSearchAndStatusCard(historyAsync),
                     const SizedBox(height: AppSpacing.md),
                     _buildFilterBar(musteriListAsync, ugramaListAsync),
@@ -416,46 +402,76 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       0,
       (sum, item) => sum + (item.ucret ?? 0),
     );
-    final completedCount = orders
-        .where((item) => item.durum == SiparisDurum.tamamlandi)
-        .length;
+    final completedCount = orders.where((item) => item.durum == SiparisDurum.tamamlandi).length;
 
     return Container(
-      padding: ProjectPadding.all.normal,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          _HistoryMetric(
-            label: 'Görünen Sipariş',
-            value: '${orders.length}',
-            accentColor: AppColors.primary,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          _HistoryMetric(
-            label: 'Tamamlanan',
-            value: '$completedCount',
-            accentColor: AppColors.secondary,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          _HistoryMetric(
-            label: 'Filtrelenmiş Ciro',
-            value: '₺${total.toStringAsFixed(2)}',
-            accentColor: AppColors.textPrimary,
-          ),
-          const Spacer(),
-          const Text(
-            '/ aramayı açar, Esc düzenlemeyi kapatır',
-            style: TextStyle(
-              color: AppColors.textMuted,
-              fontWeight: FontWeight.w600,
-            ),
+        color: const Color(0xFF1D1B41),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      child: Row(
+        children: [
+          _buildHeaderMetric('GÖRÜNEN SİPARİŞ', '${orders.length}', const Color(0xFF6366F1)),
+          const SizedBox(width: 32),
+          _buildHeaderMetric('TAMAMLANAN', '$completedCount', const Color(0xFF10B981)),
+          const SizedBox(width: 32),
+          _buildHeaderMetric(
+            'TOPLAM CİRO',
+            '₺${total.toStringAsFixed(2)}',
+            const Color(0xFFF59E0B),
+          ),
+          const Spacer(),
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                'SİSTEM AKTİF',
+                style: TextStyle(
+                  color: Color(0xFF10B981),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 10,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                '/ arama, Esc kapatır',
+                style: TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderMetric(String label, String value, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.5),
+            fontSize: 9,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+        ),
+      ],
     );
   }
 
@@ -489,37 +505,34 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     AsyncValue<List<Musteri>> musteriListAsync,
     AsyncValue<List<Ugrama>> ugramaListAsync,
   ) {
-    return SingleChildScrollView(
+    return ListView(
       padding: const EdgeInsets.only(bottom: 32),
-      child: Column(
-        children: [
-          _buildSelectionSummaryCard(),
-          const SizedBox(height: AppSpacing.md),
-          if (_selectedOrder == null)
-            const AppSectionCard(
-              title: 'Sipariş Detayı',
-              description:
-                  'Tablodan bir sipariş seçildiğinde düzenleme paneli burada açılır.',
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Sağ panel yerine burada sabit detay alanı kullanılır.'),
-                  SizedBox(height: AppSpacing.sm),
-                  Wrap(
-                    spacing: AppSpacing.sm,
-                    runSpacing: AppSpacing.sm,
-                    children: [
-                      Chip(label: Text('Esc kapatır')),
-                      Chip(label: Text('/ arama')),
-                    ],
-                  ),
-                ],
-              ),
-            )
-          else
-            _buildEditPanel(musteriListAsync, ugramaListAsync),
-        ],
-      ),
+      children: [
+        _buildSelectionSummaryCard(),
+        const SizedBox(height: AppSpacing.md),
+        if (_selectedOrder == null)
+          const AppSectionCard(
+            title: 'Sipariş Detayı',
+            description: 'Tablodan bir sipariş seçildiğinde düzenleme paneli burada açılır.',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Sağ panel yerine burada sabit detay alanı kullanılır.'),
+                SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    Chip(label: Text('Esc kapatır')),
+                    Chip(label: Text('/ arama')),
+                  ],
+                ),
+              ],
+            ),
+          )
+        else
+          _buildEditPanel(musteriListAsync, ugramaListAsync),
+      ],
     );
   }
 
@@ -569,13 +582,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
 
     final filteredStops = ugramalar;
 
-    final musteriItems = musteriler
-        .map((m) => (value: m.id, label: m.firmaKisaAd))
-        .toList();
+    final musteriItems = musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList();
 
-    final stopItems = filteredStops
-        .map((u) => (value: u.id, label: u.ugramaAdi))
-        .toList();
+    final stopItems = filteredStops.map((u) => (value: u.id, label: u.ugramaAdi)).toList();
 
     final durumItems = [
       SiparisDurum.tamamlandi,
@@ -683,9 +692,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
           SiparisDurum.tamamlandi.value: orders
               .where((item) => item.durum == SiparisDurum.tamamlandi)
               .length,
-          SiparisDurum.iptal.value: orders
-              .where((item) => item.durum == SiparisDurum.iptal)
-              .length,
+          SiparisDurum.iptal.value: orders.where((item) => item.durum == SiparisDurum.iptal).length,
           SiparisDurum.devamEdiyor.value: orders
               .where((item) => item.durum == SiparisDurum.devamEdiyor)
               .length,
@@ -699,8 +706,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
 
     return AppSectionCard(
       title: 'Hızlı Arama',
-      description:
-          'Sipariş ID, müşteri, uğrama, kurye veya not ile filtreleyin.',
+      description: 'Sipariş ID, müşteri, uğrama, kurye veya not ile filtreleyin.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -783,84 +789,119 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     AsyncValue<List<Musteri>> musteriListAsync,
     AsyncValue<List<Ugrama>> ugramaListAsync,
   ) {
-    final musteriler = musteriListAsync is AsyncData<List<Musteri>>
-        ? musteriListAsync.value
-        : <Musteri>[];
-    final ugramalar = ugramaListAsync is AsyncData<List<Ugrama>>
-        ? ugramaListAsync.value
-        : <Ugrama>[];
+    final musteriler = musteriListAsync.maybeWhen(data: (d) => d, orElse: () => <Musteri>[]);
+    final ugramalar = ugramaListAsync.maybeWhen(data: (d) => d, orElse: () => <Ugrama>[]);
 
-    final filteredStops = ugramalar;
+    return _PremiumCard(
+      title: 'FİLTRELER',
+      icon: Icons.filter_list_rounded,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompact = constraints.maxWidth < 900;
 
-    return AppSectionCard(
-      title: 'Filtreler',
-      description:
-          'Tarih ve operasyon noktalarına göre kayıt aralığını daraltın.',
-      child: Column(
-        children: [
-          Row(
+          final dateField = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  '${_formatDate(_dateRange.start)} — '
-                  '${_formatDate(_dateRange.end)}',
+              const Text(
+                'TARİH ARALIĞI',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textMuted,
                 ),
               ),
-              TextButton.icon(
-                key: const Key('filter_date_button'),
-                onPressed: _pickDateRange,
-                icon: const Icon(Icons.date_range),
-                label: const Text('Tarih'),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: _pickDateRange,
+                child: Container(
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_rounded,
+                        size: 18,
+                        color: AppColors.textMuted,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '${_formatDate(_dateRange.start)} - ${_formatDate(_dateRange.end)}',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          SearchableDropdown<String>(
+          );
+
+          final musteriField = SearchableDropdown<String>(
             key: const Key('filter_musteri_dropdown'),
             value: _filterMusteriId,
-            label: 'Müşteri',
-            placeholder: 'Tümü',
-            searchPlaceholder: 'Müşteri ara...',
-            items: musteriler
-                .map((m) => (value: m.id, label: m.firmaKisaAd))
-                .toList(),
+            label: 'MÜŞTERİ',
+            placeholder: 'Hepsi',
+            items: musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList(),
             onChanged: _onFilterMusteriChanged,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          SearchableDropdown<String>(
-            key: const Key('filter_cikis_dropdown'),
+          );
+
+          final guzergahField = SearchableDropdown<String>(
             value: _filterCikisId,
-            label: 'Çıkış',
-            placeholder: 'Tümü',
-            searchPlaceholder: 'Uğrama ara...',
-            items: filteredStops
-                .map((u) => (value: u.id, label: u.ugramaAdi))
-                .toList(),
+            label: 'GÜZERGAH',
+            placeholder: 'Hepsi',
+            items: ugramalar.map((u) => (value: u.id, label: u.ugramaAdi)).toList(),
             onChanged: (v) => setState(() => _filterCikisId = v),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          SearchableDropdown<String>(
-            key: const Key('filter_ugrama_dropdown'),
-            value: _filterUgramaId,
-            label: 'Uğrama',
-            placeholder: 'Tümü',
-            searchPlaceholder: 'Uğrama ara...',
-            items: filteredStops
-                .map((u) => (value: u.id, label: u.ugramaAdi))
-                .toList(),
-            onChanged: (v) => setState(() => _filterUgramaId = v),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              key: const Key('filter_clear_button'),
+          );
+
+          final clearButton = SizedBox(
+            width: 56,
+            height: 48,
+            child: ElevatedButton(
               onPressed: _clearFilters,
-              icon: const Icon(Icons.clear),
-              label: const Text('Temizle'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF1F5F9),
+                foregroundColor: AppColors.textPrimary,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Icon(Icons.refresh_rounded),
             ),
-          ),
-        ],
+          );
+
+          if (isCompact) {
+            return Column(
+              children: [
+                dateField,
+                const SizedBox(height: 16),
+                musteriField,
+                const SizedBox(height: 16),
+                guzergahField,
+                const SizedBox(height: 16),
+                Align(alignment: Alignment.centerRight, child: clearButton),
+              ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(child: dateField),
+              const SizedBox(width: 16),
+              Expanded(child: musteriField),
+              const SizedBox(width: 16),
+              Expanded(child: guzergahField),
+              const SizedBox(width: 16),
+              clearButton,
+            ],
+          );
+        },
       ),
     );
   }
@@ -875,76 +916,138 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
   }) {
     return historyAsync.when(
       data: (orders) {
-        if (orders.isEmpty) {
-          return const AppSectionCard(
-            title: 'Siparişler',
-            child: Text('Sipariş bulunamadı.'),
-          );
-        }
-
-        return AppSectionCard(
-          title: 'Siparişler (${orders.length})',
-          description: 'Satır seçerek düzenleme panelini açabilirsiniz.',
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DataTable(
-              key: const Key('history_data_table'),
-              showCheckboxColumn: false,
-              columns: const [
-                DataColumn(label: Text('Tarih')),
-                DataColumn(label: Text('Müşteri')),
-                DataColumn(label: Text('Çıkış')),
-                DataColumn(label: Text('Uğrama')),
-                DataColumn(label: Text('Kurye')),
-                DataColumn(label: Text('Ücret'), numeric: true),
-                DataColumn(label: Text('Durum')),
-              ],
-              rows: orders.map((s) {
-                final isSelected = _selectedOrder?.id == s.id;
-                return DataRow(
-                  key: ValueKey('row_${s.id}'),
-                  selected: isSelected,
-                  onSelectChanged: (_) => _selectOrder(s),
-                  cells: [
-                    DataCell(
-                      Text(
-                        s.createdAt != null ? _formatDate(s.createdAt!) : '-',
-                      ),
-                    ),
-                    DataCell(Text(musteriMap[s.musteriId] ?? s.musteriId)),
-                    DataCell(Text(ugramaMap[s.cikisId] ?? s.cikisId)),
-                    DataCell(Text(ugramaMap[s.ugramaId] ?? s.ugramaId)),
-                    DataCell(
-                      Text(
-                        s.kuryeId != null
-                            ? (kuryeMap[s.kuryeId!] ?? s.kuryeId!)
-                            : '-',
-                      ),
-                    ),
-                    DataCell(
-                      Text(
-                        s.ucret != null
-                            ? '₺${s.ucret!.toStringAsFixed(2)}'
-                            : '-',
-                      ),
-                    ),
-                    DataCell(Text(s.durum.value)),
-                  ],
-                );
-              }).toList(),
-            ),
+        return _PremiumCard(
+          title: 'SİPARİŞ GEÇMİŞİ (${orders.length})',
+          icon: Icons.history_rounded,
+          child: Column(
+            key: const Key('history_data_table'),
+            children: [
+              _buildTableHeader(['Tarih', 'Müşteri', 'Çıkış', 'Uğrama', 'Kurye', 'Ücret', 'Durum']),
+              const Divider(height: 1),
+              if (orders.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 40),
+                  child: Text('Kayıt bulunamadı', style: TextStyle(color: AppColors.textMuted)),
+                )
+              else
+                ...orders.map((s) => _buildDataRow(s, musteriMap, ugramaMap, kuryeMap)),
+            ],
           ),
         );
       },
-      loading: () => const AppSectionCard(
-        title: 'Siparişler',
-        child: Center(child: CircularProgressIndicator()),
-      ),
-      error: (e, _) => AppSectionCard(
-        title: 'Siparişler',
-        child: Text('Hata: $e'),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Text('Hata: $e'),
+    );
+  }
+
+  Widget _buildTableHeader(List<String> labels) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      child: Row(
+        children: labels
+            .map(
+              (l) => Expanded(
+                child: Text(
+                  l.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textMuted,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            )
+            .toList(),
       ),
     );
+  }
+
+  Widget _buildDataRow(
+    Siparis s,
+    Map<String, String> musteriMap,
+    Map<String, String> ugramaMap,
+    Map<String, String> kuryeMap,
+  ) {
+    final isSelected = _selectedOrder?.id == s.id;
+    return InkWell(
+      onTap: () => _selectOrder(s),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.05) : null,
+          border: const Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                s.createdAt != null ? _formatDate(s.createdAt!) : '-',
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                musteriMap[s.musteriId] ?? s.musteriId,
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              ),
+            ),
+            Expanded(
+              child: Text(ugramaMap[s.cikisId] ?? s.cikisId, style: const TextStyle(fontSize: 13)),
+            ),
+            Expanded(
+              child: Text(
+                ugramaMap[s.ugramaId] ?? s.ugramaId,
+                style: const TextStyle(fontSize: 13),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                kuryeMap[s.kuryeId] ?? '-',
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                s.ucret != null ? '₺${s.ucret!.toStringAsFixed(2)}' : '-',
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getStatusColor(s.durum).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  s.durum.value.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: _getStatusColor(s.durum),
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getStatusColor(SiparisDurum durum) {
+    switch (durum) {
+      case SiparisDurum.tamamlandi:
+        return const Color(0xFF10B981);
+      case SiparisDurum.iptal:
+        return const Color(0xFFEF4444);
+      case SiparisDurum.devamEdiyor:
+        return const Color(0xFF6366F1);
+      case SiparisDurum.kuryeBekliyor:
+        return const Color(0xFFF59E0B);
+    }
   }
 
   // ──────────── Helpers ────────────
@@ -956,53 +1059,79 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
   }
 }
 
-class _HistoryMetric extends StatelessWidget {
-  const _HistoryMetric({
-    required this.label,
-    required this.value,
-    required this.accentColor,
-  });
-
-  final String label;
-  final String value;
-  final Color accentColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: accentColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _FocusHistorySearchIntent extends Intent {
   const _FocusHistorySearchIntent();
 }
 
 class _ClearHistorySelectionIntent extends Intent {
   const _ClearHistorySelectionIntent();
+}
+
+class _PremiumCard extends StatelessWidget {
+  const _PremiumCard({
+    required this.title,
+    required this.child,
+    this.icon,
+  });
+
+  final String title;
+  final Widget child;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    const headerColor = Colors.white;
+    const titleColor = AppColors.textPrimary;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 30,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            color: headerColor,
+            child: Row(
+              children: [
+                if (icon != null) ...[
+                  Icon(
+                    icon,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: titleColor,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: child,
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);
+  }
 }

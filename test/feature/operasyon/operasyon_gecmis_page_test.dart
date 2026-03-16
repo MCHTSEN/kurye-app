@@ -344,7 +344,7 @@ void main() {
       expect(find.byKey(const Key('history_search_field')), findsOneWidget);
       expect(find.text('Seçili Sipariş'), findsOneWidget);
       expect(
-        find.text('/ aramayı açar, Esc düzenlemeyi kapatır'),
+        find.text('/ arama, Esc kapatır'),
         findsOneWidget,
       );
     });

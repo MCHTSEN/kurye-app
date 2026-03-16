@@ -373,11 +373,6 @@ class ResponsiveScaffold extends StatelessWidget {
   }
 
   Widget _buildDrawer(BuildContext context) {
-    final subtitle = headerSubtitle;
-    final initials = subtitle != null && subtitle.isNotEmpty
-        ? subtitle[0].toUpperCase()
-        : 'M';
-
     return Drawer(
       child: Column(
         children: [
@@ -393,49 +388,17 @@ class ResponsiveScaffold extends StatelessWidget {
             decoration: const BoxDecoration(
               gradient: AppColors.primaryGradient,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
-                      width: 2,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      initials,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 240,
+                  maxHeight: 140,
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  headerTitle,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
+                child: Image.asset(
+                  'assets/images/bmk-logo.png',
+                  fit: BoxFit.contain,
                 ),
-                if (subtitle != null)
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
-              ],
+              ),
             ),
           ),
           // ─── Nav items ───

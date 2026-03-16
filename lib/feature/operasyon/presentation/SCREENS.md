@@ -3,23 +3,28 @@
 ## OperasyonShellPage
 - Purpose: Mobil operasyon ana akışını 4 sekmeli `NavigationBar` ile sarmalar.
 - Mobile tabs:
-  - `Dashboard`
   - `Operasyon`
   - `Uğrama`
+  - `Raporlar`
   - `Ayarlar`
 - State behavior:
   - Sekmeler `AutoTabsScaffold` üzerinden korunur.
   - `Operasyon Ekranı` form state'i sekme değişiminde resetlenmez.
+  - Varsayılan açılış `Operasyon` sekmesidir.
 - Desktop/tablet:
   - Shell child route'u doğrudan gösterir.
   - Sayfalar kendi `ResponsiveScaffold` desktop sidebar davranışını korur.
 
 ## OperasyonDashboardPage
+- Purpose: Şifre ile açılan rapor ekranı
+- Giriş davranışı:
+  - `OPERASYON_REPORTS_PASSWORD` tanımlıysa önce şifre formu gösterilir
+  - Doğru şifre girilmeden metrikler render edilmez
 - 3 aylık / 1 aylık / 1 haftalık ciro toplamları
 - İçinde bulunulan ayın günlük ortalaması
 - Kuryelerin aylık ve günlük iş sayıları
 - Bugünkü aktif kuryeler
-- Mobile nav: `Dashboard` tab'ı
+- Mobile nav: `Raporlar` tab'ı
 - Desktop UX:
   - Özet metrikler taranabilir bloklar halinde kalır
   - Hızlı operasyon geçişleri dashboard içindeki kartlar ve sidebar üzerinden yapılır

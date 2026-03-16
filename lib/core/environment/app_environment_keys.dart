@@ -8,4 +8,5 @@ abstract final class AppEnvironmentKeys {
   static const mixpanelToken = 'MIXPANEL_TOKEN';
   static const analyticsEnabled = 'ANALYTICS_ENABLED';
   static const sentryDsn = 'SENTRY_DSN';
+  static const operasyonReportsPassword = 'OPERASYON_REPORTS_PASSWORD';
 }

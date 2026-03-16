@@ -12,6 +12,28 @@ flutter pub get
 flutter run --dart-define=APP_ENV=dev --dart-define=BACKEND_PROVIDER=mock --dart-define=CREDIT_ACCESS_PROVIDER=backend
 ```
 
+## Web Debug (Local)
+
+Local web geliştirmede bazı ortamlarda CSP, Flutter web debug çıktısındaki
+`eval` kullanımını bloklayabilir. Bu durumda production CSP'yi gevşetmek yerine
+Chrome'u yalnızca local development için gevşetilmiş güvenlik flag'leriyle aç.
+
+```bash
+flutter run -d chrome -t lib/main_supabase.dart \
+  --web-hostname 127.0.0.1 \
+  --web-port 8080 \
+  --dart-define-from-file=.env \
+  --dart-define=APP_ENV=dev \
+  --dart-define=CREDIT_ACCESS_PROVIDER=backend \
+  --dart-define=ANALYTICS_ENABLED=false \
+  --web-browser-flag=--disable-web-security \
+  --web-browser-flag=--disable-site-isolation-trials \
+  --web-browser-flag=--user-data-dir=/tmp/kurye-app-chrome-dev
+```
+
+Bu komut yalnızca local debug içindir. Production / staging build'lerinde CSP
+gevşetilmemelidir.
+
 ## Ortam Değişkenleri
 
 - `APP_ENV`: `dev`, `staging`, `prod`
@@ -22,6 +44,7 @@ flutter run --dart-define=APP_ENV=dev --dart-define=BACKEND_PROVIDER=mock --dart
 - `SUPABASE_ANON_KEY`: Supabase anon key
 - `MIXPANEL_TOKEN`: Mixpanel project token
 - `ANALYTICS_ENABLED`: `true` / `false`
+- `OPERASYON_REPORTS_PASSWORD`: operasyon rapor ekranı şifresi
 
 ## İskelet Kapsamı
 
