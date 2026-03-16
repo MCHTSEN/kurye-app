@@ -9,46 +9,55 @@ const operasyonDesktopNavItems = <NavItem>[
     icon: Icons.dashboard,
     label: 'Dashboard',
     route: CustomRoute.operasyonDashboard,
+    section: 'Ana',
   ),
   NavItem(
     icon: Icons.assignment,
     label: 'Operasyon Ekranı',
     route: CustomRoute.operasyonEkran,
+    section: 'Ana',
   ),
   NavItem(
     icon: Icons.business,
     label: 'Müşteri Kayıt',
     route: CustomRoute.musteriKayit,
+    section: 'Yönetim',
   ),
   NavItem(
     icon: Icons.people,
     label: 'Personel Kayıt',
     route: CustomRoute.musteriPersonelKayit,
+    section: 'Yönetim',
   ),
   NavItem(
     icon: Icons.location_on,
     label: 'Uğrama Yönetimi',
     route: CustomRoute.ugramaYonetim,
+    section: 'Operasyon',
   ),
   NavItem(
     icon: Icons.playlist_add_check,
     label: 'Uğrama Talepleri',
     route: CustomRoute.ugramaTalepYonetim,
+    section: 'Operasyon',
   ),
   NavItem(
     icon: Icons.two_wheeler,
     label: 'Kurye Yönetimi',
     route: CustomRoute.kuryeYonetim,
+    section: 'Yönetim',
   ),
   NavItem(
     icon: Icons.how_to_reg,
     label: 'Rol Onayları',
     route: CustomRoute.rolOnay,
+    section: 'Yönetim',
   ),
   NavItem(
     icon: Icons.history,
     label: 'Geçmiş Siparişler',
     route: CustomRoute.operasyonGecmis,
+    section: 'Operasyon',
   ),
 ];
 

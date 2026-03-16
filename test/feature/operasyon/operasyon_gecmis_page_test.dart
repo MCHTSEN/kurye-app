@@ -44,6 +44,27 @@ void main() {
     });
 
     Future<void> pumpPage(WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(390, 844);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await tester.pumpApp(
+        const OperasyonGecmisPage(),
+        overrides: [
+          siparisRepositoryProvider.overrideWithValue(fakeSiparisRepo),
+          musteriRepositoryProvider.overrideWithValue(fakeMusteriRepo),
+          ugramaRepositoryProvider.overrideWithValue(fakeUgramaRepo),
+          kuryeRepositoryProvider.overrideWithValue(fakeKuryeRepo),
+        ],
+      );
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> pumpDesktopPage(WidgetTester tester) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(1440, 1200);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpApp(
         const OperasyonGecmisPage(),
         overrides: [
@@ -127,8 +148,9 @@ void main() {
       expect(revenueText.data, '₺200.00');
     });
 
-    testWidgets('(c) tap row populates edit panel with order data',
-        (tester) async {
+    testWidgets('(c) tap row populates edit panel with order data', (
+      tester,
+    ) async {
       fakeSiparisRepo.store['s1'] = Siparis(
         id: 's1',
         musteriId: 'musteri-1',
@@ -191,8 +213,9 @@ void main() {
       expect(not1Field.controller?.text, 'Test not');
     });
 
-    testWidgets('(d) edit panel save triggers update and refreshes list',
-        (tester) async {
+    testWidgets('(d) edit panel save triggers update and refreshes list', (
+      tester,
+    ) async {
       fakeSiparisRepo.store['s1'] = Siparis(
         id: 's1',
         musteriId: 'musteri-1',
@@ -253,8 +276,9 @@ void main() {
       expect(find.text('Sipariş güncellendi'), findsOneWidget);
     });
 
-    testWidgets('(e) filter application changes displayed results',
-        (tester) async {
+    testWidgets('(e) filter application changes displayed results', (
+      tester,
+    ) async {
       // Seed orders for two different customers.
       fakeSiparisRepo.store['s1'] = Siparis(
         id: 's1',
@@ -298,6 +322,29 @@ void main() {
       // the dropdown widget exists and is tappable.
       expect(
         find.byKey(const Key('filter_musteri_dropdown')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('(f) desktop workbench renders search and side editor shell', (
+      tester,
+    ) async {
+      fakeSiparisRepo.store['s1'] = Siparis(
+        id: 's1',
+        musteriId: 'musteri-1',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+        durum: SiparisDurum.tamamlandi,
+        ucret: 100,
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      );
+
+      await pumpDesktopPage(tester);
+
+      expect(find.byKey(const Key('history_search_field')), findsOneWidget);
+      expect(find.text('Seçili Sipariş'), findsOneWidget);
+      expect(
+        find.text('/ aramayı açar, Esc düzenlemeyi kapatır'),
         findsOneWidget,
       );
     });

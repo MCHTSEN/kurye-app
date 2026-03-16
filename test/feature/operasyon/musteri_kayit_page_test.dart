@@ -9,9 +9,14 @@ import '../../helpers/widgets/test_app.dart';
 
 void main() {
   group('MusteriKayitPage', () {
-    testWidgets('renders form fields and empty list', (tester) async {
-      final fakeRepo = FakeMusteriRepository();
-
+    Future<void> pumpPage(
+      WidgetTester tester,
+      FakeMusteriRepository fakeRepo,
+    ) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(390, 844);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpApp(
         const MusteriKayitPage(),
         overrides: [
@@ -19,6 +24,12 @@ void main() {
         ],
       );
       await tester.pumpAndSettle();
+    }
+
+    testWidgets('renders form fields and empty list', (tester) async {
+      final fakeRepo = FakeMusteriRepository();
+
+      await pumpPage(tester, fakeRepo);
 
       // Form section
       expect(find.text('Yeni Müşteri'), findsOneWidget);
@@ -38,15 +49,10 @@ void main() {
     testWidgets('validates required field before submit', (tester) async {
       final fakeRepo = FakeMusteriRepository();
 
-      await tester.pumpApp(
-        const MusteriKayitPage(),
-        overrides: [
-          musteriRepositoryProvider.overrideWithValue(fakeRepo),
-        ],
-      );
-      await tester.pumpAndSettle();
+      await pumpPage(tester, fakeRepo);
 
       // Tap save without filling required field
+      await tester.ensureVisible(find.text('Kaydet'));
       await tester.tap(find.text('Kaydet'));
       await tester.pumpAndSettle();
 
@@ -58,13 +64,7 @@ void main() {
     testWidgets('creates a record and shows it in list', (tester) async {
       final fakeRepo = FakeMusteriRepository();
 
-      await tester.pumpApp(
-        const MusteriKayitPage(),
-        overrides: [
-          musteriRepositoryProvider.overrideWithValue(fakeRepo),
-        ],
-      );
-      await tester.pumpAndSettle();
+      await pumpPage(tester, fakeRepo);
 
       // Fill required field
       await tester.enterText(
@@ -77,6 +77,7 @@ void main() {
       );
 
       // Submit
+      await tester.ensureVisible(find.text('Kaydet'));
       await tester.tap(find.text('Kaydet'));
       await tester.pumpAndSettle();
 
@@ -100,22 +101,16 @@ void main() {
         ),
       );
 
-      await tester.pumpApp(
-        const MusteriKayitPage(),
-        overrides: [
-          musteriRepositoryProvider.overrideWithValue(fakeRepo),
-        ],
-      );
-      await tester.pumpAndSettle();
+      await pumpPage(tester, fakeRepo);
 
       // List should show the record
       expect(find.text('Acme'), findsOneWidget);
 
       // Scroll down to make the list item visible, then tap
-      await tester.dragUntilVisible(
+      await tester.scrollUntilVisible(
         find.text('Acme'),
-        find.byType(ListView).first,
-        const Offset(0, -200),
+        200,
+        scrollable: find.byType(Scrollable).first,
       );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Acme'));

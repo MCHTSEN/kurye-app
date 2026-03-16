@@ -9,7 +9,6 @@ import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
 import 'package:bursamotokurye/product/user_profile/user_profile_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../helpers/fakes/fake_kurye_repository.dart';
 import '../../helpers/fakes/fake_musteri_repository.dart';
@@ -72,6 +71,10 @@ void main() {
       WidgetTester tester, {
       OrderAlertService? alertService,
     }) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(390, 844);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpApp(
         OperasyonEkranPage(alertService: alertService),
         overrides: [
@@ -88,24 +91,36 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    Future<void> reveal(WidgetTester tester, Finder target) async {
+      if (target.evaluate().isNotEmpty) {
+        await tester.ensureVisible(target.first);
+        await tester.pumpAndSettle();
+        return;
+      }
+
+      final scrollables = find.byType(Scrollable);
+      if (scrollables.evaluate().isNotEmpty) {
+        await tester.scrollUntilVisible(
+          target,
+          200,
+          scrollable: scrollables.first,
+        );
+      } else {
+        await tester.ensureVisible(target);
+      }
+      await tester.pumpAndSettle();
+    }
+
     testWidgets('(a) renders 3 panels with correct titles', (tester) async {
       await pumpPage(tester);
 
       expect(find.text('Sipariş Oluşturma Paneli'), findsOneWidget);
 
       // Scroll down to see bottom panels.
-      await tester.dragUntilVisible(
-        find.textContaining('Kurye Bekleyenler'),
-        find.byType(ListView).first,
-        const Offset(0, -200),
-      );
+      await reveal(tester, find.textContaining('Kurye Bekleyenler'));
       expect(find.textContaining('Kurye Bekleyenler'), findsOneWidget);
 
-      await tester.dragUntilVisible(
-        find.textContaining('Devam Edenler'),
-        find.byType(ListView).first,
-        const Offset(0, -200),
-      );
+      await reveal(tester, find.textContaining('Devam Edenler'));
       expect(find.textContaining('Devam Edenler'), findsOneWidget);
     });
 
@@ -121,20 +136,16 @@ void main() {
       await pumpPage(tester);
 
       // Scroll to the waiting panel.
-      await tester.dragUntilVisible(
-        find.textContaining('Kurye Bekleyenler'),
-        find.byType(ListView).first,
-        const Offset(0, -200),
-      );
+      await reveal(tester, find.textContaining('Kurye Bekleyenler'));
 
       expect(find.textContaining('Kurye Bekleyenler (1)'), findsOneWidget);
       // Name resolution: ugrama-1 → 'Merkez Ofis', ugrama-2 → 'Şube A'
       expect(find.text('Merkez Ofis → Şube A'), findsOneWidget);
     });
 
-    testWidgets(
-        '(c) courier assignment flow — select, pick courier, tap Ata',
-        (tester) async {
+    testWidgets('(c) courier assignment flow — select, pick courier, tap Ata', (
+      tester,
+    ) async {
       // Seed a waiting order.
       fakeSiparisRepo.store['s1'] = const Siparis(
         id: 's1',
@@ -146,22 +157,14 @@ void main() {
       await pumpPage(tester);
 
       // Scroll to the waiting panel.
-      await tester.dragUntilVisible(
-        find.byKey(const Key('waiting_s1')),
-        find.byType(ListView).first,
-        const Offset(0, -200),
-      );
+      await reveal(tester, find.byKey(const Key('waiting_s1')));
 
       // Select the order checkbox.
       await tester.tap(find.byKey(const Key('waiting_s1')));
       await tester.pumpAndSettle();
 
       // Scroll to see the kurye dropdown.
-      await tester.dragUntilVisible(
-        find.byKey(const Key('kurye_dropdown')),
-        find.byType(ListView).first,
-        const Offset(0, -200),
-      );
+      await reveal(tester, find.byKey(const Key('kurye_dropdown')));
 
       // Select courier from dropdown.
       await tester.tap(find.byKey(const Key('kurye_dropdown')));
@@ -171,14 +174,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Scroll to see the Ata button.
-      await tester.dragUntilVisible(
-        find.widgetWithText(ShadButton, 'Ata'),
-        find.byType(ListView).first,
-        const Offset(0, -200),
-      );
+      await reveal(tester, find.widgetWithText(ElevatedButton, 'KURYE ATA'));
 
       // Tap Ata button.
-      await tester.tap(find.widgetWithText(ShadButton, 'Ata'));
+      await tester.tap(find.widgetWithText(ElevatedButton, 'KURYE ATA'));
       await tester.pumpAndSettle();
 
       // Verify update was called with correct fields.
@@ -196,8 +195,9 @@ void main() {
       expect(log.degistirenId, _testUserId);
     });
 
-    testWidgets('(d) finish with auto-pricing — historical match found',
-        (tester) async {
+    testWidgets('(d) finish with auto-pricing — historical match found', (
+      tester,
+    ) async {
       // Seed an in-progress order.
       fakeSiparisRepo.store['s2'] = const Siparis(
         id: 's2',
@@ -222,23 +222,18 @@ void main() {
       await pumpPage(tester);
 
       // Scroll to active panel.
-      await tester.dragUntilVisible(
-        find.textContaining('Devam Edenler'),
-        find.byType(ListView).first,
-        const Offset(0, -200),
-      );
+      await reveal(tester, find.textContaining('Devam Edenler'));
 
       // Select the active order.
       await tester.tap(find.byKey(const Key('active_s2')));
       await tester.pumpAndSettle();
 
       // Scroll to and tap Bitir button.
-      await tester.dragUntilVisible(
-        find.widgetWithText(ShadButton, 'Bitir'),
-        find.byType(ListView).first,
-        const Offset(0, -200),
+      await reveal(
+        tester,
+        find.widgetWithText(ElevatedButton, 'TESLİMATI BİTİR'),
       );
-      await tester.tap(find.widgetWithText(ShadButton, 'Bitir'));
+      await tester.tap(find.widgetWithText(ElevatedButton, 'TESLİMATI BİTİR'));
       await tester.pumpAndSettle();
 
       // Verify auto-pricing was applied.
@@ -256,8 +251,9 @@ void main() {
       expect(logs.first.yeniDurum, SiparisDurum.tamamlandi);
     });
 
-    testWidgets('(e) manual pricing fallback — no historical match',
-        (tester) async {
+    testWidgets('(e) manual pricing fallback — no historical match', (
+      tester,
+    ) async {
       // Seed an in-progress order with no historical pricing match.
       fakeSiparisRepo.store['s3'] = const Siparis(
         id: 's3',
@@ -271,23 +267,18 @@ void main() {
       await pumpPage(tester);
 
       // Scroll to active panel.
-      await tester.dragUntilVisible(
-        find.textContaining('Devam Edenler'),
-        find.byType(ListView).first,
-        const Offset(0, -200),
-      );
+      await reveal(tester, find.textContaining('Devam Edenler'));
 
       // Select the order.
       await tester.tap(find.byKey(const Key('active_s3')));
       await tester.pumpAndSettle();
 
       // Scroll to and tap Bitir.
-      await tester.dragUntilVisible(
-        find.widgetWithText(ShadButton, 'Bitir'),
-        find.byType(ListView).first,
-        const Offset(0, -200),
+      await reveal(
+        tester,
+        find.widgetWithText(ElevatedButton, 'TESLİMATI BİTİR'),
       );
-      await tester.tap(find.widgetWithText(ShadButton, 'Bitir'));
+      await tester.tap(find.widgetWithText(ElevatedButton, 'TESLİMATI BİTİR'));
       // Use pump() instead of pumpAndSettle() — the async _onFinish is
       // awaiting the dialog, so the widget tree won't settle until the
       // dialog is dismissed.
@@ -316,75 +307,74 @@ void main() {
 
       // Verify log entry.
       expect(
-        fakeLogRepo.store.values
-            .where((l) => l.siparisId == 's3')
-            .length,
+        fakeLogRepo.store.values.where((l) => l.siparisId == 's3').length,
         1,
       );
     });
 
     testWidgets(
-        '(f) sound alert fires only on genuinely new kurye_bekliyor orders',
-        (tester) async {
-      final fakeAlert = FakeOrderAlertService();
+      '(f) sound alert fires only on genuinely new kurye_bekliyor orders',
+      (tester) async {
+        final fakeAlert = FakeOrderAlertService();
 
-      // Seed one existing waiting order.
-      fakeSiparisRepo.store['s1'] = const Siparis(
-        id: 's1',
-        musteriId: 'musteri-1',
-        cikisId: 'ugrama-1',
-        ugramaId: 'ugrama-2',
-      );
-
-      await pumpPage(tester, alertService: fakeAlert);
-
-      // Initial load — should NOT trigger alert.
-      expect(fakeAlert.alertCallCount, 0);
-
-      // Emit a second list with one NEW waiting order added.
-      fakeSiparisRepo.emitActive([
-        const Siparis(
+        // Seed one existing waiting order.
+        fakeSiparisRepo.store['s1'] = const Siparis(
           id: 's1',
           musteriId: 'musteri-1',
           cikisId: 'ugrama-1',
           ugramaId: 'ugrama-2',
-        ),
-        const Siparis(
-          id: 's-new',
-          musteriId: 'musteri-1',
-          cikisId: 'ugrama-2',
-          ugramaId: 'ugrama-3',
-        ),
-      ]);
-      await tester.pumpAndSettle();
+        );
 
-      // Alert should fire once for the new order.
-      expect(fakeAlert.alertCallCount, 1);
+        await pumpPage(tester, alertService: fakeAlert);
 
-      // Emit same list again — no new IDs, no alert.
-      fakeSiparisRepo.emitActive([
-        const Siparis(
-          id: 's1',
-          musteriId: 'musteri-1',
-          cikisId: 'ugrama-1',
-          ugramaId: 'ugrama-2',
-        ),
-        const Siparis(
-          id: 's-new',
-          musteriId: 'musteri-1',
-          cikisId: 'ugrama-2',
-          ugramaId: 'ugrama-3',
-        ),
-      ]);
-      await tester.pumpAndSettle();
+        // Initial load — should NOT trigger alert.
+        expect(fakeAlert.alertCallCount, 0);
 
-      // Should still be 1 — no new IDs appeared.
-      expect(fakeAlert.alertCallCount, 1);
-    });
+        // Emit a second list with one NEW waiting order added.
+        fakeSiparisRepo.emitActive([
+          const Siparis(
+            id: 's1',
+            musteriId: 'musteri-1',
+            cikisId: 'ugrama-1',
+            ugramaId: 'ugrama-2',
+          ),
+          const Siparis(
+            id: 's-new',
+            musteriId: 'musteri-1',
+            cikisId: 'ugrama-2',
+            ugramaId: 'ugrama-3',
+          ),
+        ]);
+        await tester.pumpAndSettle();
 
-    testWidgets(
-        '(g) active panel shows resolved stop and courier names',
-        (tester) async {
+        // Alert should fire once for the new order.
+        expect(fakeAlert.alertCallCount, 1);
+
+        // Emit same list again — no new IDs, no alert.
+        fakeSiparisRepo.emitActive([
+          const Siparis(
+            id: 's1',
+            musteriId: 'musteri-1',
+            cikisId: 'ugrama-1',
+            ugramaId: 'ugrama-2',
+          ),
+          const Siparis(
+            id: 's-new',
+            musteriId: 'musteri-1',
+            cikisId: 'ugrama-2',
+            ugramaId: 'ugrama-3',
+          ),
+        ]);
+        await tester.pumpAndSettle();
+
+        // Should still be 1 — no new IDs appeared.
+        expect(fakeAlert.alertCallCount, 1);
+      },
+    );
+
+    testWidgets('(g) active panel shows resolved stop and courier names', (
+      tester,
+    ) async {
       // Seed an in-progress order with known IDs.
       fakeSiparisRepo.store['s-act'] = const Siparis(
         id: 's-act',
@@ -398,11 +388,7 @@ void main() {
       await pumpPage(tester);
 
       // Scroll to active panel.
-      await tester.dragUntilVisible(
-        find.textContaining('Devam Edenler'),
-        find.byType(ListView).first,
-        const Offset(0, -200),
-      );
+      await reveal(tester, find.textContaining('Devam Edenler'));
 
       // Route label should show resolved stop names.
       expect(find.text('Merkez Ofis → Şube B'), findsOneWidget);
@@ -410,9 +396,9 @@ void main() {
       expect(find.text('Kurye: Ali Kurye'), findsOneWidget);
     });
 
-    testWidgets(
-        '(h) unknown IDs fall back to raw UUID strings',
-        (tester) async {
+    testWidgets('(h) unknown IDs fall back to raw UUID strings', (
+      tester,
+    ) async {
       // Seed an order with IDs that are NOT in our test ugrama/kurye sets.
       fakeSiparisRepo.store['s-unknown'] = const Siparis(
         id: 's-unknown',
@@ -426,11 +412,7 @@ void main() {
       await pumpPage(tester);
 
       // Scroll to active panel.
-      await tester.dragUntilVisible(
-        find.textContaining('Devam Edenler'),
-        find.byType(ListView).first,
-        const Offset(0, -200),
-      );
+      await reveal(tester, find.textContaining('Devam Edenler'));
 
       // Fallback: raw IDs should appear.
       expect(

@@ -9,6 +9,7 @@ Defines reusable widget contracts used across features.
   - Supports loading state
 - `AppSectionCard`
   - Standard card wrapper for section blocks
+  - Dar alanlarda `trailing` içeriğini başlığın altına alarak taşmayı önler
 - `AppAsyncView<T>`
   - Standard async data / loading / error renderer
 - `AppEmptyState`
@@ -20,8 +21,13 @@ Defines reusable widget contracts used across features.
 - `ResponsiveScaffold`
   - Adaptive page shell
   - Mobile: `AppBar` + optional drawer
-  - Tablet/Desktop: `NavigationRail` + body
+  - Tablet: compact navigation rail
+  - Desktop: grouped navigation sidebar + body
   - Supports disabling the mobile drawer for shell-based flows
+- `WorkbenchSplitView`
+  - Shared desktop-first split-view layout
+  - Fixed-width editor pane + flexible content pane
+  - Falls back to stacked mobile/tablet flow when needed
 
 ## Usage Rules
 - Use shared widgets before creating new duplicates.
@@ -31,6 +37,8 @@ Defines reusable widget contracts used across features.
 - Screen analytics is handled centrally by router observer, not by widget wrappers.
 - Feature shells may own the mobile bottom navigation while still reusing
   `ResponsiveScaffold` for the inner page chrome.
+- Desktop-first admin pages should prefer grouped sidebar navigation and
+  split-view workbenches instead of long single-column forms.
 
 ## Last Updated
 - 2026-03-16
