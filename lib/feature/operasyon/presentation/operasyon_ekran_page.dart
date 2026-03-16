@@ -24,6 +24,7 @@ import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 import '../../../product/widgets/searchable_dropdown.dart';
+import '../../../product/widgets/typeahead_field.dart';
 
 final _log = Logger();
 
@@ -48,6 +49,15 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   String? _selectedNotId;
   final _not1Controller = TextEditingController();
   bool _isCreating = false;
+
+  // — Typeahead focus nodes for tab-through —
+  final _fnMusteri = FocusNode();
+  final _fnPersonel = FocusNode();
+  final _fnCikis = FocusNode();
+  final _fnUgrama = FocusNode();
+  final _fnUgrama1 = FocusNode();
+  final _fnNot = FocusNode();
+  final _fnSubmit = FocusNode();
 
   // — Kurye Bekleyenler panel state —
   final _waitingSelected = <String>{};
@@ -78,6 +88,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   @override
   void dispose() {
     _not1Controller.dispose();
+    _fnMusteri.dispose();
+    _fnPersonel.dispose();
+    _fnCikis.dispose();
+    _fnUgrama.dispose();
+    _fnUgrama1.dispose();
+    _fnNot.dispose();
+    _fnSubmit.dispose();
     if (_ownsAlertService) {
       unawaited(_alertService.dispose());
     }
@@ -740,131 +757,128 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
     return Form(
       key: _formKey,
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                flex: 2,
-                child: SearchableDropdown<String>(
-                  key: const Key('musteri_dropdown'),
-                  value: _selectedMusteriId,
-                  label: 'MÜŞTERİ',
-                  placeholder: 'Seçiniz',
-                  searchPlaceholder: 'Müşteri ara...',
-                  items: musteriItems,
-                  onChanged: _onMusteriChanged,
-                  validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: SearchableDropdown<String>(
-                  key: const Key('personel_dropdown'),
-                  value: _selectedPersonelId,
-                  label: 'PERSONEL',
-                  placeholder: 'Seçiniz',
-                  searchPlaceholder: 'Personel ara...',
-                  items: personelItems,
-                  onChanged: (v) => setState(() => _selectedPersonelId = v),
-                  validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: SearchableDropdown<String>(
-                  key: const Key('cikis_dropdown'),
-                  value: _selectedCikisId,
-                  label: 'ÇIKIŞ',
-                  placeholder: 'Nereden?',
-                  searchPlaceholder: 'Ara...',
-                  items: ugramaItems,
-                  onChanged: (v) => setState(() => _selectedCikisId = v),
-                  validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: SearchableDropdown<String>(
-                  key: const Key('ugrama_dropdown'),
-                  value: _selectedUgramaId,
-                  label: 'UĞRAMA',
-                  placeholder: 'Nereye?',
-                  searchPlaceholder: 'Ara...',
-                  items: ugramaItems,
-                  onChanged: (v) => setState(() => _selectedUgramaId = v),
-                  validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: SearchableDropdown<String>(
-                  key: const Key('ugrama1_dropdown'),
-                  value: _selectedUgrama1Id,
-                  label: 'UĞRAMA 1',
-                  placeholder: 'Nereye? (2)',
-                  searchPlaceholder: 'Ara...',
-                  items: ugramaItems,
-                  onChanged: (v) => setState(() => _selectedUgrama1Id = v),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: SearchableDropdown<String>(
-                  key: const Key('not_dropdown'),
-                  value: _selectedNotId,
-                  label: 'NOT (REHBER)',
-                  placeholder: 'Seçim Yok',
-                  searchPlaceholder: 'Ara...',
-                  items: ugramaItems,
-                  onChanged: (v) => setState(() => _selectedNotId = v),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Label (≈20) + padding-bottom (6) = 26 top offset to align
-              // with dropdown boxes. Bottom padding matches error text area.
-              Padding(
-                padding: const EdgeInsets.only(top: 26, bottom: 18),
-                child: SizedBox(
-                  width: 180,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () => _onCreateOrder(userId),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
-                  child: _isCreating
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'SİPARİŞ OLUŞTUR',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
+          Expanded(
+            child: TypeaheadField<String>(
+              key: const Key('musteri_typeahead'),
+              focusNode: _fnMusteri,
+              value: _selectedMusteriId,
+              label: 'MÜŞTERİ',
+              placeholder: 'Müşteri yazın...',
+              items: musteriItems,
+              onChanged: _onMusteriChanged,
+              validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
+              nextFocus: _fnPersonel,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TypeaheadField<String>(
+              key: const Key('personel_typeahead'),
+              focusNode: _fnPersonel,
+              value: _selectedPersonelId,
+              label: 'PERSONEL',
+              placeholder: 'Personel yazın...',
+              items: personelItems,
+              onChanged: (v) => setState(() => _selectedPersonelId = v),
+              validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
+              nextFocus: _fnCikis,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TypeaheadField<String>(
+              key: const Key('cikis_typeahead'),
+              focusNode: _fnCikis,
+              value: _selectedCikisId,
+              label: 'ÇIKIŞ',
+              placeholder: 'Nereden?',
+              items: ugramaItems,
+              onChanged: (v) => setState(() => _selectedCikisId = v),
+              validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
+              nextFocus: _fnUgrama,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TypeaheadField<String>(
+              key: const Key('ugrama_typeahead'),
+              focusNode: _fnUgrama,
+              value: _selectedUgramaId,
+              label: 'UĞRAMA',
+              placeholder: 'Nereye?',
+              items: ugramaItems,
+              onChanged: (v) => setState(() => _selectedUgramaId = v),
+              validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
+              nextFocus: _fnUgrama1,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TypeaheadField<String>(
+              key: const Key('ugrama1_typeahead'),
+              focusNode: _fnUgrama1,
+              value: _selectedUgrama1Id,
+              label: 'UĞRAMA 1',
+              placeholder: 'Opsiyonel',
+              items: ugramaItems,
+              onChanged: (v) => setState(() => _selectedUgrama1Id = v),
+              nextFocus: _fnNot,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TypeaheadField<String>(
+              key: const Key('not_typeahead'),
+              focusNode: _fnNot,
+              value: _selectedNotId,
+              label: 'NOT (REHBER)',
+              placeholder: 'Opsiyonel',
+              items: ugramaItems,
+              onChanged: (v) => setState(() => _selectedNotId = v),
+              nextFocus: _fnSubmit,
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Top padding = label height (≈20) + label bottom padding (6).
+          // Bottom padding = error text reserved area (≈18).
+          Padding(
+            padding: const EdgeInsets.only(top: 26, bottom: 18),
+            child: SizedBox(
+              width: 180,
+              height: 40,
+              child: ElevatedButton(
+                focusNode: _fnSubmit,
+                onPressed: () => _onCreateOrder(userId),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  elevation: 0,
                 ),
+                child: _isCreating
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'SİPARİŞ OLUŞTUR',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
               ),
-            ],
+            ),
           ),
         ],
       ),
