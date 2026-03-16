@@ -41,6 +41,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   // — Order creation form state —
   final _formKey = GlobalKey<FormState>();
   String? _selectedMusteriId;
+  String? _selectedPersonelId;
   String? _selectedCikisId;
   String? _selectedUgramaId;
   String? _selectedUgrama1Id;
@@ -88,6 +89,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   void _onMusteriChanged(String? musteriId) {
     setState(() {
       _selectedMusteriId = musteriId;
+      _selectedPersonelId = null;
       _selectedCikisId = null;
       _selectedUgramaId = null;
       _selectedUgrama1Id = null;
@@ -97,7 +99,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
   Future<void> _onCreateOrder(String userId) async {
     final hasDropdownErrors =
-        _selectedMusteriId == null || _selectedCikisId == null || _selectedUgramaId == null;
+        _selectedMusteriId == null || _selectedPersonelId == null || _selectedCikisId == null || _selectedUgramaId == null;
 
     if (!_formKey.currentState!.validate() || hasDropdownErrors) {
       return;
@@ -109,6 +111,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       final siparis = Siparis(
         id: '',
         musteriId: _selectedMusteriId!,
+        personelId: _selectedPersonelId,
         cikisId: _selectedCikisId!,
         ugramaId: _selectedUgramaId!,
         ugrama1Id: _selectedUgrama1Id,
@@ -122,6 +125,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       // Reset form — clear everything including müşteri.
       setState(() {
         _selectedMusteriId = null;
+        _selectedPersonelId = null;
         _selectedCikisId = null;
         _selectedUgramaId = null;
         _selectedUgrama1Id = null;
@@ -708,6 +712,32 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }) {
     final musteriItems = musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList();
 
+    // Personel items: populated when müşteri is selected.
+    final personelItems = <({String value, String label})>[];
+    if (_selectedMusteriId != null) {
+      final personelAsync = ref.watch(
+        musteriPersonelListByMusteriProvider(_selectedMusteriId!),
+      );
+      if (personelAsync case AsyncData(value: final personeller)) {
+        personelItems.addAll(
+          personeller.map((p) => (value: p.id, label: p.ad)),
+        );
+      }
+    }
+
+    // Uğrama items: populated when müşteri is selected.
+    final ugramaItems = <({String value, String label})>[];
+    if (_selectedMusteriId != null) {
+      final ugramaAsync = ref.watch(
+        ugramaListByMusteriProvider(_selectedMusteriId!),
+      );
+      if (ugramaAsync case AsyncData(value: final ugramalar)) {
+        ugramaItems.addAll(
+          ugramalar.map((u) => (value: u.id, label: u.ugramaAdi)),
+        );
+      }
+    }
+
     return Form(
       key: _formKey,
       child: Column(
@@ -733,35 +763,88 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                 flex: 2,
                 child: SearchableDropdown<String>(
                   key: const Key('personel_dropdown'),
+                  value: _selectedPersonelId,
                   label: 'PERSONEL',
                   placeholder: 'Seçiniz',
                   searchPlaceholder: 'Personel ara...',
-                  items: const [], // Placeholder for now
-                  onChanged: (_) {},
+                  items: personelItems,
+                  onChanged: (v) => setState(() => _selectedPersonelId = v),
+                  validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
                 ),
               ),
-              if (_selectedMusteriId != null) ...[
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 6,
-                  child: _buildStopDropdowns(),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2,
+                child: SearchableDropdown<String>(
+                  key: const Key('cikis_dropdown'),
+                  value: _selectedCikisId,
+                  label: 'ÇIKIŞ',
+                  placeholder: 'Nereden?',
+                  searchPlaceholder: 'Ara...',
+                  items: ugramaItems,
+                  onChanged: (v) => setState(() => _selectedCikisId = v),
+                  validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
                 ),
-              ],
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2,
+                child: SearchableDropdown<String>(
+                  key: const Key('ugrama_dropdown'),
+                  value: _selectedUgramaId,
+                  label: 'UĞRAMA',
+                  placeholder: 'Nereye?',
+                  searchPlaceholder: 'Ara...',
+                  items: ugramaItems,
+                  onChanged: (v) => setState(() => _selectedUgramaId = v),
+                  validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2,
+                child: SearchableDropdown<String>(
+                  key: const Key('ugrama1_dropdown'),
+                  value: _selectedUgrama1Id,
+                  label: 'UĞRAMA 1',
+                  placeholder: 'Nereye? (2)',
+                  searchPlaceholder: 'Ara...',
+                  items: ugramaItems,
+                  onChanged: (v) => setState(() => _selectedUgrama1Id = v),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 2,
+                child: SearchableDropdown<String>(
+                  key: const Key('not_dropdown'),
+                  value: _selectedNotId,
+                  label: 'NOT (REHBER)',
+                  placeholder: 'Seçim Yok',
+                  searchPlaceholder: 'Ara...',
+                  items: ugramaItems,
+                  onChanged: (v) => setState(() => _selectedNotId = v),
+                ),
+              ),
               const SizedBox(width: 12),
-              SizedBox(
-                width: 180,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () => _onCreateOrder(userId),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              // Label (≈20) + padding-bottom (6) = 26 top offset to align
+              // with dropdown boxes. Bottom padding matches error text area.
+              Padding(
+                padding: const EdgeInsets.only(top: 26, bottom: 18),
+                child: SizedBox(
+                  width: 180,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () => _onCreateOrder(userId),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
                     ),
-                    elevation: 0,
-                  ),
                   child: _isCreating
                       ? const SizedBox(
                           width: 20,
@@ -778,93 +861,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                             letterSpacing: 0.5,
                           ),
                         ),
+                  ),
                 ),
               ),
             ],
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildStopDropdowns() {
-    final ugramaAsync = ref.watch(
-      ugramaListByMusteriProvider(_selectedMusteriId!),
-    );
-
-    return ugramaAsync.when(
-      data: (ugramalar) {
-        final items = ugramalar.map((u) => (value: u.id, label: u.ugramaAdi)).toList();
-
-        return Row(
-          children: [
-            Expanded(
-              child: SearchableDropdown<String>(
-                key: const Key('cikis_dropdown'),
-                value: _selectedCikisId,
-                label: 'ÇIKIŞ',
-                placeholder: 'Nereden?',
-                searchPlaceholder: 'Ara...',
-                items: items,
-                onChanged: (v) => setState(() => _selectedCikisId = v),
-                validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: SearchableDropdown<String>(
-                key: const Key('ugrama_dropdown'),
-                value: _selectedUgramaId,
-                label: 'UĞRAMA',
-                placeholder: 'Nereye?',
-                searchPlaceholder: 'Ara...',
-                items: items,
-                onChanged: (v) => setState(() => _selectedUgramaId = v),
-                validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: SearchableDropdown<String>(
-                key: const Key('ugrama1_dropdown'),
-                value: _selectedUgrama1Id,
-                label: 'UĞRAMA 1',
-                placeholder: 'Nereye? (2)',
-                searchPlaceholder: 'Ara...',
-                items: items,
-                onChanged: (v) => setState(() => _selectedUgrama1Id = v),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: SearchableDropdown<String>(
-                key: const Key('not_dropdown'),
-                value: _selectedNotId,
-                label: 'NOT (REHBER)',
-                placeholder: 'Seçim Yok',
-                searchPlaceholder: 'Ara...',
-                items: items,
-                onChanged: (v) => setState(() => _selectedNotId = v),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: TextButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text('NOT'),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.textMuted,
-                  textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => const Text('Hata'),
     );
   }
 
@@ -1253,7 +1256,14 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }) {
     final cikis = ugramaMap[s.cikisId] ?? s.cikisId;
     final ugrama = ugramaMap[s.ugramaId] ?? s.ugramaId;
-    return '$cikis → $ugrama';
+    final parts = [cikis, ugrama];
+    if (s.ugrama1Id != null) {
+      parts.add(ugramaMap[s.ugrama1Id!] ?? s.ugrama1Id!);
+    }
+    if (s.notId != null) {
+      parts.add(ugramaMap[s.notId!] ?? s.notId!);
+    }
+    return parts.join(' → ');
   }
 }
 

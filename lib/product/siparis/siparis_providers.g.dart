@@ -342,6 +342,7 @@ final class SiparisHistoryProvider
       DateTime? startDate,
       DateTime? endDate,
       String? musteriId,
+      String? kuryeId,
       String? cikisId,
       String? ugramaId,
     })
@@ -378,6 +379,7 @@ final class SiparisHistoryProvider
               DateTime? startDate,
               DateTime? endDate,
               String? musteriId,
+              String? kuryeId,
               String? cikisId,
               String? ugramaId,
             });
@@ -386,6 +388,7 @@ final class SiparisHistoryProvider
       startDate: argument.startDate,
       endDate: argument.endDate,
       musteriId: argument.musteriId,
+      kuryeId: argument.kuryeId,
       cikisId: argument.cikisId,
       ugramaId: argument.ugramaId,
     );
@@ -402,7 +405,7 @@ final class SiparisHistoryProvider
   }
 }
 
-String _$siparisHistoryHash() => r'fc875483f9ff375fb6710fc0298a7a2ad07c0dac';
+String _$siparisHistoryHash() => r'1a1f3c889a7d3d584bbdbd8152c2c2a80d1134d4';
 
 final class SiparisHistoryFamily extends $Family
     with
@@ -412,6 +415,7 @@ final class SiparisHistoryFamily extends $Family
             DateTime? startDate,
             DateTime? endDate,
             String? musteriId,
+            String? kuryeId,
             String? cikisId,
             String? ugramaId,
           })
@@ -429,6 +433,7 @@ final class SiparisHistoryFamily extends $Family
     DateTime? startDate,
     DateTime? endDate,
     String? musteriId,
+    String? kuryeId,
     String? cikisId,
     String? ugramaId,
   }) => SiparisHistoryProvider._(
@@ -436,6 +441,7 @@ final class SiparisHistoryFamily extends $Family
       startDate: startDate,
       endDate: endDate,
       musteriId: musteriId,
+      kuryeId: kuryeId,
       cikisId: cikisId,
       ugramaId: ugramaId,
     ),

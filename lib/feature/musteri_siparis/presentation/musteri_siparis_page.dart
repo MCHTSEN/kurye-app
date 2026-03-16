@@ -395,14 +395,23 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
   }
 
   Widget _buildOrderCard(Siparis siparis, Map<String, String> ugramaMap) {
-    final cikisAdi = ugramaMap[siparis.cikisId] ?? siparis.cikisId;
-    final ugramaAdi = ugramaMap[siparis.ugramaId] ?? siparis.ugramaId;
+    final parts = [
+      ugramaMap[siparis.cikisId] ?? siparis.cikisId,
+      ugramaMap[siparis.ugramaId] ?? siparis.ugramaId,
+    ];
+    if (siparis.ugrama1Id != null) {
+      parts.add(ugramaMap[siparis.ugrama1Id!] ?? siparis.ugrama1Id!);
+    }
+    if (siparis.notId != null) {
+      parts.add(ugramaMap[siparis.notId!] ?? siparis.notId!);
+    }
+    final routeLabel = parts.join(' → ');
     final durumLabel = _durumLabel(siparis.durum);
     final durumColor = _durumColor(siparis.durum);
 
     return Card(
       child: ListTile(
-        title: Text('$cikisAdi → $ugramaAdi'),
+        title: Text(routeLabel),
         subtitle: siparis.createdAt != null
             ? Text(_formatDate(siparis.createdAt!))
             : null,

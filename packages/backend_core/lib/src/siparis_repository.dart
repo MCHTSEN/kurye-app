@@ -25,6 +25,7 @@ abstract class SiparisRepository {
     DateTime? startDate,
     DateTime? endDate,
     String? musteriId,
+    String? kuryeId,
     String? cikisId,
     String? ugramaId,
   });

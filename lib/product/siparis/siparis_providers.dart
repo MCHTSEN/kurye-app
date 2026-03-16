@@ -46,6 +46,7 @@ Future<List<Siparis>> siparisHistory(
   DateTime? startDate,
   DateTime? endDate,
   String? musteriId,
+  String? kuryeId,
   String? cikisId,
   String? ugramaId,
 }) async {
@@ -54,6 +55,7 @@ Future<List<Siparis>> siparisHistory(
     startDate: startDate,
     endDate: endDate,
     musteriId: musteriId,
+    kuryeId: kuryeId,
     cikisId: cikisId,
     ugramaId: ugramaId,
   );
