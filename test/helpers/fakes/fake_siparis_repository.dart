@@ -179,6 +179,7 @@ class FakeSiparisRepository implements SiparisRepository {
     DateTime? startDate,
     DateTime? endDate,
     String? musteriId,
+    String? kuryeId,
     String? cikisId,
     String? ugramaId,
   }) async {
@@ -199,6 +200,9 @@ class FakeSiparisRepository implements SiparisRepository {
     }
     if (musteriId != null) {
       results = results.where((s) => s.musteriId == musteriId);
+    }
+    if (kuryeId != null) {
+      results = results.where((s) => s.kuryeId == kuryeId);
     }
     if (cikisId != null) {
       results = results.where((s) => s.cikisId == cikisId);

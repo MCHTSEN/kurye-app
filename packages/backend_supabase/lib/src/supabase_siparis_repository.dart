@@ -105,11 +105,12 @@ class SupabaseSiparisRepository implements SiparisRepository {
     DateTime? startDate,
     DateTime? endDate,
     String? musteriId,
+    String? kuryeId,
     String? cikisId,
     String? ugramaId,
   }) async {
     _log.i('getHistory: startDate=$startDate, endDate=$endDate, '
-        'musteri=$musteriId, cikis=$cikisId, ugrama=$ugramaId');
+        'musteri=$musteriId, kurye=$kuryeId, cikis=$cikisId, ugrama=$ugramaId');
     var query = _client
         .from(_table)
         .select()
@@ -125,6 +126,9 @@ class SupabaseSiparisRepository implements SiparisRepository {
     }
     if (musteriId != null) {
       query = query.eq('musteri_id', musteriId);
+    }
+    if (kuryeId != null) {
+      query = query.eq('kurye_id', kuryeId);
     }
     if (cikisId != null) {
       query = query.eq('cikis_id', cikisId);

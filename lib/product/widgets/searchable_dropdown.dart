@@ -112,16 +112,17 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
               ),
           ],
         ),
-        if (errorText != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(
-              errorText,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.error,
-              ),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            errorText ?? '',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: errorText != null
+                  ? theme.colorScheme.error
+                  : Colors.transparent,
             ),
           ),
+        ),
       ],
     );
   }

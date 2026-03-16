@@ -315,6 +315,20 @@ Project audit log for major changes.
 
 ---
 
+### 2026-03-16 — mobile-mcp repository add and integration verification
+- Scope: `tooling`, `mcp`
+- Summary: Added `mobile-mcp` source under `tools/mobile-mcp`, verified local package tests, and confirmed Codex MCP registration/availability for `mobile-mcp`.
+- Files:
+  - `tools/mobile-mcp` (git clone from `https://github.com/mobile-next/mobile-mcp`)
+- Validation:
+  - `npx -y @mobilenext/mobile-mcp@latest --help` passed (CLI available).
+  - `npm ci` in `tools/mobile-mcp` passed.
+  - `npm test` in `tools/mobile-mcp` passed (`11 passing`, `18 pending`).
+  - `codex mcp list` shows `mobile-mcp` enabled.
+  - `npx -y @mobilenext/mobile-mcp@latest --port 8787` starts SSE server successfully.
+
+---
+
 ### 2026-03-16 — Operasyon geçmiş desktop/mobile layout stabilization
 - Scope: `feature/operasyon`
 - Summary: Fixed `OperasyonGecmisPage` render crashes caused by unbounded button widths and fragile scroll pane layout in the workbench view. Desktop panes now use bounded list views, filter controls degrade responsively, and test selectors were aligned with the current screen contract.
