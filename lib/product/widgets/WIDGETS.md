@@ -21,9 +21,11 @@ Defines reusable widget contracts used across features.
 - `ResponsiveScaffold`
   - Adaptive page shell
   - Mobile: `AppBar` + optional drawer
-  - Drawer header uses `assets/images/bmk-logo.png` logo block in the gradient area
+  - Drawer + desktop sidebar can use the same dark palette for visual continuity
+  - Drawer header uses `assets/images/bmk-logo.png` logo block in the top area
   - Tablet: compact navigation rail
-  - Desktop: grouped navigation sidebar + body
+  - Desktop: grouped navigation sidebar + body, responsive sidebar width
+  - Navigation labels scale by screen size for better readability
   - Supports disabling the mobile drawer for shell-based flows
 - `WorkbenchSplitView`
   - Shared desktop-first split-view layout
