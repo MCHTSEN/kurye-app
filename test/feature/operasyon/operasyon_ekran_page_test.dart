@@ -307,8 +307,42 @@ void main() {
       );
     });
 
+    testWidgets('(f) active order can be edited and saved from row action', (
+      tester,
+    ) async {
+      fakeSiparisRepo.store['s-edit'] = const Siparis(
+        id: 's-edit',
+        musteriId: 'musteri-1',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+        kuryeId: 'kurye-1',
+        durum: SiparisDurum.devamEdiyor,
+      );
+
+      await pumpPage(tester);
+
+      await reveal(tester, find.byKey(const Key('edit_active_s-edit')));
+      await tester.tap(find.byKey(const Key('edit_active_s-edit')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Devam Eden Siparişi Düzenle'), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const Key('active_edit_note_field')),
+        'Müşteri telefonda teyit edildi',
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('active_edit_save_button')));
+      await tester.pumpAndSettle();
+
+      final updated = fakeSiparisRepo.store['s-edit']!;
+      expect(updated.not1, 'Müşteri telefonda teyit edildi');
+      expect(updated.durum, SiparisDurum.devamEdiyor);
+    });
+
     testWidgets(
-      '(f) sound alert fires only on genuinely new kurye_bekliyor orders',
+      '(g) sound alert fires only on genuinely new kurye_bekliyor orders',
       (tester) async {
         final fakeAlert = FakeOrderAlertService();
 
@@ -367,7 +401,7 @@ void main() {
       },
     );
 
-    testWidgets('(g) active panel shows resolved stop and courier names', (
+    testWidgets('(h) active panel shows resolved stop and courier names', (
       tester,
     ) async {
       // Seed an in-progress order with known IDs.
@@ -391,7 +425,7 @@ void main() {
       expect(find.text('ALI KURYE'), findsOneWidget);
     });
 
-    testWidgets('(h) unknown IDs fall back to raw UUID strings', (
+    testWidgets('(i) unknown IDs fall back to raw UUID strings', (
       tester,
     ) async {
       // Seed an order with IDs that are NOT in our test ugrama/kurye sets.
@@ -417,7 +451,7 @@ void main() {
       expect(find.text('ATANMADI'), findsOneWidget);
     });
 
-    testWidgets('(i) desktop active row is resilient to missing customer/personnel data', (
+    testWidgets('(j) desktop active row is resilient to missing customer/personnel data', (
       tester,
     ) async {
       fakeSiparisRepo.store['s-desktop'] = const Siparis(
@@ -441,6 +475,37 @@ void main() {
       expect(find.text('missing-personel'), findsOneWidget);
       expect(find.byKey(const Key('finish_s-desktop')), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('(k) desktop summary shows today revenue from completed orders', (
+      tester,
+    ) async {
+      final now = DateTime.now();
+      fakeSiparisRepo.store['s-today-completed'] = Siparis(
+        id: 's-today-completed',
+        musteriId: 'musteri-1',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+        durum: SiparisDurum.tamamlandi,
+        ucret: 150,
+        createdAt: now,
+      );
+      fakeSiparisRepo.store['s-yesterday-completed'] = Siparis(
+        id: 's-yesterday-completed',
+        musteriId: 'musteri-1',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+        durum: SiparisDurum.tamamlandi,
+        ucret: 250,
+        createdAt: now.subtract(const Duration(days: 1)),
+      );
+
+      await pumpPage(
+        tester,
+        size: const Size(1440, 1200),
+      );
+
+      expect(find.text('150 TL'), findsOneWidget);
     });
   });
 }

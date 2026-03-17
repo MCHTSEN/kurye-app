@@ -11,6 +11,55 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-03-17
+- Scope: Operasyon ekranı günlük ciro hesaplama düzeltmesi
+- Summary:
+  - `OperasyonEkranPage` desktop özetindeki `BUGÜNKÜ KAZANÇ` alanı sabit `0 TL` yerine canlı hesaplamaya geçirildi.
+  - Hesaplama, bugünün tarih aralığında `tamamlandi` siparişlerin `ucret` toplamını kullanıyor.
+  - Bu davranış için widget test eklendi (`desktop summary shows today revenue...`).
+- Files:
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+- Validation:
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` passed.
+
+### 2026-03-16
+- Scope: Operasyon koyu drawer/sidebar teması ve responsive tipografi
+- Summary:
+  - `ResponsiveScaffold` drawer ve desktop sidebar aynı koyu gri palette'e taşındı.
+  - Drawer/sidebar metinleri büyütüldü ve ekran genişliğine göre responsive ölçekleme eklendi.
+  - Desktop sidebar genişliği sabit değil, ekran genişliğine göre dinamik hale getirildi.
+  - `OperasyonEkranPage` tablo başlık/satır yazıları responsive büyütüldü; desktop panel oranları dinamik ayarlanarak ekran alanı daha efektif kullanıldı.
+- Files:
+  - `lib/product/widgets/WIDGETS.md`
+  - `lib/product/widgets/responsive_scaffold.dart`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+- Validation:
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` passed.
+  - `flutter test test/product/widgets/responsive_scaffold_test.dart` passed.
+  - `flutter analyze lib/product/widgets/responsive_scaffold.dart lib/feature/operasyon/presentation/operasyon_ekran_page.dart` failed with info-level lint warnings only (no new blocking analyzer error).
+
+### 2026-03-16
+- Scope: Operasyon devam eden sipariş düzenleme akışı
+- Summary:
+  - `OperasyonEkranPage` aktif satırındaki düzenleme ikonu gerçek aksiyona bağlandı.
+  - Devam eden sipariş için düzenleme dialog'u eklendi (kurye, personel, çıkış/uğrama adımları, not alanları).
+  - Güncelleme sonrası `siparisStreamActiveProvider` invalidation ile liste anlık yenileme korundu.
+  - Operasyon ekranı koyu gri temaya geçirildi; arka plan, kart yüzeyleri ve satır bölücüleri dark palette'e alındı, metin kontrastı açık tonlarla güncellendi.
+  - Widget test kapsamına aktif sipariş düzenleme ve kaydetme senaryosu eklendi.
+- Files:
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+- Validation:
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` passed.
+  - `flutter analyze lib/feature/operasyon/presentation/operasyon_ekran_page.dart test/feature/operasyon/operasyon_ekran_page_test.dart` failed with existing info-level lints (`avoid_redundant_argument_values`) and no new blocking error.
+  - `flutter analyze` failed with existing repo-wide info-level lint backlog (latest run: 37 issues).
+  - `flutter test` failed only on existing golden mismatch: `test/feature/example_feed/example_feed_page_golden_test.dart`.
+
 ### 2026-03-16
 - Scope: Operasyon web UX hardening and desktop workflow polish
 - Summary:

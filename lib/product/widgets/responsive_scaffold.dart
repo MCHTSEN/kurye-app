@@ -9,6 +9,15 @@ import '../../app/router/custom_route.dart';
 import '../../core/theme/app_colors.dart';
 import 'responsive_layout.dart';
 
+final class _NavigationTheme {
+  static const bg = Color(0xFF111827);
+  static const surface = Color(0xFF1F2937);
+  static const surfaceAlt = Color(0xFF0B1220);
+  static const divider = Color(0xFF374151);
+  static const textPrimary = Color(0xFFE5E7EB);
+  static const textMuted = Color(0xFF9CA3AF);
+}
+
 /// Navigation item definition shared between Drawer and NavigationRail.
 class NavItem {
   const NavItem({
@@ -105,6 +114,8 @@ class ResponsiveScaffold extends StatelessWidget {
 
   Widget _buildDesktopScaffold(BuildContext context, LayoutType type) {
     if (type == LayoutType.desktop) {
+      final width = MediaQuery.sizeOf(context).width;
+      final sidebarWidth = (width * 0.22).clamp(280.0, 360.0);
       return Scaffold(
         appBar: AppBar(
           title: Text(title),
@@ -113,11 +124,11 @@ class ResponsiveScaffold extends StatelessWidget {
         floatingActionButton: floatingActionButton,
         body: Row(
           children: [
-            _buildDesktopSidebar(context),
+            _buildDesktopSidebar(context, width: sidebarWidth),
             const VerticalDivider(
               thickness: 1,
               width: 1,
-              color: AppColors.border,
+              color: _NavigationTheme.divider,
             ),
             Expanded(child: body),
           ],
@@ -182,7 +193,7 @@ class ResponsiveScaffold extends StatelessWidget {
           const VerticalDivider(
             thickness: 1,
             width: 1,
-            color: AppColors.border,
+            color: _NavigationTheme.divider,
           ),
           Expanded(child: body),
         ],
@@ -236,7 +247,7 @@ class ResponsiveScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildDesktopSidebar(BuildContext context) {
+  Widget _buildDesktopSidebar(BuildContext context, {required double width}) {
     final groupedItems = LinkedHashMap<String, List<(int, NavItem)>>();
     for (var i = 0; i < navItems.length; i++) {
       final item = navItems[i];
@@ -247,15 +258,19 @@ class ResponsiveScaffold extends StatelessWidget {
     }
 
     return Container(
-      width: 300,
-      color: const Color(0xFFF8F9FC),
+      width: width,
+      color: _NavigationTheme.bg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
             decoration: const BoxDecoration(
-              gradient: AppColors.primaryGradient,
+              gradient: LinearGradient(
+                colors: [_NavigationTheme.surfaceAlt, _NavigationTheme.surface],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,16 +297,17 @@ class ResponsiveScaffold extends StatelessWidget {
                           Text(
                             headerTitle,
                             style: const TextStyle(
-                              fontSize: 18,
+                              fontSize: 21,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white,
+                              color: _NavigationTheme.textPrimary,
                             ),
                           ),
                           if (headerSubtitle != null)
                             Text(
                               headerSubtitle!,
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.82),
+                                fontSize: 14,
+                                color: _NavigationTheme.textMuted,
                               ),
                             ),
                         ],
@@ -312,8 +328,8 @@ class ResponsiveScaffold extends StatelessWidget {
                   child: Text(
                     'Kısayollar: Ctrl/Cmd + 1-${navItems.length > 9 ? 9 : navItems.length}',
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
+                      color: _NavigationTheme.textPrimary,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -331,10 +347,10 @@ class ResponsiveScaffold extends StatelessWidget {
                     child: Text(
                       entry.key,
                       style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.3,
-                        color: AppColors.textMuted,
+                        color: _NavigationTheme.textMuted,
                       ),
                     ),
                   ),
@@ -374,6 +390,7 @@ class ResponsiveScaffold extends StatelessWidget {
 
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
+      backgroundColor: _NavigationTheme.bg,
       child: Column(
         children: [
           // ─── Gradient header ───
@@ -386,7 +403,11 @@ class ResponsiveScaffold extends StatelessWidget {
               right: 20,
             ),
             decoration: const BoxDecoration(
-              gradient: AppColors.primaryGradient,
+              gradient: LinearGradient(
+                colors: [_NavigationTheme.surfaceAlt, _NavigationTheme.surface],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
             child: Center(
               child: ConstrainedBox(
@@ -421,7 +442,7 @@ class ResponsiveScaffold extends StatelessWidget {
           ),
           // ─── Logout ───
           if (onLogout != null) ...[
-            const Divider(height: 1),
+            const Divider(height: 1, color: _NavigationTheme.divider),
             _DrawerNavTile(
               icon: Icons.logout_rounded,
               label: 'Cikis Yap',
@@ -454,11 +475,15 @@ class _DrawerNavTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final isCompact = width < 400;
+    final labelFontSize = isCompact ? 16.0 : 18.0;
+    final iconSize = isCompact ? 22.0 : 24.0;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
         color: isSelected
-            ? AppColors.primary.withValues(alpha: 0.08)
+            ? AppColors.primary.withValues(alpha: 0.2)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         child: InkWell(
@@ -470,18 +495,18 @@ class _DrawerNavTile extends StatelessWidget {
               children: [
                 Icon(
                   icon,
-                  size: 20,
-                  color: isSelected ? AppColors.primary : AppColors.textMuted,
+                  size: iconSize,
+                  color: isSelected ? AppColors.primary : _NavigationTheme.textMuted,
                 ),
                 const SizedBox(width: 14),
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: labelFontSize,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     color: isSelected
                         ? AppColors.primary
-                        : AppColors.textPrimary,
+                        : _NavigationTheme.textPrimary,
                   ),
                 ),
                 if (isSelected) ...[
@@ -521,6 +546,9 @@ class _DesktopNavTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final labelFontSize = width < 1280 ? 15.0 : 17.0;
+    final shortcutFontSize = width < 1280 ? 11.0 : 12.0;
     return Tooltip(
       message: shortcutLabel == null ? label : '$label ($shortcutLabel)',
       child: Padding(
@@ -543,7 +571,7 @@ class _DesktopNavTile extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.primary.withValues(alpha: 0.14)
-                          : Colors.white,
+                          : _NavigationTheme.surfaceAlt,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -558,13 +586,13 @@ class _DesktopNavTile extends StatelessWidget {
                     child: Text(
                       label,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: labelFontSize,
                         fontWeight: isSelected
                             ? FontWeight.w700
                             : FontWeight.w500,
                         color: isSelected
-                            ? AppColors.textPrimary
-                            : AppColors.textMuted,
+                            ? _NavigationTheme.textPrimary
+                            : _NavigationTheme.textMuted,
                       ),
                     ),
                   ),
@@ -575,16 +603,16 @@ class _DesktopNavTile extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: _NavigationTheme.surfaceAlt,
                         borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: _NavigationTheme.divider),
                       ),
                       child: Text(
                         shortcutLabel!,
-                        style: const TextStyle(
-                          fontSize: 11,
+                        style: TextStyle(
+                          fontSize: shortcutFontSize,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textMuted,
+                          color: _NavigationTheme.textMuted,
                         ),
                       ),
                     ),

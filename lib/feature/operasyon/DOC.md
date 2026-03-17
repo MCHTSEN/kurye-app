@@ -25,7 +25,7 @@ aksiyonlar için optimize edilir.
   varsayılan açılış sekmesi `Operasyon Ekranı`
 - **Raporlar**: Ciro toplamları, kurye performans, aktif kuryeler;
   sayfaya erişim operasyon rapor şifresi ile açılır
-- **OperasyonEkran**: 3 panel realtime yönetim; desktop'ta bağımsız scroll alanlı kontrol merkezi
+- **OperasyonEkran**: 3 panel realtime yönetim; devam eden siparişler satır bazlı dialog ile düzenlenebilir, desktop'ta bağımsız scroll alanlı kontrol merkezi
 - **UgramaYonetim**: Lokasyon/uğrama yönetimi
 - **OperasyonAyarlar**: Yönetim sayfalarına giriş, hesap özeti ve çıkış aksiyonu
 - **MusteriKayit**: Desktop'ta split-view CRUD formu + filtrelenebilir liste
@@ -46,6 +46,7 @@ aksiyonlar için optimize edilir.
 - Rapor şifresi `OPERASYON_REPORTS_PASSWORD` dart-define/env değeriyle değiştirilebilir.
 - Ayarlar içinde profil detay ekranı sonradan nested route olarak ayrılabilir.
 - Web kısayolları komut paleti veya global arama ile genişletilebilir.
+- Devam eden sipariş düzenleme dialog'una kurala bağlı alan/rol kısıtları eklenebilir.
 
 ## Last Updated
 - 2026-03-16

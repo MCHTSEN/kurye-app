@@ -32,12 +32,20 @@
 ## OperasyonEkranPage
 - Panel A: Sipariş oluşturma formu
 - Panel B: Kurye Bekleyenler (checkbox + kurye atama)
-- Panel C: Devam Edenler (checkbox + bitir + harita tooltip)
+- Panel C: Devam Edenler (checkbox + bitir + satır bazlı düzenleme)
+- Devam eden siparişte düzenlenebilir alanlar:
+  - Kurye
+  - Personel
+  - Çıkış / Uğrama / Uğrama 1
+  - Not (rehber) ve serbest not
 - Realtime güncelleme, sesli uyarı
+- Görsel tema: koyu gri zemin + koyu kart yüzeyleri; metin/ikonlar açık tonda kontrastlı okunabilir
+- Tipografi: tablo başlık/satır metinleri responsive olarak büyür, küçük ekranda taşma önlenir
 - Mobile nav: `Operasyon` tab'ı
 - Desktop UX:
-  - 3 kolon bağımsız scroll alanı olarak çalışır
+  - 3 kolon bağımsız scroll alanı olarak çalışır, panel oranları genişlikte dinamik ayarlanır
   - Üstte güncel operasyon özeti ve kısayol ipuçları yer alır
+  - `Bugünkü Kazanç` kartı bugün tamamlanan siparişlerin toplam ücretiyle canlı hesaplanır
   - `Esc` seçimleri temizler
 
 ## UgramaYonetimPage
