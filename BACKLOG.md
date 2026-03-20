@@ -16,7 +16,8 @@ Project audit log for major changes.
 - Summary:
   - `OperasyonEkranPage` desktop özetindeki `BUGÜNKÜ KAZANÇ` alanı sabit `0 TL` yerine canlı hesaplamaya geçirildi.
   - Hesaplama, bugünün tarih aralığında `tamamlandi` siparişlerin `ucret` toplamını kullanıyor.
-  - Bu davranış için widget test eklendi (`desktop summary shows today revenue...`).
+  - `Bitir` aksiyonu sonrası günlük ciro provider invalidation eklendi; sayfa yenilemeden metrik anında güncelleniyor.
+  - Bu davranış için widget test eklendi (`desktop summary shows today revenue...`, `finishing order updates today revenue without manual refresh`).
 - Files:
   - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
   - `test/feature/operasyon/operasyon_ekran_page_test.dart`

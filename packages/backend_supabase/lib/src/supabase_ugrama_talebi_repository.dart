@@ -10,12 +10,6 @@ class SupabaseUgramaTalebiRepository implements UgramaTalebiRepository {
       AppLogger('SupabaseUgramaTalebiRepo', tag: LogTag.data);
 
   static const _table = 'ugrama_talepleri';
-  static const _ugramaTable = 'ugramalar';
-  static const _bridgeTable = 'musteri_ugrama';
-
-  /// Explicit column selection for ugrama (no lokasyon).
-  static const _ugramaColumns =
-      'id, ugrama_adi, adres, is_active, created_at';
 
   @override
   Future<UgramaTalebi> create(UgramaTalebi talep) async {
@@ -73,46 +67,19 @@ class SupabaseUgramaTalebiRepository implements UgramaTalebiRepository {
   }) async {
     _log.i('approve: talepId=$talepId, islemYapan=$islemYapanId');
 
-    // 1. Talebi oku
-    final talepData = await _client
-        .from(_table)
-        .select()
-        .eq('id', talepId)
-        .single();
-    final talep = UgramaTalebi.fromJson(talepData);
+    // Single RPC call wraps ugrama insert + bridge insert + talep update
+    // in a database transaction — no partial state on failure.
+    final result = await _client.rpc(
+      'approve_ugrama_talebi',
+      params: {
+        'p_talep_id': talepId,
+        'p_islem_yapan_id': islemYapanId,
+      },
+    );
 
-    // 2. Uğramalar tablosuna insert
-    final ugramaData = await _client
-        .from(_ugramaTable)
-        .insert({
-          'ugrama_adi': talep.ugramaAdi,
-          'adres': talep.adres,
-          'is_active': true,
-        })
-        .select(_ugramaColumns)
-        .single();
-    final ugramaId = ugramaData['id'] as String;
-
-    // 3. Köprü tablosuna atama
-    await _client.from(_bridgeTable).insert({
-      'musteri_id': talep.musteriId,
-      'ugrama_id': ugramaId,
-    });
-
-    // 4. Talep durumunu güncelle
-    final updatedData = await _client
-        .from(_table)
-        .update({
-          'durum': UgramaTalepDurum.onaylandi.value,
-          'islem_yapan_id': islemYapanId,
-          'onaylanan_ugrama_id': ugramaId,
-        })
-        .eq('id', talepId)
-        .select()
-        .single();
-
-    _log.i('approved: talepId=$talepId → ugramaId=$ugramaId');
-    return UgramaTalebi.fromJson(updatedData);
+    final data = result as Map<String, dynamic>;
+    _log.i('approved: talepId=$talepId → ugramaId=${data['onaylanan_ugrama_id']}');
+    return UgramaTalebi.fromJson(data);
   }
 
   @override

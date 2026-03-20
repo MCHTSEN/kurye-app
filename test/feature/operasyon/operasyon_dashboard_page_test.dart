@@ -2,7 +2,9 @@ import 'package:backend_core/backend_core.dart';
 import 'package:bursamotokurye/core/environment/app_environment.dart';
 import 'package:bursamotokurye/core/environment/backend_provider.dart';
 import 'package:bursamotokurye/core/environment/credit_access_provider.dart';
+import 'package:bursamotokurye/feature/operasyon/domain/dashboard_stats.dart';
 import 'package:bursamotokurye/feature/operasyon/presentation/operasyon_dashboard_page.dart';
+import 'package:bursamotokurye/feature/operasyon/providers/dashboard_providers.dart';
 import 'package:bursamotokurye/product/kurye/kurye_providers.dart';
 import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
 import 'package:bursamotokurye/product/user_profile/user_profile_providers.dart';
@@ -116,9 +118,17 @@ void main() {
     final siparisRepo = FakeSiparisRepository(seed: seedOrders ?? orders);
     final kuryeRepo = FakeKuryeRepository(seed: seedCouriers ?? couriers);
 
+    // Pre-compute stats with fixed `now` so tests are deterministic.
+    final stats = DashboardStats.compute(
+      orders: seedOrders ?? orders,
+      couriers: seedCouriers ?? couriers,
+      now: now,
+    );
+
     return [
       siparisRepositoryProvider.overrideWithValue(siparisRepo),
       kuryeRepositoryProvider.overrideWithValue(kuryeRepo),
+      dashboardStatsProvider.overrideWith((_) async => stats),
       currentUserProfileProvider.overrideWithBuild(
         (ref, notifier) => null,
       ),
