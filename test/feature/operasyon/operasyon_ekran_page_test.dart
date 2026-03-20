@@ -507,5 +507,43 @@ void main() {
 
       expect(find.text('150 TL'), findsOneWidget);
     });
+
+    testWidgets(
+      '(l) finishing order updates today revenue without manual refresh',
+      (tester) async {
+        final now = DateTime.now();
+        fakeSiparisRepo.store['s-live'] = Siparis(
+          id: 's-live',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+          kuryeId: 'kurye-1',
+          durum: SiparisDurum.devamEdiyor,
+          createdAt: now,
+        );
+        fakeSiparisRepo.store['s-hist-price'] = Siparis(
+          id: 's-hist-price',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+          durum: SiparisDurum.tamamlandi,
+          ucret: 75,
+          createdAt: now.subtract(const Duration(days: 1)),
+        );
+
+        await pumpPage(
+          tester,
+          size: const Size(1440, 1200),
+        );
+
+        expect(find.text('0 TL'), findsOneWidget);
+
+        await reveal(tester, find.byKey(const Key('finish_s-live')));
+        await tester.tap(find.byKey(const Key('finish_s-live')));
+        await tester.pumpAndSettle();
+
+        expect(find.text('75 TL'), findsOneWidget);
+      },
+    );
   });
 }

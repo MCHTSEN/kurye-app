@@ -306,6 +306,14 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       // Force provider refresh so the UI doesn't wait for the next
       // Supabase Realtime event — completed orders disappear immediately.
       ref.invalidate(siparisStreamActiveProvider);
+      final now = DateTime.now();
+      final startOfDay = DateTime(now.year, now.month, now.day);
+      ref.invalidate(
+        siparisHistoryProvider(
+          startDate: startOfDay,
+          endDate: startOfDay.add(const Duration(days: 1)),
+        ),
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
