@@ -11,6 +11,46 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-03-27
+- Scope: Operasyon ekranı mobil layout iyileştirmesi
+- Summary:
+  - `_buildOrderForm` mobilde dikey layout kullanacak şekilde yeniden düzenlendi: Müşteri ve Personel tam genişlik, Çıkış/Uğrama ve Uğrama1/Not(Rehber) 2'li grid, SİPARİŞ OLUŞTUR butonu tam genişlik.
+  - `_buildWaitingPanel` mobilde kart bazlı sipariş listesi kullanacak şekilde refactor edildi: her sipariş checkbox + müşteri/personel/güzergah + saat içeren tıklanabilir kart. Kurye Seç dropdown ve ATA butonu panel altına taşındı.
+  - `_buildActivePanel` mobilde kart bazlı sipariş listesi kullanacak şekilde refactor edildi: her aktif iş kurye badge + güzergah + düzenle ikonu + BİTTİ butonu içeren kart.
+  - `_buildWaitingCard` ve `_buildActiveCard` yardımcı metotları eklendi.
+  - Desktop ve tablet layout'lar değişmedi; mevcut tablo/row yapısı korundu.
+  - Tüm mevcut testler korundu; `Key('active_${s.id}')` kart container'ına eklenerek test uyumu sağlandı.
+- Files:
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+- Validation:
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` → 12/12 passed.
+  - `flutter test` → 140 passing, 1 failing (pre-existing golden mismatch, unrelated).
+  - iPhone 17 Pro simulator üzerinde canlı doğrulama: form tam genişlik dropdown'larla okunabilir, bekleyenler kartları çalışıyor.
+
+### 2026-03-20
+- Scope: Müşteri mobil navigasyon shell düzeltmesi
+- Summary:
+  - Müşteri mobil drawer navigasyonu kaldırılarak `AutoTabsScaffold` tabanlı `MusteriShellPage` eklendi.
+  - Müşteri route'ları `/musteri` shell altındaki child route yapısına taşındı; sipariş / geçmiş / uğrama talebi sekmeleri mobilde alt çubuk üzerinden açılıyor.
+  - `MusteriSiparisPage`, `MusteriGecmisPage` ve `MusteriUgramaTalepPage` mobilde drawer göstermeyecek şekilde güncellendi; desktop/tablet `ResponsiveScaffold` davranışı korundu.
+  - Müşteri tab geçişleri için analytics event kataloğuna `musteri_tab_selected` eklendi.
+  - Yeni widget testi ile müşteri shell sekme geçişi doğrulandı; iPhone 15 Pro simulator üzerinde canlı doğrulamada Sipariş → Geçmiş → Uğrama → Sipariş akışı çalıştı.
+- Files:
+  - `lib/app/router/app_router.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_shell_page.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_gecmis_page.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_ugrama_talep_page.dart`
+  - `lib/feature/musteri_siparis/DOC.md`
+  - `lib/feature/musteri_siparis/presentation/SCREENS.md`
+  - `lib/product/navigation/role_nav_items.dart`
+  - `packages/backend_core/lib/src/domain/app_events.dart`
+  - `test/feature/musteri_siparis/musteri_shell_page_test.dart`
+- Validation:
+  - `flutter analyze` passed with existing repo-wide info/warning backlog only (no new blocking analyzer error).
+  - `flutter test` => `140 passing, 1 failing` and the only failure remains pre-existing `test/feature/example_feed/example_feed_page_golden_test.dart` golden mismatch.
+  - Manual simulator verification passed on iPhone 15 Pro simulator: müşteri mobile tabs navigate correctly across sipariş / geçmiş / uğrama screens.
+
 ### 2026-03-17
 - Scope: Operasyon ekranı günlük ciro hesaplama düzeltmesi
 - Summary:
