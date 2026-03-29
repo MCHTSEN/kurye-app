@@ -122,12 +122,15 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentUserProfileProvider);
 
+    final isMobile = layoutTypeOf(context) == LayoutType.mobile;
+
     return ResponsiveScaffold(
       title: 'Sipariş Oluştur',
       currentRoute: CustomRoute.musteriSiparis,
       navItems: musteriNavItems,
       headerSubtitle: 'Müşteri',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: !isMobile,
       body: profileAsync.when(
         data: (profile) {
           if (profile == null || profile.musteriId == null) {

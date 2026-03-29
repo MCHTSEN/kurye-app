@@ -89,6 +89,11 @@ abstract final class AppEvents {
     properties: {'path': path},
   );
 
+  static AnalyticsEvent musteriTabSelected(String tabName) => AnalyticsEvent(
+    name: 'musteri_tab_selected',
+    properties: {'tab_name': tabName},
+  );
+
   static AnalyticsEvent operasyonTabSelected(String tabName) => AnalyticsEvent(
     name: 'operasyon_tab_selected',
     properties: {'tab_name': tabName},

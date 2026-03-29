@@ -12,6 +12,7 @@ import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 
 class MusteriUgramaTalepPage extends ConsumerStatefulWidget {
@@ -87,6 +88,7 @@ class _MusteriUgramaTalepPageState
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentUserProfileProvider);
+    final isMobile = layoutTypeOf(context) == LayoutType.mobile;
 
     return ResponsiveScaffold(
       title: 'Uğrama Talepleri',
@@ -94,6 +96,7 @@ class _MusteriUgramaTalepPageState
       navItems: musteriNavItems,
       headerSubtitle: 'Müşteri',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: !isMobile,
       body: profileAsync.when(
         data: (profile) {
           if (profile == null || profile.musteriId == null) {

@@ -37,7 +37,7 @@
 - [x] B4: Sipariş formu: Zorunlu alanlar boşken "Sipariş Oluştur" hata verir
   - Sonuç: PASS (test kanıtı) — müşteri formunda aynı zorunlu alan doğrulaması widget test ile doğrulanıyor; operasyon formu için ayrı kanıt çıkarılmadı ancak form kontratı aynı repository akışına bağlı.
 - [ ] B5: Sipariş formu: Tüm alanlar doldurulunca sipariş oluşturulur, "kurye bekleyenler" panelinde görünür
-  - Sonuç: PARTIAL — lifecycle integration testi sipariş oluşturma + waiting stream görünürlüğünü doğruluyor; operasyon UI üstünden uçtan uca canlı doğrulama bu turda yapılmadı.
+  - Sonuç: PARTIAL — lifecycle integration testi sipariş oluşturma + waiting stream görünürlüğünü doğruluyor; operasyon UI üstünden uçtan uca canlı doğrulamacsa bu turda yapılmadı.
 - [x] B6: Kurye atama: Kurye bekleyenler'den sipariş(ler) checkbox ile seçilir, kurye dropdown'ından kurye seçilir, "ATA" ile atanır
   - Sonuç: PASS (test kanıtı) — `operasyon_ekran_page_test.dart` içindeki `courier assignment flow` testi bu akışı doğruluyor.
 - [x] B7: Atanan sipariş "devam edenler" paneline geçer

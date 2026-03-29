@@ -121,6 +121,25 @@ const operasyonSettingsNavItems = <NavItem>[
   ),
 ];
 
+/// Primary mobile tabs for müşteri role.
+const musteriPrimaryMobileNavItems = <NavItem>[
+  NavItem(
+    icon: Icons.add_shopping_cart_rounded,
+    label: 'Sipariş',
+    route: CustomRoute.musteriSiparis,
+  ),
+  NavItem(
+    icon: Icons.history_rounded,
+    label: 'Geçmiş',
+    route: CustomRoute.musteriGecmis,
+  ),
+  NavItem(
+    icon: Icons.add_location_alt_rounded,
+    label: 'Uğrama',
+    route: CustomRoute.musteriUgramaTalep,
+  ),
+];
+
 /// Navigation items for müşteri (personel) role.
 const musteriNavItems = <NavItem>[
   NavItem(

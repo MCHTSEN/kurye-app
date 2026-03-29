@@ -20,6 +20,11 @@ class TypeaheadField<T> extends StatefulWidget {
     this.enabled = true,
     this.focusNode,
     this.nextFocus,
+    this.fillColor,
+    this.overlayColor,
+    this.textColor,
+    this.borderColor,
+    this.errorColor,
   });
 
   final List<({T value, String label})> items;
@@ -29,6 +34,11 @@ class TypeaheadField<T> extends StatefulWidget {
   final String? placeholder;
   final String? Function(T?)? validator;
   final bool enabled;
+  final Color? fillColor;
+  final Color? overlayColor;
+  final Color? textColor;
+  final Color? borderColor;
+  final Color? errorColor;
 
   /// Optional external focus node. If null, an internal one is created.
   final FocusNode? focusNode;
@@ -264,6 +274,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
               widget.label!,
               style: theme.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w500,
+                color: widget.textColor ?? theme.textTheme.bodySmall?.color,
               ),
             ),
           ),
@@ -277,24 +288,37 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
               focusNode: _focusNode,
               enabled: widget.enabled,
               onChanged: _onTextChanged,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: widget.textColor ?? AppColors.textPrimary,
+              ),
               decoration: InputDecoration(
                 hintText: widget.placeholder,
+                hintStyle: TextStyle(
+                  color: (widget.textColor ?? AppColors.textPrimary)
+                      .withValues(alpha: 0.5),
+                ),
                 isDense: true,
+                filled: widget.fillColor != null,
+                fillColor: widget.fillColor,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(
+                      color: widget.borderColor ?? AppColors.border),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide(
+                      color: widget.borderColor ?? AppColors.border),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide:
-                      const BorderSide(color: AppColors.primary, width: 1.5),
+                  borderSide: BorderSide(
+                      color: widget.borderColor ?? AppColors.primary,
+                      width: 1.5),
                 ),
                 suffixIcon: widget.value != null
                     ? GestureDetector(
@@ -303,25 +327,29 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
                           widget.onChanged(null);
                           _focusNode.requestFocus();
                         },
-                        child: const Icon(Icons.close, size: 16),
+                        child: Icon(Icons.close,
+                            size: 16,
+                            color: widget.textColor?.withValues(alpha: 0.7)),
                       )
-                    : const Icon(
+                    : Icon(
                         Icons.keyboard_arrow_down_rounded,
                         size: 18,
-                        color: AppColors.textMuted,
+                        color: widget.textColor?.withValues(alpha: 0.7) ??
+                            AppColors.textMuted,
                       ),
               ),
             ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(top: 4),
+          padding: const EdgeInsets.only(top: 4, left: 4),
           child: Text(
             errorText ?? '',
             style: theme.textTheme.bodySmall?.copyWith(
               color: errorText != null
-                  ? theme.colorScheme.error
+                  ? (widget.errorColor ?? theme.colorScheme.error)
                   : Colors.transparent,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -341,7 +369,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
         child: Material(
           elevation: 8,
           borderRadius: BorderRadius.circular(10),
-          color: Colors.white,
+          color: widget.overlayColor ?? Colors.white,
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: 220,
@@ -373,8 +401,8 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
                             ? FontWeight.w700
                             : FontWeight.w500,
                         color: isHighlighted
-                            ? AppColors.primary
-                            : AppColors.textPrimary,
+                            ? (widget.textColor ?? AppColors.primary)
+                            : (widget.textColor ?? AppColors.textPrimary),
                       ),
                     ),
                   ),
