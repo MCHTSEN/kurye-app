@@ -39,6 +39,49 @@ final class _OperasyonTheme {
   static const divider = Color(0xFF374151);
 }
 
+class _OperasyonTypeahead extends StatelessWidget {
+  const _OperasyonTypeahead({
+    super.key,
+    required this.items,
+    required this.onChanged,
+    this.value,
+    this.label,
+    this.placeholder,
+    this.validator,
+    this.focusNode,
+    this.nextFocus,
+  });
+
+  final List<({String value, String label})> items;
+  final ValueChanged<String?> onChanged;
+  final String? value;
+  final String? label;
+  final String? placeholder;
+  final String? Function(String?)? validator;
+  final FocusNode? focusNode;
+  final FocusNode? nextFocus;
+
+  @override
+  Widget build(BuildContext context) {
+    return TypeaheadField<String>(
+      key: key,
+      items: items,
+      onChanged: onChanged,
+      value: value,
+      label: label,
+      placeholder: placeholder,
+      validator: validator,
+      focusNode: focusNode,
+      nextFocus: nextFocus,
+      fillColor: _OperasyonTheme.cardHeaderDark,
+      overlayColor: _OperasyonTheme.cardHeaderDark,
+      textColor: _OperasyonTheme.textPrimary,
+      borderColor: _OperasyonTheme.divider,
+      errorColor: Colors.redAccent.shade200,
+    );
+  }
+}
+
 class OperasyonEkranPage extends ConsumerStatefulWidget {
   const OperasyonEkranPage({super.key, this.alertService});
 
@@ -1086,7 +1129,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TypeaheadField<String>(
+            _OperasyonTypeahead(
               key: const Key('musteri_typeahead'),
               focusNode: _fnMusteri,
               value: _selectedMusteriId,
@@ -1098,7 +1141,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
               nextFocus: _fnPersonel,
             ),
             const SizedBox(height: 8),
-            TypeaheadField<String>(
+            _OperasyonTypeahead(
               key: const Key('personel_typeahead'),
               focusNode: _fnPersonel,
               value: _selectedPersonelId,
@@ -1114,7 +1157,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: TypeaheadField<String>(
+                  child: _OperasyonTypeahead(
                     key: const Key('cikis_typeahead'),
                     focusNode: _fnCikis,
                     value: _selectedCikisId,
@@ -1128,7 +1171,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: TypeaheadField<String>(
+                  child: _OperasyonTypeahead(
                     key: const Key('ugrama_typeahead'),
                     focusNode: _fnUgrama,
                     value: _selectedUgramaId,
@@ -1147,7 +1190,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: TypeaheadField<String>(
+                  child: _OperasyonTypeahead(
                     key: const Key('ugrama1_typeahead'),
                     focusNode: _fnUgrama1,
                     value: _selectedUgrama1Id,
@@ -1160,7 +1203,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: TypeaheadField<String>(
+                  child: _OperasyonTypeahead(
                     key: const Key('not_typeahead'),
                     focusNode: _fnNot,
                     value: _selectedNotId,
@@ -1187,7 +1230,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
-            child: TypeaheadField<String>(
+            child: _OperasyonTypeahead(
               key: const Key('musteri_typeahead'),
               focusNode: _fnMusteri,
               value: _selectedMusteriId,
@@ -1201,7 +1244,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: TypeaheadField<String>(
+            child: _OperasyonTypeahead(
               key: const Key('personel_typeahead'),
               focusNode: _fnPersonel,
               value: _selectedPersonelId,
@@ -1215,7 +1258,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: TypeaheadField<String>(
+            child: _OperasyonTypeahead(
               key: const Key('cikis_typeahead'),
               focusNode: _fnCikis,
               value: _selectedCikisId,
@@ -1229,7 +1272,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: TypeaheadField<String>(
+            child: _OperasyonTypeahead(
               key: const Key('ugrama_typeahead'),
               focusNode: _fnUgrama,
               value: _selectedUgramaId,
@@ -1243,7 +1286,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: TypeaheadField<String>(
+            child: _OperasyonTypeahead(
               key: const Key('ugrama1_typeahead'),
               focusNode: _fnUgrama1,
               value: _selectedUgrama1Id,
@@ -1256,7 +1299,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: TypeaheadField<String>(
+            child: _OperasyonTypeahead(
               key: const Key('not_typeahead'),
               focusNode: _fnNot,
               value: _selectedNotId,
@@ -1277,7 +1320,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                 focusNode: _fnSubmit,
                 onPressed: () => _onCreateOrder(userId),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -2078,7 +2121,7 @@ class _BackgroundEffect extends StatelessWidget {
           top: -100,
           right: -100,
           child: _BlurredCircle(
-            color: AppColors.primary.withValues(alpha: 0.16),
+            color: AppColors.primary.withValues(alpha: 0.04),
             size: 400,
           ),
         ),
@@ -2086,7 +2129,7 @@ class _BackgroundEffect extends StatelessWidget {
           bottom: -50,
           left: -100,
           child: _BlurredCircle(
-            color: AppColors.secondary.withValues(alpha: 0.14),
+            color: AppColors.secondary.withValues(alpha: 0.03),
             size: 350,
           ),
         ),
@@ -2094,7 +2137,7 @@ class _BackgroundEffect extends StatelessWidget {
           top: 200,
           left: 100,
           child: _BlurredCircle(
-            color: AppColors.primary.withValues(alpha: 0.1),
+            color: AppColors.primary.withValues(alpha: 0.02),
             size: 200,
           ),
         ),

@@ -45,6 +45,7 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentUserProfileProvider);
+    final isMobile = layoutTypeOf(context) == LayoutType.mobile;
 
     return ResponsiveScaffold(
       title: 'Geçmiş Siparişler',
@@ -52,6 +53,7 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
       navItems: musteriNavItems,
       headerSubtitle: 'Müşteri',
       onLogout: logoutCallback(ref),
+      showMobileDrawer: !isMobile,
       body: profileAsync.when(
         data: (profile) {
           if (profile == null || profile.musteriId == null) {

@@ -8,6 +8,7 @@ import '../../feature/home/presentation/home_page.dart';
 import '../../feature/kurye/presentation/kurye_ana_page.dart';
 import '../../feature/musteri_siparis/presentation/musteri_gecmis_page.dart';
 import '../../feature/musteri_siparis/presentation/musteri_siparis_page.dart';
+import '../../feature/musteri_siparis/presentation/musteri_shell_page.dart';
 import '../../feature/musteri_siparis/presentation/musteri_ugrama_talep_page.dart';
 import '../../feature/not_found/presentation/not_found_page.dart';
 import '../../feature/onboarding/presentation/onboarding_page.dart';
@@ -31,6 +32,7 @@ import 'guards/app_access_guard.dart';
 part 'app_router.g.dart';
 
 const _operasyonAyarlarHomeRouteName = 'OperasyonAyarlarHomeRoute';
+const _musteriShellRouteName = 'MusteriShellRoute';
 
 String _nestedPath(String fullPath, String parentPath) {
   final prefix = '$parentPath/';
@@ -98,19 +100,36 @@ RootStackRouter appRouter(Ref ref) {
 
       // --- Müşteri rotaları ---
       NamedRouteDef(
-        name: CustomRoute.musteriSiparis.routeName,
-        path: CustomRoute.musteriSiparis.path,
-        builder: (context, data) => const MusteriSiparisPage(),
-      ),
-      NamedRouteDef(
-        name: CustomRoute.musteriGecmis.routeName,
-        path: CustomRoute.musteriGecmis.path,
-        builder: (context, data) => const MusteriGecmisPage(),
-      ),
-      NamedRouteDef(
-        name: CustomRoute.musteriUgramaTalep.routeName,
-        path: CustomRoute.musteriUgramaTalep.path,
-        builder: (context, data) => const MusteriUgramaTalepPage(),
+        name: _musteriShellRouteName,
+        path: '/musteri',
+        builder: (context, data) => const MusteriShellPage(),
+        children: [
+          NamedRouteDef(
+            name: CustomRoute.musteriSiparis.routeName,
+            path: _nestedPath(
+              CustomRoute.musteriSiparis.path,
+              '/musteri',
+            ),
+            initial: true,
+            builder: (context, data) => const MusteriSiparisPage(),
+          ),
+          NamedRouteDef(
+            name: CustomRoute.musteriGecmis.routeName,
+            path: _nestedPath(
+              CustomRoute.musteriGecmis.path,
+              '/musteri',
+            ),
+            builder: (context, data) => const MusteriGecmisPage(),
+          ),
+          NamedRouteDef(
+            name: CustomRoute.musteriUgramaTalep.routeName,
+            path: _nestedPath(
+              CustomRoute.musteriUgramaTalep.path,
+              '/musteri',
+            ),
+            builder: (context, data) => const MusteriUgramaTalepPage(),
+          ),
+        ],
       ),
 
       // --- Operasyon rotaları ---
