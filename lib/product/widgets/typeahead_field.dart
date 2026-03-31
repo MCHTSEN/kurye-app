@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -53,12 +55,14 @@ class TypeaheadField<T> extends StatefulWidget {
 class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
   final _controller = TextEditingController();
   final _layerLink = LayerLink();
-  final _fieldKey = GlobalKey();
+  final GlobalKey _fieldKey = GlobalKey();
   FocusNode? _internalFocusNode;
   OverlayEntry? _overlay;
   int _highlightIndex = 0;
   List<({T value, String label})> _filtered = [];
   bool _ignoreNextChange = false;
+  bool _pointerSelectionInProgress = false;
+  Timer? _blurCloseTimer;
 
   FocusNode get _focusNode =>
       widget.focusNode ?? (_internalFocusNode ??= FocusNode());
@@ -79,6 +83,12 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
     // Only refilter if items actually changed (content comparison).
     if (!_listEquals(widget.items, oldWidget.items)) {
       _filter(_controller.text);
+      if (_focusNode.hasFocus) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || !_focusNode.hasFocus) return;
+          _openSuggestionsForCurrentQuery();
+        });
+      }
     }
   }
 
@@ -106,6 +116,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
   bool get _isOptional => widget.validator == null;
 
   void _onFocusChange() {
+    _blurCloseTimer?.cancel();
     if (_focusNode.hasFocus) {
       // Optional field with no items — skip overlay entirely.
       if (_isOptional && widget.items.isEmpty) return;
@@ -113,10 +124,15 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
         baseOffset: 0,
         extentOffset: _controller.text.length,
       );
-      _filter(_controller.text);
-      _showOverlay();
+      _openSuggestionsForCurrentQuery();
     } else {
-      _resolveAndClose();
+      // Delay blur handling so a pointer tap on overlay options can complete.
+      _blurCloseTimer = Timer(const Duration(milliseconds: 120), () {
+        if (!mounted || _focusNode.hasFocus || _pointerSelectionInProgress) {
+          return;
+        }
+        _resolveAndClose();
+      });
     }
   }
 
@@ -138,6 +154,16 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
 
     _overlay = OverlayEntry(builder: (_) => _buildOverlay());
     Overlay.of(context).insert(_overlay!);
+  }
+
+  void _openSuggestionsForCurrentQuery() {
+    _filter(_controller.text);
+    if (_filtered.isNotEmpty) {
+      _showOverlay();
+      _updateOverlay();
+    } else {
+      _removeOverlay();
+    }
   }
 
   void _removeOverlay() {
@@ -164,6 +190,8 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
   }
 
   void _select(({T value, String label}) item, {bool moveFocus = true}) {
+    _blurCloseTimer?.cancel();
+    _pointerSelectionInProgress = false;
     _ignoreNextChange = true;
     _controller.text = item.label;
     _controller.selection = TextSelection.collapsed(
@@ -203,8 +231,10 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
     if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
       if (_filtered.isNotEmpty) {
         setState(() {
-          _highlightIndex =
-              (_highlightIndex + 1).clamp(0, _filtered.length - 1);
+          _highlightIndex = (_highlightIndex + 1).clamp(
+            0,
+            _filtered.length - 1,
+          );
         });
         _updateOverlay();
       }
@@ -213,8 +243,10 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
     if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
       if (_filtered.isNotEmpty) {
         setState(() {
-          _highlightIndex =
-              (_highlightIndex - 1).clamp(0, _filtered.length - 1);
+          _highlightIndex = (_highlightIndex - 1).clamp(
+            0,
+            _filtered.length - 1,
+          );
         });
         _updateOverlay();
       }
@@ -251,6 +283,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
 
   @override
   void dispose() {
+    _blurCloseTimer?.cancel();
     _removeOverlay();
     _focusNode.removeListener(_onFocusChange);
     _internalFocusNode?.dispose();
@@ -287,6 +320,10 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
               controller: _controller,
               focusNode: _focusNode,
               enabled: widget.enabled,
+              onTap: () {
+                if (!widget.enabled) return;
+                _openSuggestionsForCurrentQuery();
+              },
               onChanged: _onTextChanged,
               style: TextStyle(
                 fontSize: 13,
@@ -296,29 +333,35 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
               decoration: InputDecoration(
                 hintText: widget.placeholder,
                 hintStyle: TextStyle(
-                  color: (widget.textColor ?? AppColors.textPrimary)
-                      .withValues(alpha: 0.5),
+                  color: (widget.textColor ?? AppColors.textPrimary).withValues(
+                    alpha: 0.5,
+                  ),
                 ),
                 isDense: true,
                 filled: widget.fillColor != null,
                 fillColor: widget.fillColor,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(
-                      color: widget.borderColor ?? AppColors.border),
+                    color: widget.borderColor ?? AppColors.border,
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(
-                      color: widget.borderColor ?? AppColors.border),
+                    color: widget.borderColor ?? AppColors.border,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(
-                      color: widget.borderColor ?? AppColors.primary,
-                      width: 1.5),
+                    color: widget.borderColor ?? AppColors.primary,
+                    width: 1.5,
+                  ),
                 ),
                 suffixIcon: widget.value != null
                     ? GestureDetector(
@@ -327,14 +370,17 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
                           widget.onChanged(null);
                           _focusNode.requestFocus();
                         },
-                        child: Icon(Icons.close,
-                            size: 16,
-                            color: widget.textColor?.withValues(alpha: 0.7)),
+                        child: Icon(
+                          Icons.close,
+                          size: 16,
+                          color: widget.textColor?.withValues(alpha: 0.7),
+                        ),
                       )
                     : Icon(
                         Icons.keyboard_arrow_down_rounded,
                         size: 18,
-                        color: widget.textColor?.withValues(alpha: 0.7) ??
+                        color:
+                            widget.textColor?.withValues(alpha: 0.7) ??
                             AppColors.textMuted,
                       ),
               ),
@@ -384,6 +430,11 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
                 final item = _filtered[index];
                 final isHighlighted = index == _highlightIndex;
                 return InkWell(
+                  onTapDown: (_) {
+                    _blurCloseTimer?.cancel();
+                    _pointerSelectionInProgress = true;
+                  },
+                  onTapCancel: () => _pointerSelectionInProgress = false,
                   onTap: () => _select(item),
                   child: Container(
                     padding: const EdgeInsets.symmetric(

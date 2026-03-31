@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/router/custom_route.dart';
 import '../../../product/analytics/analytics_provider.dart';
+import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/widgets/responsive_layout.dart';
 
@@ -26,8 +27,21 @@ class MusteriShellPage extends ConsumerWidget {
       return const AutoRouter();
     }
 
+    final logout = logoutCallback(ref);
+
     return AutoTabsScaffold(
       routes: _tabRoutes,
+      appBarBuilder: (context, tabsRouter) => AppBar(
+        title: const Text('Müşteri Paneli'),
+        actions: [
+          IconButton(
+            key: const Key('musteri_logout_btn'),
+            icon: const Icon(Icons.logout),
+            tooltip: 'Çıkış Yap',
+            onPressed: logout,
+          ),
+        ],
+      ),
       bottomNavigationBuilder: (context, tabsRouter) {
         return NavigationBar(
           selectedIndex: tabsRouter.activeIndex,

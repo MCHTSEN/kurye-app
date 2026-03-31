@@ -47,6 +47,8 @@
   - Üstte güncel operasyon özeti ve kısayol ipuçları yer alır
   - `Bugünkü Kazanç` kartı bugün tamamlanan siparişlerin toplam ücretiyle canlı hesaplanır
   - `Esc` seçimleri temizler
+- Etkileşim:
+  - Sipariş formundaki typeahead alanlarında öneri satırına mouse/touch ile tıklama doğrudan seçim yapar; seçim için yalnızca Enter zorunlu değildir.
 
 ## UgramaYonetimPage
 - Mobile nav: `Uğrama` tab'ı
@@ -80,4 +82,4 @@
   - `Esc` seçili siparişi kapatır
 
 ## Last Updated
-- 2026-03-16
+- 2026-03-31

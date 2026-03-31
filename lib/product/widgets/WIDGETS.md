@@ -31,6 +31,13 @@ Defines reusable widget contracts used across features.
   - Shared desktop-first split-view layout
   - Fixed-width editor pane + flexible content pane
   - Falls back to stacked mobile/tablet flow when needed
+- `TypeaheadField<T>`
+  - Searchable text-input + overlay suggestion list
+  - Keyboard: `↑/↓` ile gezinme, `Enter/Tab` ile seçim
+  - Pointer: Öneri satırına mouse/touch tıklaması ile doğrudan seçim
+  - Alan boşken tıklamada da mevcut seçenekleri listeleyerek açar
+- `SearchableDropdown<T>`
+  - `ShadSelect.withSearch` tabanlı arama destekli seçim alanı
 
 ## Usage Rules
 - Use shared widgets before creating new duplicates.
@@ -44,4 +51,4 @@ Defines reusable widget contracts used across features.
   split-view workbenches instead of long single-column forms.
 
 ## Last Updated
-- 2026-03-16
+- 2026-03-31
