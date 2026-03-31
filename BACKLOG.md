@@ -11,6 +11,31 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-03-31
+- Scope: Operasyon typeahead tıklama seçimi düzeltmesi
+- Summary:
+  - Operasyon ekranındaki form alanlarında kullanılan `TypeaheadField` overlay seçim davranışı düzeltildi.
+  - Öneri satırına mouse/touch tıklandığında focus kaybı nedeniyle overlay erken kapanıp seçim iptal oluyordu; pointer seçim akışı korunarak tıklama ile doğrudan seçim garantilendi.
+  - Blur kapanışı kısa gecikmeli güvenli akışa alındı (`120ms`), böylece focus kaybı ile satır tıklaması yarışında seçim kaybolmuyor.
+  - Alan zaten odaktayken tekrar tıklamada da öneri overlay'i açılacak şekilde güncellendi; kullanıcı yazı yazmadan tüm seçenekleri görebiliyor.
+  - `items` listesi odaktayken sonradan güncellendiğinde overlay otomatik yenileniyor.
+  - `didUpdateWidget` sırasında overlay build tetiklenmesi kaynaklı `setState() or markNeedsBuild() called during build` hatası için overlay açma akışı `postFrameCallback` ile güvenli hale getirildi.
+  - Bu regresyon için widget testi eklendi: Enter basmadan öneri tıklamasıyla seçim yapılabildiği doğrulandı.
+  - Living docs güncellendi (`SCREENS.md`, `WIDGETS.md`) ve etkileşim kontratı netleştirildi.
+- Files:
+  - `lib/product/widgets/typeahead_field.dart`
+  - `test/product/widgets/typeahead_field_test.dart`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/product/widgets/WIDGETS.md`
+  - `BACKLOG.md`
+- Validation:
+  - `flutter test test/product/widgets/typeahead_field_test.dart` → passed.
+  - `flutter test test/product/widgets/typeahead_field_test.dart test/feature/operasyon/operasyon_ekran_page_test.dart` → passed.
+  - `test/product/widgets/typeahead_field_test.dart` içinde "shows all suggestions on tap when query is empty" senaryosu geçti.
+  - `test/product/widgets/typeahead_field_test.dart` içinde "does not throw when items update while field is focused" senaryosu geçti.
+  - `flutter analyze` → failed (`42 issues`): repo genelindeki mevcut info lintleri + `packages/backend_supabase/lib/src/supabase_ugrama_talebi_repository.dart` içinde önceden var olan 1 warning.
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, pixel diff), yeni typeahead testi geçti.
+
 ### 2026-03-27
 - Scope: Operasyon ekranı mobil layout iyileştirmesi
 - Summary:

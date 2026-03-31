@@ -29,14 +29,40 @@ import '../../../product/widgets/typeahead_field.dart';
 final _log = Logger();
 
 final class _OperasyonTheme {
-  static const background = Color(0xFF111827);
-  static const backgroundOverlay = Color(0xFF1F2937);
-  static const cardSurface = Color(0xFF1F2937);
-  static const cardHeader = Color(0xFF111827);
-  static const cardHeaderDark = Color(0xFF0B1220);
-  static const textPrimary = Color(0xFFE5E7EB);
-  static const textMuted = Color(0xFF9CA3AF);
-  static const divider = Color(0xFF374151);
+  const _OperasyonTheme._dark()
+      : background = const Color(0xFF111827),
+        backgroundOverlay = const Color(0xFF1F2937),
+        cardSurface = const Color(0xFF1F2937),
+        cardHeader = const Color(0xFF111827),
+        cardHeaderDark = const Color(0xFF0B1220),
+        textPrimary = const Color(0xFFE5E7EB),
+        textMuted = const Color(0xFF9CA3AF),
+        divider = const Color(0xFF374151);
+
+  const _OperasyonTheme._light()
+      : background = AppColors.surfaceHigh,
+        backgroundOverlay = Colors.white,
+        cardSurface = Colors.white,
+        cardHeader = AppColors.surfaceHigh,
+        cardHeaderDark = AppColors.surfaceMid,
+        textPrimary = AppColors.textPrimary,
+        textMuted = AppColors.textMuted,
+        divider = AppColors.border;
+
+  factory _OperasyonTheme.of(BuildContext context) {
+    return layoutTypeOf(context) == LayoutType.desktop
+        ? const _OperasyonTheme._dark()
+        : const _OperasyonTheme._light();
+  }
+
+  final Color background;
+  final Color backgroundOverlay;
+  final Color cardSurface;
+  final Color cardHeader;
+  final Color cardHeaderDark;
+  final Color textPrimary;
+  final Color textMuted;
+  final Color divider;
 }
 
 class _OperasyonTypeahead extends StatelessWidget {
@@ -63,6 +89,8 @@ class _OperasyonTypeahead extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = _OperasyonTheme.of(context);
+    final isDesktop = layoutTypeOf(context) == LayoutType.desktop;
     return TypeaheadField<String>(
       key: key,
       items: items,
@@ -73,10 +101,10 @@ class _OperasyonTypeahead extends StatelessWidget {
       validator: validator,
       focusNode: focusNode,
       nextFocus: nextFocus,
-      fillColor: _OperasyonTheme.cardHeaderDark,
-      overlayColor: _OperasyonTheme.cardHeaderDark,
-      textColor: _OperasyonTheme.textPrimary,
-      borderColor: _OperasyonTheme.divider,
+      fillColor: isDesktop ? theme.cardHeaderDark : null,
+      overlayColor: isDesktop ? theme.cardHeaderDark : null,
+      textColor: isDesktop ? theme.textPrimary : null,
+      borderColor: isDesktop ? theme.divider : null,
       errorColor: Colors.redAccent.shade200,
     );
   }
@@ -784,6 +812,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }
 
   Widget _buildDesktopSummaryBar(AsyncValue<List<Siparis>> streamAsync) {
+    final theme = _OperasyonTheme.of(context);
     final now = DateTime.now();
     final startOfDay = DateTime(now.year, now.month, now.day);
     final endOfDay = startOfDay.add(const Duration(days: 1));
@@ -806,7 +835,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       decoration: BoxDecoration(
-        color: _OperasyonTheme.cardSurface.withValues(alpha: 0.96),
+        color: theme.cardSurface.withValues(alpha: 0.96),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -900,12 +929,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           IconButton(
             onPressed: logoutCallback(ref),
             style: IconButton.styleFrom(
-              backgroundColor: _OperasyonTheme.cardHeaderDark,
-              foregroundColor: _OperasyonTheme.textPrimary,
+              backgroundColor: theme.cardHeaderDark,
+              foregroundColor: theme.textPrimary,
               padding: const EdgeInsets.all(12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: _OperasyonTheme.divider),
+                side: BorderSide(color: theme.divider),
               ),
             ),
             icon: const Icon(Icons.logout_rounded),
@@ -1375,7 +1404,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF374151),
-              foregroundColor: _OperasyonTheme.textPrimary,
+              foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900),
@@ -1386,7 +1415,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     width: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: _OperasyonTheme.textPrimary,
+                      color: Colors.white,
                     ),
                   )
                 : Text('ATA (${_waitingSelected.length})'),
@@ -1412,9 +1441,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         ? Column(
             children: [
               if (waiting.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Text('Bekleyen sipariş yok', style: TextStyle(color: _OperasyonTheme.textMuted)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  child: Text('Bekleyen sipariş yok', style: TextStyle(color: _OperasyonTheme.of(context).textMuted)),
                 )
               else
                 ...waiting.map((s) => _buildWaitingCard(s, musteriMap, personelMap, ugramaMap)),
@@ -1444,7 +1473,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                                 : null,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF374151),
-                              foregroundColor: _OperasyonTheme.textPrimary,
+                              foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                               textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
@@ -1453,7 +1482,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                                 ? const SizedBox(
                                     height: 18,
                                     width: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: _OperasyonTheme.textPrimary),
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                   )
                                 : Text('ATA (${_waitingSelected.length})'),
                           ),
@@ -1469,11 +1498,11 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         : Column(
             children: [
               _buildTableHeader(['MÜŞTERİ', 'SAAT', 'GÜZERGAH', 'İŞLEM']),
-              const Divider(height: 1, color: _OperasyonTheme.divider),
+              Divider(height: 1, color: _OperasyonTheme.of(context).divider),
               if (waiting.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Text('Bekleyen sipariş yok', style: TextStyle(color: _OperasyonTheme.textMuted)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: Text('Bekleyen sipariş yok', style: TextStyle(color: _OperasyonTheme.of(context).textMuted)),
                 )
               else
                 ...waiting.map((s) => _buildWaitingRow(s, musteriMap, personelMap, ugramaMap)),
@@ -1496,6 +1525,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     Map<String, String> ugramaMap,
   ) {
     final isSelected = _waitingSelected.contains(s.id);
+    final theme = _OperasyonTheme.of(context);
     final timeStr = s.createdAt != null
         ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
         : '--:--';
@@ -1504,10 +1534,10 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       decoration: BoxDecoration(
         color: isSelected
             ? const Color(0xFF1F3A2E).withValues(alpha: 0.6)
-            : _OperasyonTheme.cardHeader.withValues(alpha: 0.5),
+            : theme.cardHeader.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isSelected ? const Color(0xFF22C55E) : _OperasyonTheme.divider,
+          color: isSelected ? const Color(0xFF22C55E) : theme.divider,
           width: isSelected ? 1.5 : 1,
         ),
       ),
@@ -1546,16 +1576,16 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                   children: [
                     Text(
                       musteriMap[s.musteriId] ?? s.musteriId,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
-                        color: _OperasyonTheme.textPrimary,
+                        color: theme.textPrimary,
                       ),
                     ),
                     if (s.personelId != null)
                       Text(
                         personelMap[s.personelId!] ?? '',
-                        style: const TextStyle(fontSize: 12, color: _OperasyonTheme.textMuted),
+                        style: TextStyle(fontSize: 12, color: theme.textMuted),
                       ),
                     const SizedBox(height: 4),
                     Text(
@@ -1572,10 +1602,10 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
               const SizedBox(width: 8),
               Text(
                 timeStr,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
-                  color: _OperasyonTheme.textMuted,
+                  color: theme.textMuted,
                 ),
               ),
             ],
@@ -1599,9 +1629,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         ? Column(
             children: [
               if (active.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 32),
-                  child: Text('Aktif iş yok', style: TextStyle(color: _OperasyonTheme.textMuted)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  child: Text('Aktif iş yok', style: TextStyle(color: _OperasyonTheme.of(context).textMuted)),
                 )
               else
                 ...active.map(
@@ -1612,11 +1642,11 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         : Column(
             children: [
               _buildTableHeader(['FİRMA/PERSONEL', 'SAAT', 'GÜZERGAH', 'DÜZENLE', 'KURYE & İŞLEM']),
-              const Divider(height: 1, color: _OperasyonTheme.divider),
+              Divider(height: 1, color: _OperasyonTheme.of(context).divider),
               if (active.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Text('Aktif iş yok', style: TextStyle(color: _OperasyonTheme.textMuted)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: Text('Aktif iş yok', style: TextStyle(color: _OperasyonTheme.of(context).textMuted)),
                 )
               else
                 ...active.map(
@@ -1647,13 +1677,14 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         : '--:--';
     final kuryeAd = kuryeMap[s.kuryeId] ?? 'Atanmadı';
 
+    final theme = _OperasyonTheme.of(context);
     return Container(
       key: Key('active_${s.id}'),
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: _OperasyonTheme.cardHeader.withValues(alpha: 0.5),
+        color: theme.cardHeader.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _OperasyonTheme.divider),
+        border: Border.all(color: theme.divider),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -1669,26 +1700,26 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     children: [
                       Text(
                         musteriMap[s.musteriId] ?? s.musteriId,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 14,
-                          color: _OperasyonTheme.textPrimary,
+                          color: theme.textPrimary,
                         ),
                       ),
                       if (s.personelId != null)
                         Text(
                           personelMap[s.personelId!] ?? s.personelId!,
-                          style: const TextStyle(fontSize: 12, color: _OperasyonTheme.textMuted),
+                          style: TextStyle(fontSize: 12, color: theme.textMuted),
                         ),
                     ],
                   ),
                 ),
                 Text(
                   timeStr,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: _OperasyonTheme.textMuted,
+                    color: theme.textMuted,
                   ),
                 ),
                 IconButton(
@@ -1774,6 +1805,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   Widget _buildTableHeader(List<String> labels) {
     final isDesktop = layoutTypeOf(context) == LayoutType.desktop;
     final headerFontSize = isDesktop ? 12.0 : 11.0;
+    final theme = _OperasyonTheme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       child: Row(
@@ -1785,7 +1817,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                   style: TextStyle(
                     fontSize: headerFontSize,
                     fontWeight: FontWeight.w800,
-                    color: _OperasyonTheme.textMuted,
+                    color: theme.textMuted,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -1804,14 +1836,15 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   ) {
     final isSelected = _waitingSelected.contains(s.id);
     final isDesktop = layoutTypeOf(context) == LayoutType.desktop;
+    final theme = _OperasyonTheme.of(context);
     final titleFont = isDesktop ? 14.0 : 13.0;
     final subFont = isDesktop ? 12.0 : 11.0;
     final timeFont = isDesktop ? 14.0 : 13.0;
     final routeFont = isDesktop ? 13.0 : 12.0;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: _OperasyonTheme.divider)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: theme.divider)),
       ),
       child: Row(
         children: [
@@ -1846,13 +1879,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                         style: TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: titleFont,
-                          color: _OperasyonTheme.textPrimary,
+                          color: theme.textPrimary,
                         ),
                       ),
                       if (s.personelId != null)
                         Text(
                           personelMap[s.personelId!] ?? '',
-                          style: TextStyle(fontSize: subFont, color: _OperasyonTheme.textMuted),
+                          style: TextStyle(fontSize: subFont, color: theme.textMuted),
                         ),
                     ],
                   ),
@@ -1868,7 +1901,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: timeFont,
-                color: _OperasyonTheme.textPrimary,
+                color: theme.textPrimary,
               ),
             ),
           ),
@@ -1904,14 +1937,15 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     List<Siparis> active,
   ) {
     final isDesktop = layoutTypeOf(context) == LayoutType.desktop;
+    final theme = _OperasyonTheme.of(context);
     final titleFont = isDesktop ? 14.0 : 13.0;
     final subFont = isDesktop ? 12.0 : 11.0;
     final timeFont = isDesktop ? 14.0 : 13.0;
     final routeFont = isDesktop ? 13.0 : 12.0;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: _OperasyonTheme.divider)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: theme.divider)),
       ),
       child: Row(
         children: [
@@ -1939,13 +1973,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     style: TextStyle(
                       fontWeight: FontWeight.w900,
                       fontSize: titleFont,
-                      color: _OperasyonTheme.textPrimary,
+                      color: theme.textPrimary,
                     ),
                   ),
                   subtitle: s.personelId != null
                       ? Text(
                           personelMap[s.personelId!] ?? s.personelId!,
-                          style: TextStyle(fontSize: subFont, color: _OperasyonTheme.textMuted),
+                          style: TextStyle(fontSize: subFont, color: theme.textMuted),
                         )
                       : null,
                 ),
@@ -1960,7 +1994,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: timeFont,
-                color: _OperasyonTheme.textPrimary,
+                color: theme.textPrimary,
               ),
             ),
           ),
@@ -2101,17 +2135,21 @@ class _BackgroundEffect extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (layoutTypeOf(context) != LayoutType.desktop) {
+      return const SizedBox.shrink();
+    }
+    final theme = _OperasyonTheme.of(context);
     return Stack(
       children: [
         Positioned.fill(
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  _OperasyonTheme.backgroundOverlay,
-                  _OperasyonTheme.background,
+                  theme.backgroundOverlay,
+                  theme.background,
                 ],
               ),
             ),
@@ -2189,13 +2227,14 @@ class _PremiumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final headerColor = isDarkHeader ? _OperasyonTheme.cardHeaderDark : _OperasyonTheme.cardHeader;
-    final titleColor = _OperasyonTheme.textPrimary;
+    final theme = _OperasyonTheme.of(context);
+    final headerColor = isDarkHeader ? theme.cardHeaderDark : theme.cardHeader;
 
     return Container(
       decoration: BoxDecoration(
-        color: _OperasyonTheme.cardSurface.withValues(alpha: 0.96),
+        color: theme.cardSurface,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: theme.divider),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -2216,7 +2255,7 @@ class _PremiumCard extends StatelessWidget {
                 if (icon != null) ...[
                   Icon(
                     icon,
-                    color: accentColor ?? _OperasyonTheme.textMuted,
+                    color: accentColor ?? theme.textMuted,
                     size: 20,
                   ),
                   const SizedBox(width: 12),
@@ -2230,7 +2269,7 @@ class _PremiumCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w900,
-                          color: titleColor,
+                          color: theme.textPrimary,
                           letterSpacing: 0.5,
                         ),
                       ),
