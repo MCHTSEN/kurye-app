@@ -47,6 +47,7 @@ class ResponsiveScaffold extends StatelessWidget {
     this.floatingActionButton,
     this.onLogout,
     this.showMobileDrawer = true,
+    this.showAppBar = true,
   });
 
   final String title;
@@ -62,6 +63,7 @@ class ResponsiveScaffold extends StatelessWidget {
   /// at the bottom of the drawer and navigation rail.
   final VoidCallback? onLogout;
   final bool showMobileDrawer;
+  final bool showAppBar;
 
   int? get _selectedIndex {
     final current = currentRoute;
@@ -101,10 +103,12 @@ class ResponsiveScaffold extends StatelessWidget {
 
   Widget _buildMobileScaffold(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        actions: actions,
-      ),
+      appBar: showAppBar
+          ? AppBar(
+              title: Text(title),
+              actions: actions,
+            )
+          : null,
       drawer: showMobileDrawer ? _buildDrawer(context) : null,
       body: body,
       floatingActionButton: floatingActionButton,
@@ -116,10 +120,12 @@ class ResponsiveScaffold extends StatelessWidget {
       final width = MediaQuery.sizeOf(context).width;
       final sidebarWidth = (width * 0.22).clamp(280.0, 360.0);
       return Scaffold(
-        appBar: AppBar(
-          title: Text(title),
-          actions: actions,
-        ),
+        appBar: showAppBar
+            ? AppBar(
+                title: Text(title),
+                actions: actions,
+              )
+            : null,
         floatingActionButton: floatingActionButton,
         body: Row(
           children: [
@@ -136,10 +142,12 @@ class ResponsiveScaffold extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        actions: actions,
-      ),
+      appBar: showAppBar
+          ? AppBar(
+              title: Text(title),
+              actions: actions,
+            )
+          : null,
       floatingActionButton: floatingActionButton,
       body: Row(
         children: [
@@ -494,7 +502,9 @@ class _DrawerNavTile extends StatelessWidget {
                 Icon(
                   icon,
                   size: iconSize,
-                  color: isSelected ? AppColors.primary : _NavigationTheme.textMuted,
+                  color: isSelected
+                      ? AppColors.primary
+                      : _NavigationTheme.textMuted,
                 ),
                 const SizedBox(width: 14),
                 Text(

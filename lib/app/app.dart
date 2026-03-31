@@ -25,11 +25,11 @@ class KuryemApp extends ConsumerWidget {
     return ShadApp.custom(
       themeMode: ThemeMode.light,
       theme: ShadThemeData(
-        colorScheme: const ShadSlateColorScheme.light(),
+        colorScheme: const ShadBlueColorScheme.light(),
         brightness: Brightness.light,
       ),
       darkTheme: ShadThemeData(
-        colorScheme: const ShadSlateColorScheme.dark(),
+        colorScheme: const ShadBlueColorScheme.dark(),
         brightness: Brightness.dark,
       ),
       appBuilder: (context) {

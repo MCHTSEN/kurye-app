@@ -30,6 +30,8 @@ abstract final class AppTheme {
       secondary: AppColors.secondary,
       primary: AppColors.primary,
       onPrimary: Colors.white,
+      surfaceTint: Colors.transparent,
+      surfaceVariant: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF1E293B),
     );
 
     final textColor = isLight ? AppColors.textPrimary : Colors.white;
@@ -164,11 +166,33 @@ abstract final class AppTheme {
         ),
         elevation: 4,
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textMuted,
+        backgroundColor: isLight ? Colors.white : colorScheme.surface,
         elevation: 0,
+        selectedLabelStyle: _ts(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+        unselectedLabelStyle: _ts(fontSize: 12, color: AppColors.textMuted),
+        selectedIconTheme: const IconThemeData(color: AppColors.primary, size: 24),
+        unselectedIconTheme: const IconThemeData(color: AppColors.textMuted, size: 24),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: isLight ? Colors.white : colorScheme.surface,
+        indicatorColor: AppColors.primary.withValues(alpha: 0.1),
+        elevation: 0,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: AppColors.primary);
+          }
+          return const IconThemeData(color: AppColors.textMuted);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return _ts(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary);
+          }
+          return _ts(fontSize: 12, color: AppColors.textMuted);
+        }),
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: isLight ? Colors.white : colorScheme.surface,
