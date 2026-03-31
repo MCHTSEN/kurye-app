@@ -70,9 +70,9 @@ final class _OperasyonTheme {
 
 class _OperasyonTypeahead extends StatelessWidget {
   const _OperasyonTypeahead({
-    super.key,
     required this.items,
     required this.onChanged,
+    super.key,
     this.value,
     this.label,
     this.placeholder,
@@ -207,6 +207,18 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     });
   }
 
+  void _swapStops() {
+    setState(() {
+      final cikisId = _selectedCikisId;
+      _selectedCikisId = _selectedUgramaId;
+      _selectedUgramaId = cikisId;
+
+      final cikisInput = _cikisInput;
+      _cikisInput = _ugramaInput;
+      _ugramaInput = cikisInput;
+    });
+  }
+
   Future<void> _onCreateOrder(String userId) async {
     final hasDropdownErrors =
         _selectedMusteriId == null ||
@@ -303,7 +315,6 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       var selfResult = await service.resolveForMusteri(
         musteriId: musteriId,
         ugramaAdi: selfName,
-        strategy: UgramaResolutionStrategy.auto,
       );
 
       if (selfResult.resolutionType == UgramaResolutionType.notFound ||
@@ -336,7 +347,6 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     var result = await service.resolveForMusteri(
       musteriId: musteriId,
       ugramaAdi: input,
-      strategy: UgramaResolutionStrategy.auto,
     );
 
     if (result.resolutionType == UgramaResolutionType.notFound) {
@@ -782,7 +792,6 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                           setDialogState(() => selectedUgrama1Id = value);
                         },
                         nullable: true,
-                        emptyLabel: 'Seçilmedi',
                       ),
                       const SizedBox(height: 12),
                       _buildDialogDropdown(
@@ -794,7 +803,6 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                           setDialogState(() => selectedNotId = value);
                         },
                         nullable: true,
-                        emptyLabel: 'Seçilmedi',
                       ),
                       const SizedBox(height: 12),
                       TextField(
@@ -881,7 +889,6 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       items: [
         if (nullable)
           DropdownMenuItem<String>(
-            value: null,
             child: Text(emptyLabel),
           ),
         ...items.map(
@@ -1459,6 +1466,16 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                   ),
                 ),
                 const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(top: 24),
+                  child: IconButton(
+                    key: const Key('swap_stops_button'),
+                    tooltip: 'Çıkış ve uğramayı yer değiştir',
+                    onPressed: _swapStops,
+                    icon: const Icon(Icons.swap_horiz),
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Expanded(
                   child: _OperasyonTypeahead(
                     key: const Key('ugrama_typeahead'),
@@ -1529,6 +1546,16 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
               onChanged: _onMusteriChanged,
               validator: (v) => v == null || v.isEmpty ? 'Zorunlu' : null,
               nextFocus: _fnPersonel,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Padding(
+            padding: const EdgeInsets.only(top: 24),
+            child: IconButton(
+              key: const Key('swap_stops_button'),
+              tooltip: 'Çıkış ve uğramayı yer değiştir',
+              onPressed: _swapStops,
+              icon: const Icon(Icons.swap_horiz),
             ),
           ),
           const SizedBox(width: 8),
@@ -2283,7 +2310,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
             child: Text(
               _routeLabel(s, ugramaMap: ugramaMap),
               style: TextStyle(
-                color: Color(0xFF6366F1),
+                color: const Color(0xFF6366F1),
                 fontWeight: FontWeight.w700,
                 fontSize: routeFont,
               ),
@@ -2383,7 +2410,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
             child: Text(
               _routeLabel(s, ugramaMap: ugramaMap),
               style: TextStyle(
-                color: Color(0xFF6366F1),
+                color: const Color(0xFF6366F1),
                 fontWeight: FontWeight.w700,
                 fontSize: routeFont,
               ),

@@ -1,5 +1,5 @@
-import 'package:bursamotokurye/core/environment/credit_access_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/core/environment/credit_access_provider.dart';
 
 void main() {
   group('CreditAccessProvider', () {

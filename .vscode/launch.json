@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "moto-kurye-supabase-web-dev",
+      "name": "kuryem-supabase-web-dev",
       "request": "launch",
       "type": "dart",
       "deviceId": "chrome",
@@ -22,7 +22,7 @@
       ]
     },
     {
-      "name": "moto-kurye-supabase",
+      "name": "kuryem-supabase",
       "request": "launch",
       "type": "dart",
       "program": "lib/main_supabase.dart",
@@ -35,7 +35,7 @@
       ]
     },
     {
-      "name": "moto-kurye-mock",
+      "name": "kuryem-mock",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",

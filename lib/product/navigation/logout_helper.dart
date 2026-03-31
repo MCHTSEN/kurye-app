@@ -1,7 +1,7 @@
 import 'dart:ui';
 
-import 'package:bursamotokurye/product/widgets/responsive_scaffold.dart' show ResponsiveScaffold;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kuryem/product/widgets/responsive_scaffold.dart' show ResponsiveScaffold;
 
 import '../../feature/auth/application/auth_controller.dart';
 

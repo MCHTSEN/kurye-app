@@ -1,7 +1,7 @@
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -159,7 +159,7 @@ class _MusteriPersonelKayitPageState
           },
           child: WorkbenchSplitView(
             header: personelAsync.maybeWhen(
-              data: (list) => _buildHeader(list),
+              data: _buildHeader,
               orElse: () => null,
             ),
             editorPane: _buildEditorPane(musteriAsync),
@@ -361,7 +361,7 @@ class _MusteriPersonelKayitPageState
                 ),
               );
             },
-            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.xs),
+            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.xs),
           );
 
     final card = AppSectionCard(

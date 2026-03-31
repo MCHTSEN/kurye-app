@@ -1,15 +1,15 @@
 import 'package:backend_core/backend_core.dart';
-import 'package:bursamotokurye/feature/operasyon/presentation/operasyon_ekran_page.dart';
-import 'package:bursamotokurye/product/kurye/kurye_providers.dart';
-import 'package:bursamotokurye/product/musteri/musteri_providers.dart';
-import 'package:bursamotokurye/product/musteri_personel/musteri_personel_providers.dart';
-import 'package:bursamotokurye/product/services/order_alert_service.dart';
-import 'package:bursamotokurye/product/siparis/siparis_log_providers.dart';
-import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
-import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
-import 'package:bursamotokurye/product/user_profile/user_profile_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/feature/operasyon/presentation/operasyon_ekran_page.dart';
+import 'package:kuryem/product/kurye/kurye_providers.dart';
+import 'package:kuryem/product/musteri/musteri_providers.dart';
+import 'package:kuryem/product/musteri_personel/musteri_personel_providers.dart';
+import 'package:kuryem/product/services/order_alert_service.dart';
+import 'package:kuryem/product/siparis/siparis_log_providers.dart';
+import 'package:kuryem/product/siparis/siparis_providers.dart';
+import 'package:kuryem/product/ugrama/ugrama_providers.dart';
+import 'package:kuryem/product/user_profile/user_profile_providers.dart';
 
 import '../../helpers/fakes/fake_kurye_repository.dart';
 import '../../helpers/fakes/fake_musteri_personel_repository.dart';
@@ -315,6 +315,56 @@ void main() {
         );
       },
     );
+
+    testWidgets('(b5) swap button switches cikis and ugrama before submit', (
+      tester,
+    ) async {
+      await pumpPage(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('musteri_typeahead')).first,
+        'Firma A',
+      );
+      await tester.pump();
+      await tester.tap(find.text('Firma A').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('personel_typeahead')).first,
+        'Personel A',
+      );
+      await tester.pump();
+      await tester.tap(find.text('Personel A').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('cikis_typeahead')).first,
+        'Merkez Ofis',
+      );
+      await tester.pump();
+      await tester.tap(find.textContaining('Merkez Ofis').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('ugrama_typeahead')).first,
+        'Şube A',
+      );
+      await tester.pump();
+      await tester.tap(find.textContaining('Şube A').last);
+      await tester.pumpAndSettle();
+
+      await reveal(tester, find.byKey(const Key('swap_stops_button')));
+      await tester.tap(find.byKey(const Key('swap_stops_button')).first);
+      await tester.pumpAndSettle();
+
+      await reveal(tester, find.text('SİPARİŞ OLUŞTUR'));
+      await tester.tap(find.text('SİPARİŞ OLUŞTUR'));
+      await tester.pumpAndSettle();
+
+      final created = fakeSiparisRepo.store.values.last;
+      expect(created.cikisId, 'ugrama-2');
+      expect(created.ugramaId, 'ugrama-1');
+    });
 
     testWidgets('(c) courier assignment flow — select, pick courier, tap Ata', (
       tester,

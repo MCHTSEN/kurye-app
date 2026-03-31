@@ -4,6 +4,8 @@
 - Karşılama mesajı
 - Sipariş oluşturma formu:
   - Çıkış/Uğrama: typeahead + serbest metin
+  - Müşteri kendi kısa adıyla çıkış/uğrama seçimi yapabilir (gerekirse otomatik uğrama oluşturulur)
+  - Çıkış ↔ Uğrama tek tık swap butonu bulunur
   - Bilinmeyen girişte popup: yeni uğrama oluşturma onayı
   - Aynı ad birden çok kayda denk gelirse popup: mevcut seç / yeni oluştur
 - Altında aktif siparişler listesi

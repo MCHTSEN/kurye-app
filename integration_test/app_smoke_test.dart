@@ -1,16 +1,16 @@
 import 'package:backend_core/backend_core.dart';
 import 'package:backend_mock/backend_mock.dart';
-import 'package:bursamotokurye/app/app.dart';
-import 'package:bursamotokurye/core/environment/app_environment.dart';
-import 'package:bursamotokurye/core/environment/backend_provider.dart';
-import 'package:bursamotokurye/core/environment/credit_access_provider.dart';
-import 'package:bursamotokurye/product/auth/auth_providers.dart';
-import 'package:bursamotokurye/product/environment/environment_provider.dart';
-import 'package:bursamotokurye/product/onboarding/onboarding_providers.dart';
-import 'package:bursamotokurye/product/runtime/runtime_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:kuryem/app/app.dart';
+import 'package:kuryem/core/environment/app_environment.dart';
+import 'package:kuryem/core/environment/backend_provider.dart';
+import 'package:kuryem/core/environment/credit_access_provider.dart';
+import 'package:kuryem/product/auth/auth_providers.dart';
+import 'package:kuryem/product/environment/environment_provider.dart';
+import 'package:kuryem/product/onboarding/onboarding_providers.dart';
+import 'package:kuryem/product/runtime/runtime_providers.dart';
 
 import '../test/helpers/fakes/fake_connectivity_service.dart';
 import '../test/helpers/fakes/fake_crash_reporting_service.dart';
@@ -53,7 +53,7 @@ void main() {
             FakeOnboardingRepository(),
           ),
         ],
-        child: const BursamotoKuryeApp(),
+        child: const KuryemApp(),
       ),
     );
 

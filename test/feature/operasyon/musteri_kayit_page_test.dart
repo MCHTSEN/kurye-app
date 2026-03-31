@@ -1,8 +1,8 @@
 import 'package:backend_core/backend_core.dart';
-import 'package:bursamotokurye/feature/operasyon/presentation/musteri_kayit_page.dart';
-import 'package:bursamotokurye/product/musteri/musteri_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/feature/operasyon/presentation/musteri_kayit_page.dart';
+import 'package:kuryem/product/musteri/musteri_providers.dart';
 
 import '../../helpers/fakes/fake_musteri_repository.dart';
 import '../../helpers/widgets/test_app.dart';

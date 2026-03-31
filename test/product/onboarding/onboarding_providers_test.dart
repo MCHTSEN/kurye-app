@@ -1,7 +1,7 @@
-import 'package:bursamotokurye/product/onboarding/onboarding_providers.dart';
-import 'package:bursamotokurye/product/onboarding/onboarding_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/product/onboarding/onboarding_providers.dart';
+import 'package:kuryem/product/onboarding/onboarding_repository.dart';
 
 class _FakeOnboardingRepository implements OnboardingRepository {
   bool _completed = false;

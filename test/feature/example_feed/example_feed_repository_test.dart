@@ -1,11 +1,11 @@
-import 'package:bursamotokurye/core/runtime/cache_policy.dart';
-import 'package:bursamotokurye/core/runtime/connectivity_service.dart';
-import 'package:bursamotokurye/core/runtime/retry_policy.dart';
-import 'package:bursamotokurye/feature/example_feed/data/example_feed_local_cache.dart';
-import 'package:bursamotokurye/feature/example_feed/data/example_feed_remote_data_source.dart';
-import 'package:bursamotokurye/feature/example_feed/data/example_feed_repository_impl.dart';
-import 'package:bursamotokurye/feature/example_feed/domain/example_feed_item.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/core/runtime/cache_policy.dart';
+import 'package:kuryem/core/runtime/connectivity_service.dart';
+import 'package:kuryem/core/runtime/retry_policy.dart';
+import 'package:kuryem/feature/example_feed/data/example_feed_local_cache.dart';
+import 'package:kuryem/feature/example_feed/data/example_feed_remote_data_source.dart';
+import 'package:kuryem/feature/example_feed/data/example_feed_repository_impl.dart';
+import 'package:kuryem/feature/example_feed/domain/example_feed_item.dart';
 
 import '../../helpers/fakes/fake_api_client.dart';
 import '../../helpers/fakes/fake_connectivity_service.dart';

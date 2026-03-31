@@ -69,7 +69,7 @@ class OperasyonAyarlarPage extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
           const _SettingsSection(
             title: 'Yönetim',
-            items: const [
+            items: [
               _SettingsItem(
                 title: 'Müşteri Kayıt',
                 subtitle: 'Müşteri firmalarını oluştur ve düzenle',
@@ -99,7 +99,7 @@ class OperasyonAyarlarPage extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
           const _SettingsSection(
             title: 'Kayıt ve Talepler',
-            items: const [
+            items: [
               _SettingsItem(
                 title: 'Geçmiş Siparişler',
                 subtitle: 'Tamamlanan ve iptal edilen siparişleri filtrele',

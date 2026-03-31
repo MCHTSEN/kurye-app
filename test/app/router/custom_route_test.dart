@@ -1,5 +1,5 @@
-import 'package:bursamotokurye/app/router/custom_route.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/app/router/custom_route.dart';
 
 void main() {
   group('CustomRoute', () {

@@ -1,15 +1,15 @@
 import 'package:backend_core/backend_core.dart';
-import 'package:bursamotokurye/core/environment/app_environment.dart';
-import 'package:bursamotokurye/core/environment/backend_provider.dart';
-import 'package:bursamotokurye/core/environment/credit_access_provider.dart';
-import 'package:bursamotokurye/feature/operasyon/domain/dashboard_stats.dart';
-import 'package:bursamotokurye/feature/operasyon/presentation/operasyon_dashboard_page.dart';
-import 'package:bursamotokurye/feature/operasyon/providers/dashboard_providers.dart';
-import 'package:bursamotokurye/product/kurye/kurye_providers.dart';
-import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
-import 'package:bursamotokurye/product/user_profile/user_profile_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/core/environment/app_environment.dart';
+import 'package:kuryem/core/environment/backend_provider.dart';
+import 'package:kuryem/core/environment/credit_access_provider.dart';
+import 'package:kuryem/feature/operasyon/domain/dashboard_stats.dart';
+import 'package:kuryem/feature/operasyon/presentation/operasyon_dashboard_page.dart';
+import 'package:kuryem/feature/operasyon/providers/dashboard_providers.dart';
+import 'package:kuryem/product/kurye/kurye_providers.dart';
+import 'package:kuryem/product/siparis/siparis_providers.dart';
+import 'package:kuryem/product/user_profile/user_profile_providers.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 
 import '../../helpers/fakes/fake_kurye_repository.dart';

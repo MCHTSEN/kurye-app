@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart' hide CustomRoute;
-import 'package:bursamotokurye/app/router/custom_route.dart';
-import 'package:bursamotokurye/feature/musteri_siparis/presentation/musteri_shell_page.dart';
-import 'package:bursamotokurye/product/navigation/role_nav_items.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/app/router/custom_route.dart';
+import 'package:kuryem/feature/musteri_siparis/presentation/musteri_shell_page.dart';
+import 'package:kuryem/product/navigation/role_nav_items.dart';
 
 void main() {
   testWidgets('mobile musteri shell switches tabs across child routes', (

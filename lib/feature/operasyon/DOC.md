@@ -28,6 +28,9 @@ aksiyonlar için optimize edilir.
 - **OperasyonEkran**: 3 panel realtime yönetim; devam eden siparişler satır bazlı dialog ile düzenlenebilir, desktop'ta bağımsız scroll alanlı kontrol merkezi
   - Sipariş formunda çıkış/uğrama alanları serbest metin kabul eder.
   - Bilinmeyen uğrama için popup tabanlı çözümleme çalışır (mevcut seç / yeni oluştur).
+  - Seçili müşteri adı çıkış/uğrama seçeneklerinde doğrudan gösterilir ve
+    müşteri-adı uğraması güvenli çözümleme ile oluşturulabilir.
+  - Çıkış ve uğrama alanları tek tık swap aksiyonu ile yer değiştirebilir.
 - **UgramaYonetim**: Lokasyon/uğrama yönetimi
 - **OperasyonAyarlar**: Yönetim sayfalarına giriş, hesap özeti ve çıkış aksiyonu
 - **MusteriKayit**: Desktop'ta split-view CRUD formu + filtrelenebilir liste

@@ -1,6 +1,6 @@
 import 'package:backend_core/backend_core.dart';
-import 'package:bursamotokurye/app/router/guards/app_access_guard.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/app/router/guards/app_access_guard.dart';
 
 void main() {
   group('AppAccessGuard.homePathForRole', () {

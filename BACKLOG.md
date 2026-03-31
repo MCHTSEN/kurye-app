@@ -12,6 +12,29 @@ Project audit log for major changes.
 ## Entries
 
 ### 2026-03-31
+- Scope: Müşteri + Operasyon çıkış/uğrama müşteri-kendisi seçimi ve swap
+- Summary:
+  - `MusteriSiparisPage` üzerinde operasyonla aynı kurallarla müşteri-kendisi çıkış/uğrama seçimi eklendi.
+  - Müşteri kısa adı uğrama listesinde görünür hale getirildi; kayıt yoksa güvenli çözümleme ile oluşturulup siparişte kullanılabiliyor.
+  - Hem müşteri hem operasyon sipariş formuna `Çıkış ↔ Uğrama` tek tık swap aksiyonu eklendi.
+  - Müşteri ve operasyon ekran testleri yeni davranışları kapsayacak şekilde genişletildi (self-stop ve swap senaryoları).
+  - Living docs müşteri/operasyon feature + screen seviyesinde güncellendi.
+- Files:
+  - `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `test/feature/musteri_siparis/musteri_siparis_page_test.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `lib/feature/musteri_siparis/DOC.md`
+  - `lib/feature/musteri_siparis/presentation/SCREENS.md`
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `BACKLOG.md`
+- Validation:
+  - `flutter test test/feature/musteri_siparis/musteri_siparis_page_test.dart test/feature/operasyon/operasyon_ekran_page_test.dart` → passed.
+  - `flutter analyze` → failed (`18 issues`): repo genelindeki mevcut info/warning backlog (mevcut `supabase_ugrama_talebi_repository.dart` warning dahil).
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`).
+
+### 2026-03-31
 - Scope: Müşteri + Operasyon birleşik uğrama çözümleme ve siparişte "yoksa ekle" akışı
 - Summary:
   - Müşteri ve operasyon sipariş formlarında çıkış/uğrama alanları için listede olmayan metin girişleri desteklendi.
