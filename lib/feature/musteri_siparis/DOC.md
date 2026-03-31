@@ -9,7 +9,8 @@ Müşteri personelinin sipariş oluşturması, aktif siparişlerini takip etmesi
 - `/musteri/ugrama-talep` — Yeni uğrama talebi oluşturma + önceki talepleri izleme
 
 ## States
-- **SiparisOlusturma**: Çıkış/Uğrama/Not dropdown seçimleri → sipariş oluştur
+- **SiparisOlusturma**: Çıkış/Uğrama alanlarında mevcut seç + serbest metin;
+  listede yoksa popup ile ekle/var olanı ata akışı → sipariş oluştur
 - **AktifSiparisler**: Realtime liste, durum takibi, iş bitince düşer
 - **GecmisSiparisler**: Tarih filtreli sayfalı liste
 - **UgramaTalebi**: Yeni uğrama adı/adres girişi → talep oluştur → durum chip'leri ile izleme
@@ -18,6 +19,7 @@ Müşteri personelinin sipariş oluşturması, aktif siparişlerini takip etmesi
 ## Dependencies
 - `UserProfileRepository` — müşteri bilgisi
 - `UgramaRepository` — dropdown verileri ve talep işlemleri
+- `UgramaResolutionService` — uğrama çözümleme (exact / ambiguous / create)
 - `SiparisRepository` — sipariş CRUD
 - Supabase Realtime — anlık güncellemeler
 - `MusteriShellPage` — mobil alt sekme navigasyonu
@@ -25,3 +27,4 @@ Müşteri personelinin sipariş oluşturması, aktif siparişlerini takip etmesi
 ## Extension Points
 - Sipariş oluşturulduğunda operasyon ekranına realtime bildirim
 - Uğrama talebi açıldığında operasyon tarafına bildirim
+- Uğrama çözümleme stratejileri (normalize, eşleşme önceliği, popup metinleri)

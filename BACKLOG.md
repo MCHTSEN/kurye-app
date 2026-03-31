@@ -12,6 +12,45 @@ Project audit log for major changes.
 ## Entries
 
 ### 2026-03-31
+- Scope: Müşteri + Operasyon birleşik uğrama çözümleme ve siparişte "yoksa ekle" akışı
+- Summary:
+  - Müşteri ve operasyon sipariş formlarında çıkış/uğrama alanları için listede olmayan metin girişleri desteklendi.
+  - Ortak `UgramaResolutionService` eklendi; exact eşleşme, isim çakışması (ambiguous) ve yeni kayıt oluşturma akışları merkezi hale getirildi.
+  - `TypeaheadField` ham metin değişimini üst katmana aktaracak `onInputChanged` callback'i ile genişletildi.
+  - Müşteri sipariş ekranında bilinmeyen uğrama için onay popup'ı, isim çakışması için mevcut seç/yeni oluştur popup'ı eklendi.
+  - Operasyon sipariş formunda da aynı popup tabanlı çözümleme akışı etkinleştirildi.
+  - `backend_core` içinde yeni uğrama çözümleme kontratı/domain tipleri eklendi; Supabase adaptöründe yeni repository implementasyonu yapıldı.
+  - Supabase migration ile `resolve_or_create_ugrama_for_musteri` güvenli RPC fonksiyonu eklendi.
+  - Widget ve unit test kapsamı yeni akışları doğrulayacak şekilde güncellendi/genişletildi.
+  - Feature/layer dokümanları güncellendi.
+- Files:
+  - `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/product/widgets/typeahead_field.dart`
+  - `lib/product/ugrama/ugrama_resolution_service.dart`
+  - `packages/backend_core/lib/src/domain/ugrama_resolution.dart`
+  - `packages/backend_core/lib/src/ugrama_resolution_repository.dart`
+  - `packages/backend_core/lib/src/backend_module.dart`
+  - `packages/backend_core/lib/backend_core.dart`
+  - `packages/backend_supabase/lib/src/supabase_ugrama_resolution_repository.dart`
+  - `packages/backend_supabase/lib/src/supabase_backend_module.dart`
+  - `supabase/migrations/20260331110000_resolve_or_create_ugrama_for_musteri_rpc.sql`
+  - `test/product/ugrama/ugrama_resolution_service_test.dart`
+  - `test/feature/musteri_siparis/musteri_siparis_page_test.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `lib/feature/musteri_siparis/DOC.md`
+  - `lib/feature/musteri_siparis/presentation/SCREENS.md`
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/product/DOC.md`
+  - `BACKLOG.md`
+- Validation:
+  - `flutter test test/product/ugrama/ugrama_resolution_service_test.dart test/product/widgets/typeahead_field_test.dart` → passed.
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart test/feature/musteri_siparis/musteri_siparis_page_test.dart` → passed.
+  - `flutter analyze` → failed (`44 issues`): repo genelindeki mevcut info backlog + pre-existing warning (`packages/backend_supabase/lib/src/supabase_ugrama_talebi_repository.dart`).
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`).
+
+### 2026-03-31
 - Scope: Operasyon typeahead tıklama seçimi düzeltmesi
 - Summary:
   - Operasyon ekranındaki form alanlarında kullanılan `TypeaheadField` overlay seçim davranışı düzeltildi.

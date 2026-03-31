@@ -2,7 +2,10 @@
 
 ## MusteriSiparisPage
 - Karşılama mesajı
-- Sipariş oluşturma formu (Çıkış, Uğrama, Not dropdown'ları)
+- Sipariş oluşturma formu:
+  - Çıkış/Uğrama: typeahead + serbest metin
+  - Bilinmeyen girişte popup: yeni uğrama oluşturma onayı
+  - Aynı ad birden çok kayda denk gelirse popup: mevcut seç / yeni oluştur
 - Altında aktif siparişler listesi
 - Realtime durum güncellemeleri
 - Mobilde `MusteriShellPage` alt sekmesi altında çalışır; drawer kullanılmaz
@@ -18,6 +21,7 @@
 - Gönderilmiş talepler listesi
 - Beklemede / onaylandı / reddedildi durum chip'leri
 - Mobilde alt sekme ile açılır
+- Not: Sipariş ekranındaki hızlı uğrama ekleme akışına paralel olarak korunur.
 
 ## MusteriShellPage
 - Sadece mobilde aktif

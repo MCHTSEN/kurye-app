@@ -49,6 +49,9 @@
   - `Esc` seçimleri temizler
 - Etkileşim:
   - Sipariş formundaki typeahead alanlarında öneri satırına mouse/touch ile tıklama doğrudan seçim yapar; seçim için yalnızca Enter zorunlu değildir.
+  - Çıkış/Uğrama alanlarında listede olmayan metin girilirse popup ile çözümleme yapılır:
+    - bulunamadı → yeni uğrama oluşturma onayı
+    - aynı ada sahip çoklu kayıt → mevcut seç / yeni oluştur
 
 ## UgramaYonetimPage
 - Mobile nav: `Uğrama` tab'ı

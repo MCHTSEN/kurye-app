@@ -27,6 +27,7 @@ class TypeaheadField<T> extends StatefulWidget {
     this.textColor,
     this.borderColor,
     this.errorColor,
+    this.onInputChanged,
   });
 
   final List<({T value, String label})> items;
@@ -41,6 +42,7 @@ class TypeaheadField<T> extends StatefulWidget {
   final Color? textColor;
   final Color? borderColor;
   final Color? errorColor;
+  final ValueChanged<String>? onInputChanged;
 
   /// Optional external focus node. If null, an internal one is created.
   final FocusNode? focusNode;
@@ -110,6 +112,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
     if (_controller.text != text) {
       _ignoreNextChange = true;
       _controller.text = text;
+      widget.onInputChanged?.call(text);
     }
   }
 
@@ -198,6 +201,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
       offset: item.label.length,
     );
     widget.onChanged(item.value);
+    widget.onInputChanged?.call(item.label);
     _removeOverlay();
     if (moveFocus && widget.nextFocus != null) {
       widget.nextFocus!.requestFocus();
@@ -209,6 +213,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
       _ignoreNextChange = false;
       return;
     }
+    widget.onInputChanged?.call(text);
     setState(() {
       _filter(text);
     });
@@ -368,6 +373,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
                         onTap: () {
                           _controller.clear();
                           widget.onChanged(null);
+                          widget.onInputChanged?.call('');
                           _focusNode.requestFocus();
                         },
                         child: Icon(
