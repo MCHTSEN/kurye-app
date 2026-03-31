@@ -97,6 +97,7 @@ class _MusteriUgramaTalepPageState
       headerSubtitle: 'Müşteri',
       onLogout: logoutCallback(ref),
       showMobileDrawer: !isMobile,
+      showAppBar: !isMobile,
       body: profileAsync.when(
         data: (profile) {
           if (profile == null || profile.musteriId == null) {
@@ -161,8 +162,7 @@ class _MusteriUgramaTalepPageState
             const SizedBox(height: AppSpacing.md),
             AppPrimaryButton(
               label: 'Talep Gönder',
-              onPressed: () =>
-                  _onSubmit(musteriId: musteriId, userId: userId),
+              onPressed: () => _onSubmit(musteriId: musteriId, userId: userId),
               isLoading: _isSubmitting,
             ),
           ],
@@ -222,7 +222,10 @@ class _MusteriUgramaTalepPageState
                 padding: const EdgeInsets.only(top: 2),
                 child: Text(
                   _formatDate(talep.createdAt!),
-                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ),
           ],

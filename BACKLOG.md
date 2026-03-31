@@ -11,7 +11,38 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-03-31 (Devam)
+- Scope: Müşteri mobil shell çift app bar düzeltmesi
+- Summary:
+  - Müşteri mobil shell altında açılan sayfalarda görünen çift app bar problemi giderildi.
+  - `ResponsiveScaffold` içine `showAppBar` parametresi eklendi.
+  - Müşteri sipariş/geçmiş/uğrama talep sayfalarında mobilde app bar kapatıldı (`showAppBar: !isMobile`), shell app bar tek kaynak olarak bırakıldı.
+- Files:
+  - `lib/product/widgets/responsive_scaffold.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_gecmis_page.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_ugrama_talep_page.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `flutter test test/feature/musteri_siparis/musteri_shell_page_test.dart test/feature/musteri_siparis/musteri_siparis_page_test.dart` → passed.
+
 ### 2026-03-31
+- Scope: Tema ve Görsel Kimlik Güncellemesi (Shadcn + Flutter Material)
+- Summary:
+  - Shadcn UI bileşenlerinin temel renk paleti (base color) `Slate`'ten `Blue`'ya güncellendi.
+  - Flutter standart (Material 3) teması marka rengi olan maviye (`AppColors.primary`) göre optimize edildi.
+  - `NavigationBarTheme` ve `BottomNavigationBarTheme` güncellendi:
+    - Eski (Material 2) görünümlü navigation bar ayarları kaldırıldı.
+    - `NavigationBar` için modern indicator ve mavi odaklı ikon/etiket stilleri eklendi.
+    - `ColorScheme` üzerinden yüzey renkleri (surfaceVariant) blue-slate tonlarına çekilerek gri/beyaz tekdüzeliği kırıldı.
+- Files:
+  - `lib/app/app.dart`
+  - `lib/core/theme/app_theme.dart`
+- Validation:
+  - `flutter analyze` ve `flutter test` çalıştırıldı.
+  - `MusteriShellPage` ve `OperasyonShellPage` üzerindeki modern alt bar görünümü doğrulandı.
+
+### 2026-03-31 (Devam)
 - Scope: Müşteri + Operasyon çıkış/uğrama müşteri-kendisi seçimi ve swap
 - Summary:
   - `MusteriSiparisPage` üzerinde operasyonla aynı kurallarla müşteri-kendisi çıkış/uğrama seçimi eklendi.

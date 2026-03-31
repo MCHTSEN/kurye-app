@@ -356,6 +356,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
       headerSubtitle: 'Müşteri',
       onLogout: logoutCallback(ref),
       showMobileDrawer: !isMobile,
+      showAppBar: !isMobile,
       body: profileAsync.when(
         data: (profile) {
           if (profile == null || profile.musteriId == null) {
