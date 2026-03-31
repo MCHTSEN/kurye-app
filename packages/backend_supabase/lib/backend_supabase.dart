@@ -9,5 +9,6 @@ export 'src/supabase_siparis_log_repository.dart';
 export 'src/supabase_siparis_repository.dart';
 export 'src/supabase_token_refresh_service.dart';
 export 'src/supabase_ugrama_repository.dart';
+export 'src/supabase_ugrama_resolution_repository.dart';
 export 'src/supabase_ugrama_talebi_repository.dart';
 export 'src/supabase_user_profile_repository.dart';

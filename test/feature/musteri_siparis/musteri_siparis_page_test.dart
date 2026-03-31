@@ -4,7 +4,7 @@ import 'package:bursamotokurye/product/musteri_personel/musteri_personel_provide
 import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
 import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
 import 'package:bursamotokurye/product/user_profile/user_profile_providers.dart';
-import 'package:bursamotokurye/product/widgets/searchable_dropdown.dart';
+import 'package:bursamotokurye/product/widgets/typeahead_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -53,17 +53,16 @@ void main() {
     late FakeMusteriUgramaRepository fakeMusteriUgramaRepo;
     late FakeMusteriPersonelRepository fakePersonelRepo;
 
-    setUp(() {
+    setUp(() async {
       fakeSiparisRepo = FakeSiparisRepository();
       fakeUgramaRepo = FakeUgramaRepository(seed: _testUgramalar);
       fakeMusteriUgramaRepo = FakeMusteriUgramaRepository()
         ..ugramaRepo = fakeUgramaRepo;
       // Assign all test uğramalar to the test müşteri
       for (final u in _testUgramalar) {
-        fakeMusteriUgramaRepo.assign(_testMusteriId, u.id);
+        await fakeMusteriUgramaRepo.assign(_testMusteriId, u.id);
       }
-      fakePersonelRepo =
-          FakeMusteriPersonelRepository(seed: [_testPersonel]);
+      fakePersonelRepo = FakeMusteriPersonelRepository(seed: [_testPersonel]);
     });
 
     Future<void> pumpPage(WidgetTester tester) async {
@@ -80,18 +79,19 @@ void main() {
             (ref, notifier) => _testProfile,
           ),
           ugramaRepositoryProvider.overrideWithValue(fakeUgramaRepo),
-          musteriUgramaRepositoryProvider
-              .overrideWithValue(fakeMusteriUgramaRepo),
+          musteriUgramaRepositoryProvider.overrideWithValue(
+            fakeMusteriUgramaRepo,
+          ),
           siparisRepositoryProvider.overrideWithValue(fakeSiparisRepo),
-          musteriPersonelRepositoryProvider
-              .overrideWithValue(fakePersonelRepo),
+          musteriPersonelRepositoryProvider.overrideWithValue(fakePersonelRepo),
         ],
       );
       await tester.pumpAndSettle();
     }
 
-    testWidgets('renders all 5 form fields (4 dropdowns + 1 text)',
-        (tester) async {
+    testWidgets('renders all 5 form fields (4 dropdowns + 1 text)', (
+      tester,
+    ) async {
       await pumpPage(tester);
 
       // 4 dropdown fields
@@ -144,22 +144,22 @@ void main() {
       expect(fakeSiparisRepo.store, isEmpty);
     });
 
-    testWidgets('successful submit creates order with correct data',
-        (tester) async {
+    testWidgets('successful submit creates order with correct data', (
+      tester,
+    ) async {
       await pumpPage(tester);
 
       // Programmatically select Çıkış = ugrama-1 (Merkez Ofis).
-      final cikisDropdown = tester.widget<SearchableDropdown<String>>(
-        find.byKey(const Key('cikis_dropdown')),
+      await tester.enterText(
+        find.byKey(const Key('cikis_typeahead')),
+        'Merkez Ofis',
       );
-      cikisDropdown.onChanged('ugrama-1');
       await tester.pumpAndSettle();
 
-      // Programmatically select Uğrama = ugrama-2 (Şube A).
-      final ugramaDropdown = tester.widget<SearchableDropdown<String>>(
-        find.byKey(const Key('ugrama_dropdown')),
+      final ugramaField = tester.widget<TypeaheadField<String>>(
+        find.byKey(const Key('ugrama_typeahead')),
       );
-      ugramaDropdown.onChanged('ugrama-2');
+      ugramaField.onChanged('ugrama-2');
       await tester.pumpAndSettle();
 
       // Scroll to reveal Not1 and submit.
@@ -201,6 +201,77 @@ void main() {
       expect(created.durum, SiparisDurum.kuryeBekliyor);
     });
 
+    testWidgets(
+      'unknown stop shows confirmation, creates new stop, and submits order',
+      (tester) async {
+        await pumpPage(tester);
+
+        await tester.enterText(
+          find.byKey(const Key('cikis_typeahead')),
+          'Yeni Çıkış Noktası',
+        );
+        await tester.enterText(
+          find.byKey(const Key('ugrama_typeahead')),
+          'Şube A',
+        );
+        await tester.pump();
+
+        await tester.dragUntilVisible(
+          find.widgetWithText(ShadButton, 'Sipariş Oluştur'),
+          find.byType(ListView).first,
+          const Offset(0, -200),
+        );
+        await tester.tap(find.widgetWithText(ShadButton, 'Sipariş Oluştur'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 250));
+
+        expect(find.text('Yeni Uğrama'), findsOneWidget);
+        await tester.tap(find.widgetWithText(FilledButton, 'Evet'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 250));
+
+        expect(fakeSiparisRepo.store.length, 1);
+        expect(
+          fakeUgramaRepo.store.values.any(
+            (u) => u.ugramaAdi == 'Yeni Çıkış Noktası',
+          ),
+          isTrue,
+        );
+      },
+    );
+
+    testWidgets('allows same stop for cikis and ugrama', (tester) async {
+      await pumpPage(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('cikis_typeahead')),
+        'Merkez Ofis',
+      );
+      await tester.pump();
+      await tester.tap(find.text('Merkez Ofis').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('ugrama_typeahead')),
+        'Merkez Ofis',
+      );
+      await tester.pump();
+      await tester.tap(find.text('Merkez Ofis').last);
+      await tester.pumpAndSettle();
+
+      await tester.dragUntilVisible(
+        find.widgetWithText(ShadButton, 'Sipariş Oluştur'),
+        find.byType(ListView).first,
+        const Offset(0, -200),
+      );
+      await tester.tap(find.widgetWithText(ShadButton, 'Sipariş Oluştur'));
+      await tester.pumpAndSettle();
+
+      final created = fakeSiparisRepo.store.values.last;
+      expect(created.cikisId, created.ugramaId);
+      expect(created.cikisId, 'ugrama-1');
+    });
+
     testWidgets('shows error when profile has no musteriId', (tester) async {
       const profileWithoutMusteri = AppUserProfile(
         id: _testUserId,
@@ -216,11 +287,11 @@ void main() {
             (ref, notifier) => profileWithoutMusteri,
           ),
           ugramaRepositoryProvider.overrideWithValue(fakeUgramaRepo),
-          musteriUgramaRepositoryProvider
-              .overrideWithValue(fakeMusteriUgramaRepo),
+          musteriUgramaRepositoryProvider.overrideWithValue(
+            fakeMusteriUgramaRepo,
+          ),
           siparisRepositoryProvider.overrideWithValue(fakeSiparisRepo),
-          musteriPersonelRepositoryProvider
-              .overrideWithValue(fakePersonelRepo),
+          musteriPersonelRepositoryProvider.overrideWithValue(fakePersonelRepo),
         ],
       );
       await tester.pumpAndSettle();

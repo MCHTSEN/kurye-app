@@ -16,6 +16,7 @@
 - `runtime`: providers and adapters for secure storage, connectivity,
   feature flags, crash reporting, permissions, cache policy, and retry
   policy.
+- `ugrama`: müşteri bağlamında uğrama çözümleme/atama/oluşturma orchestrator'ı.
 - `riverpod`: provider observer and Riverpod runtime utilities.
 - `widgets`: reusable UI components with doc contract.
 
@@ -41,4 +42,4 @@
   contracts used by production providers.
 
 ## Last Updated
-- 2026-03-08
+- 2026-03-31

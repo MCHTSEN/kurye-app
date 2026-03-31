@@ -26,6 +26,8 @@ aksiyonlar için optimize edilir.
 - **Raporlar**: Ciro toplamları, kurye performans, aktif kuryeler;
   sayfaya erişim operasyon rapor şifresi ile açılır
 - **OperasyonEkran**: 3 panel realtime yönetim; devam eden siparişler satır bazlı dialog ile düzenlenebilir, desktop'ta bağımsız scroll alanlı kontrol merkezi
+  - Sipariş formunda çıkış/uğrama alanları serbest metin kabul eder.
+  - Bilinmeyen uğrama için popup tabanlı çözümleme çalışır (mevcut seç / yeni oluştur).
 - **UgramaYonetim**: Lokasyon/uğrama yönetimi
 - **OperasyonAyarlar**: Yönetim sayfalarına giriş, hesap özeti ve çıkış aksiyonu
 - **MusteriKayit**: Desktop'ta split-view CRUD formu + filtrelenebilir liste
@@ -35,6 +37,7 @@ aksiyonlar için optimize edilir.
 
 ## Dependencies
 - Tüm repository'ler
+- `UgramaResolutionService` (müşteri bağlamında uğrama çözümleme)
 - Supabase Realtime
 - Sesli uyarı servisi
 - `auto_route` nested router / tabs
@@ -49,4 +52,4 @@ aksiyonlar için optimize edilir.
 - Devam eden sipariş düzenleme dialog'una kurala bağlı alan/rol kısıtları eklenebilir.
 
 ## Last Updated
-- 2026-03-16
+- 2026-03-31

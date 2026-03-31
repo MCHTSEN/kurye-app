@@ -11,6 +11,7 @@ import 'supabase_siparis_log_repository.dart';
 import 'supabase_siparis_repository.dart';
 import 'supabase_token_refresh_service.dart';
 import 'supabase_ugrama_repository.dart';
+import 'supabase_ugrama_resolution_repository.dart';
 import 'supabase_ugrama_talebi_repository.dart';
 import 'supabase_user_profile_repository.dart';
 
@@ -101,5 +102,10 @@ class SupabaseBackendModule extends BackendModule {
   @override
   UgramaTalebiRepository createUgramaTalebiRepository() {
     return SupabaseUgramaTalebiRepository(client: Supabase.instance.client);
+  }
+
+  @override
+  UgramaResolutionRepository createUgramaResolutionRepository() {
+    return SupabaseUgramaResolutionRepository(client: Supabase.instance.client);
   }
 }
