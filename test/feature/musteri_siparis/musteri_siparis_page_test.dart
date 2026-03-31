@@ -1,15 +1,17 @@
 import 'package:backend_core/backend_core.dart';
-import 'package:bursamotokurye/feature/musteri_siparis/presentation/musteri_siparis_page.dart';
-import 'package:bursamotokurye/product/musteri_personel/musteri_personel_providers.dart';
-import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
-import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
-import 'package:bursamotokurye/product/user_profile/user_profile_providers.dart';
-import 'package:bursamotokurye/product/widgets/typeahead_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/feature/musteri_siparis/presentation/musteri_siparis_page.dart';
+import 'package:kuryem/product/musteri/musteri_providers.dart';
+import 'package:kuryem/product/musteri_personel/musteri_personel_providers.dart';
+import 'package:kuryem/product/siparis/siparis_providers.dart';
+import 'package:kuryem/product/ugrama/ugrama_providers.dart';
+import 'package:kuryem/product/user_profile/user_profile_providers.dart';
+import 'package:kuryem/product/widgets/typeahead_field.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../helpers/fakes/fake_musteri_personel_repository.dart';
+import '../../helpers/fakes/fake_musteri_repository.dart';
 import '../../helpers/fakes/fake_siparis_repository.dart';
 import '../../helpers/fakes/fake_ugrama_repository.dart';
 import '../../helpers/widgets/test_app.dart';
@@ -46,12 +48,18 @@ const _testPersonel = MusteriPersonel(
   userId: _testUserId,
 );
 
+const _testMusteri = Musteri(
+  id: _testMusteriId,
+  firmaKisaAd: 'DesignDent',
+);
+
 void main() {
   group('MusteriSiparisPage', () {
     late FakeSiparisRepository fakeSiparisRepo;
     late FakeUgramaRepository fakeUgramaRepo;
     late FakeMusteriUgramaRepository fakeMusteriUgramaRepo;
     late FakeMusteriPersonelRepository fakePersonelRepo;
+    late FakeMusteriRepository fakeMusteriRepo;
 
     setUp(() async {
       fakeSiparisRepo = FakeSiparisRepository();
@@ -63,6 +71,7 @@ void main() {
         await fakeMusteriUgramaRepo.assign(_testMusteriId, u.id);
       }
       fakePersonelRepo = FakeMusteriPersonelRepository(seed: [_testPersonel]);
+      fakeMusteriRepo = FakeMusteriRepository(seed: [_testMusteri]);
     });
 
     Future<void> pumpPage(WidgetTester tester) async {
@@ -84,6 +93,7 @@ void main() {
           ),
           siparisRepositoryProvider.overrideWithValue(fakeSiparisRepo),
           musteriPersonelRepositoryProvider.overrideWithValue(fakePersonelRepo),
+          musteriRepositoryProvider.overrideWithValue(fakeMusteriRepo),
         ],
       );
       await tester.pumpAndSettle();
@@ -272,6 +282,84 @@ void main() {
       expect(created.cikisId, 'ugrama-1');
     });
 
+    testWidgets('selected customer name can be used as stop in form', (
+      tester,
+    ) async {
+      await pumpPage(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('cikis_typeahead')),
+        'DesignDent',
+      );
+      await tester.pump();
+      await tester.tap(find.text('DesignDent').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('ugrama_typeahead')),
+        'Şube A',
+      );
+      await tester.pump();
+      await tester.tap(find.textContaining('Şube A').last);
+      await tester.pumpAndSettle();
+
+      await tester.dragUntilVisible(
+        find.widgetWithText(ShadButton, 'Sipariş Oluştur'),
+        find.byType(ListView).first,
+        const Offset(0, -200),
+      );
+      await tester.tap(find.widgetWithText(ShadButton, 'Sipariş Oluştur'));
+      await tester.pumpAndSettle();
+
+      expect(fakeSiparisRepo.store, isNotEmpty);
+      expect(
+        fakeUgramaRepo.store.values.any((u) => u.ugramaAdi == 'DesignDent'),
+        isTrue,
+      );
+    });
+
+    testWidgets('swap button switches cikis and ugrama before submit', (
+      tester,
+    ) async {
+      await pumpPage(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('cikis_typeahead')),
+        'Merkez Ofis',
+      );
+      await tester.pump();
+      await tester.tap(find.textContaining('Merkez Ofis').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('ugrama_typeahead')),
+        'Şube A',
+      );
+      await tester.pump();
+      await tester.tap(find.textContaining('Şube A').last);
+      await tester.pumpAndSettle();
+
+      await tester.dragUntilVisible(
+        find.byKey(const Key('swap_stops_button')),
+        find.byType(ListView).first,
+        const Offset(0, -200),
+      );
+      await tester.tap(find.byKey(const Key('swap_stops_button')));
+      await tester.pumpAndSettle();
+
+      await tester.dragUntilVisible(
+        find.widgetWithText(ShadButton, 'Sipariş Oluştur'),
+        find.byType(ListView).first,
+        const Offset(0, -200),
+      );
+      await tester.tap(find.widgetWithText(ShadButton, 'Sipariş Oluştur'));
+      await tester.pumpAndSettle();
+
+      final created = fakeSiparisRepo.store.values.last;
+      expect(created.cikisId, 'ugrama-2');
+      expect(created.ugramaId, 'ugrama-1');
+    });
+
     testWidgets('shows error when profile has no musteriId', (tester) async {
       const profileWithoutMusteri = AppUserProfile(
         id: _testUserId,
@@ -292,6 +380,7 @@ void main() {
           ),
           siparisRepositoryProvider.overrideWithValue(fakeSiparisRepo),
           musteriPersonelRepositoryProvider.overrideWithValue(fakePersonelRepo),
+          musteriRepositoryProvider.overrideWithValue(fakeMusteriRepo),
         ],
       );
       await tester.pumpAndSettle();

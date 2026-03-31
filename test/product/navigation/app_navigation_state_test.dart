@@ -1,5 +1,5 @@
-import 'package:bursamotokurye/product/navigation/app_navigation_state.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/product/navigation/app_navigation_state.dart';
 
 void main() {
   group('AppNavigationState', () {

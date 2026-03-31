@@ -1,6 +1,6 @@
 import 'package:backend_core/backend_core.dart';
-import 'package:bursamotokurye/product/ugrama/ugrama_resolution_service.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/product/ugrama/ugrama_resolution_service.dart';
 
 import '../../helpers/fakes/fake_ugrama_repository.dart';
 

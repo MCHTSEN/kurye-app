@@ -52,6 +52,8 @@
   - Çıkış/Uğrama alanlarında listede olmayan metin girilirse popup ile çözümleme yapılır:
     - bulunamadı → yeni uğrama oluşturma onayı
     - aynı ada sahip çoklu kayıt → mevcut seç / yeni oluştur
+  - Seçili müşteri adı, çıkış/uğrama listesinde doğrudan seçenek olarak gösterilir; seçildiğinde müşteri adına uğrama güvenli şekilde çözülür/oluşturulur.
+  - Çıkış ↔ Uğrama alanları arasında tek tık swap butonu bulunur.
 
 ## UgramaYonetimPage
 - Mobile nav: `Uğrama` tab'ı

@@ -1,5 +1,5 @@
-import 'package:bursamotokurye/core/runtime/app_permission.dart';
-import 'package:bursamotokurye/core/runtime/permission_service.dart';
+import 'package:kuryem/core/runtime/app_permission.dart';
+import 'package:kuryem/core/runtime/permission_service.dart';
 
 class FakePermissionService implements PermissionService {
   FakePermissionService({

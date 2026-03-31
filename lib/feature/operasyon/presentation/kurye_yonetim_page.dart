@@ -156,7 +156,7 @@ class _KuryeYonetimPageState extends ConsumerState<KuryeYonetimPage> {
           },
           child: WorkbenchSplitView(
             header: listAsync.maybeWhen(
-              data: (list) => _buildHeader(list),
+              data: _buildHeader,
               orElse: () => null,
             ),
             editorPane: Column(
@@ -416,7 +416,7 @@ class _KuryeYonetimPageState extends ConsumerState<KuryeYonetimPage> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: orders.length,
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                     const Divider(height: 1, color: Color(0xFFF1F5F9)),
                 itemBuilder: (context, index) {
                   final s = orders[index];
@@ -585,7 +585,7 @@ class _KuryeYonetimPageState extends ConsumerState<KuryeYonetimPage> {
                 ),
               );
             },
-            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.xs),
+            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.xs),
           );
 
     final card = AppSectionCard(

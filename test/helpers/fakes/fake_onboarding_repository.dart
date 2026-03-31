@@ -1,4 +1,4 @@
-import 'package:bursamotokurye/product/onboarding/onboarding_repository.dart';
+import 'package:kuryem/product/onboarding/onboarding_repository.dart';
 
 class FakeOnboardingRepository implements OnboardingRepository {
   FakeOnboardingRepository({this.completed = true});

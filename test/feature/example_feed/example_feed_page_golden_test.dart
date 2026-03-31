@@ -1,6 +1,6 @@
-import 'package:bursamotokurye/feature/example_feed/presentation/example_feed_page.dart';
-import 'package:bursamotokurye/product/network/api_client_provider.dart';
 import 'package:golden_toolkit/golden_toolkit.dart';
+import 'package:kuryem/feature/example_feed/presentation/example_feed_page.dart';
+import 'package:kuryem/product/network/api_client_provider.dart';
 
 import '../../helpers/fakes/fake_api_client.dart';
 import '../../helpers/widgets/test_app.dart';

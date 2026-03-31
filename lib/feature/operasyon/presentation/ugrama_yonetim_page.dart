@@ -161,7 +161,7 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
           },
           child: WorkbenchSplitView(
             header: ugramaAsync.maybeWhen(
-              data: (list) => _buildHeader(list),
+              data: _buildHeader,
               orElse: () => null,
             ),
             editorPane: _buildFormPane(musteriAsync),
@@ -346,7 +346,7 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
                     onTap: (musteriIds) => _populateForm(ugrama, musteriIds),
                   );
                 },
-                separatorBuilder: (_, __) =>
+                separatorBuilder: (_, _) =>
                     const SizedBox(height: AppSpacing.xs),
               );
 

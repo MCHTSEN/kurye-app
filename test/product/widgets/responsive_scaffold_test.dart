@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart' hide CustomRoute;
-import 'package:bursamotokurye/app/router/custom_route.dart';
-import 'package:bursamotokurye/product/widgets/responsive_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/app/router/custom_route.dart';
+import 'package:kuryem/product/widgets/responsive_scaffold.dart';
 
 void main() {
   testWidgets('desktop sidebar navigates across nested operasyon routes', (

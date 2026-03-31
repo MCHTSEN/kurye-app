@@ -1,7 +1,7 @@
-import 'package:bursamotokurye/core/environment/app_environment.dart';
-import 'package:bursamotokurye/core/environment/backend_provider.dart';
-import 'package:bursamotokurye/core/environment/credit_access_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/core/environment/app_environment.dart';
+import 'package:kuryem/core/environment/backend_provider.dart';
+import 'package:kuryem/core/environment/credit_access_provider.dart';
 
 void main() {
   group('AppFlavor', () {

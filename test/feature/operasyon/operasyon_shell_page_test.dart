@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart' hide CustomRoute;
-import 'package:bursamotokurye/app/router/custom_route.dart';
-import 'package:bursamotokurye/feature/operasyon/presentation/operasyon_shell_page.dart';
-import 'package:bursamotokurye/product/analytics/analytics_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/app/router/custom_route.dart';
+import 'package:kuryem/feature/operasyon/presentation/operasyon_shell_page.dart';
+import 'package:kuryem/product/analytics/analytics_provider.dart';
 
 import '../../helpers/fakes/fake_analytics_service.dart';
 
@@ -133,9 +133,9 @@ class _FakeOperasyonTabLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       mainAxisSize: MainAxisSize.min,
-      children: const [
+      children: [
         Text('Operasyon tab'),
         SizedBox(height: 12),
         _FakeOperasyonTab(),

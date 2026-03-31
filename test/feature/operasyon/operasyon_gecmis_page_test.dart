@@ -1,11 +1,11 @@
 import 'package:backend_core/backend_core.dart';
-import 'package:bursamotokurye/feature/operasyon/presentation/operasyon_gecmis_page.dart';
-import 'package:bursamotokurye/product/kurye/kurye_providers.dart';
-import 'package:bursamotokurye/product/musteri/musteri_providers.dart';
-import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
-import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/feature/operasyon/presentation/operasyon_gecmis_page.dart';
+import 'package:kuryem/product/kurye/kurye_providers.dart';
+import 'package:kuryem/product/musteri/musteri_providers.dart';
+import 'package:kuryem/product/siparis/siparis_providers.dart';
+import 'package:kuryem/product/ugrama/ugrama_providers.dart';
 
 import '../../helpers/fakes/fake_kurye_repository.dart';
 import '../../helpers/fakes/fake_musteri_repository.dart';

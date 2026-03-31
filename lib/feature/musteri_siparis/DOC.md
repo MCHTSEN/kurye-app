@@ -10,7 +10,9 @@ Müşteri personelinin sipariş oluşturması, aktif siparişlerini takip etmesi
 
 ## States
 - **SiparisOlusturma**: Çıkış/Uğrama alanlarında mevcut seç + serbest metin;
-  listede yoksa popup ile ekle/var olanı ata akışı → sipariş oluştur
+  listede yoksa popup ile ekle/var olanı ata akışı → sipariş oluştur.
+  Müşteri kendi kısa adıyla çıkış/uğrama seçebilir (gerekirse otomatik uğrama
+  oluşturulur) ve çıkış/uğrama için tek tık swap aksiyonu vardır.
 - **AktifSiparisler**: Realtime liste, durum takibi, iş bitince düşer
 - **GecmisSiparisler**: Tarih filtreli sayfalı liste
 - **UgramaTalebi**: Yeni uğrama adı/adres girişi → talep oluştur → durum chip'leri ile izleme

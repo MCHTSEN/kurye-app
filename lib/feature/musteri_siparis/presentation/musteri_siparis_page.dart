@@ -6,6 +6,7 @@ import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/musteri_personel/musteri_personel_providers.dart';
 import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
@@ -21,6 +22,7 @@ import '../../../product/widgets/searchable_dropdown.dart';
 import '../../../product/widgets/typeahead_field.dart';
 
 const _createNewChoiceValue = '__create_new__';
+const _selfStopVirtualValue = '__self_stop__';
 
 class MusteriSiparisPage extends ConsumerStatefulWidget {
   const MusteriSiparisPage({super.key});
@@ -62,6 +64,18 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     _formKey.currentState?.reset();
   }
 
+  void _swapStops() {
+    setState(() {
+      final cikisId = _selectedCikisId;
+      _selectedCikisId = _selectedUgramaId;
+      _selectedUgramaId = cikisId;
+
+      final cikisInput = _cikisInput;
+      _cikisInput = _ugramaInput;
+      _ugramaInput = cikisInput;
+    });
+  }
+
   Future<void> _onSubmit({
     required String musteriId,
     required String userId,
@@ -83,8 +97,10 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     setState(() => _isSubmitting = true);
 
     try {
+      final musteriLabel = _selectedMusteriLabel(musteriId);
       final resolvedCikisId = await _resolveRequiredStopId(
         musteriId: musteriId,
+        musteriLabel: musteriLabel,
         fieldLabel: 'Çıkış',
         selectedId: _selectedCikisId,
         rawInput: _cikisInput,
@@ -95,6 +111,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
 
       final resolvedUgramaId = await _resolveRequiredStopId(
         musteriId: musteriId,
+        musteriLabel: musteriLabel,
         fieldLabel: 'Uğrama',
         selectedId: _selectedUgramaId,
         rawInput: _ugramaInput,
@@ -147,10 +164,40 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
 
   Future<String?> _resolveRequiredStopId({
     required String musteriId,
+    required String? musteriLabel,
     required String fieldLabel,
     required String? selectedId,
     required String rawInput,
   }) async {
+    if (selectedId == _selfStopVirtualValue) {
+      final selfName = (musteriLabel ?? '').trim();
+      if (selfName.isEmpty) return null;
+
+      final service = ref.read(ugramaResolutionServiceProvider);
+      var selfResult = await service.resolveForMusteri(
+        musteriId: musteriId,
+        ugramaAdi: selfName,
+      );
+
+      if (selfResult.resolutionType == UgramaResolutionType.notFound ||
+          selfResult.resolutionType == UgramaResolutionType.ambiguousName) {
+        selfResult = await service.resolveForMusteri(
+          musteriId: musteriId,
+          ugramaAdi: selfName,
+          strategy: UgramaResolutionStrategy.createNew,
+        );
+      }
+
+      final selfResolvedId = selfResult.resolvedUgramaId;
+      if (selfResolvedId == null || selfResolvedId.isEmpty) {
+        return null;
+      }
+
+      _resolvedStopLabels[selfResolvedId] = selfName;
+      ref.invalidate(ugramaListByMusteriProvider(musteriId));
+      return selfResolvedId;
+    }
+
     if (selectedId != null && selectedId.isNotEmpty) {
       return selectedId;
     }
@@ -162,7 +209,6 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     var result = await service.resolveForMusteri(
       musteriId: musteriId,
       ugramaAdi: input,
-      strategy: UgramaResolutionStrategy.auto,
     );
 
     if (result.resolutionType == UgramaResolutionType.notFound) {
@@ -460,9 +506,23 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     required String musteriId,
     required String userId,
   }) {
-    final dropdownItems = ugramalar
-        .map((u) => (value: u.id, label: u.ugramaAdi))
-        .toList();
+    final dropdownItems = <({String value, String label})>[];
+    final musteriLabel = _selectedMusteriLabel(musteriId);
+    if (musteriLabel != null && musteriLabel.isNotEmpty) {
+      final normalizedMusteri = musteriLabel.trim().toLowerCase();
+      final sameNameStop = ugramalar.where((item) {
+        return item.ugramaAdi.trim().toLowerCase() == normalizedMusteri;
+      });
+      if (sameNameStop.isNotEmpty) {
+        final existing = sameNameStop.first;
+        dropdownItems.add((value: existing.id, label: musteriLabel));
+      } else {
+        dropdownItems.add((value: _selfStopVirtualValue, label: musteriLabel));
+      }
+    }
+    dropdownItems.addAll(
+      ugramalar.map((u) => (value: u.id, label: u.ugramaAdi)),
+    );
 
     return AppSectionCard(
       title: 'Siparis Formu',
@@ -480,6 +540,16 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
               items: dropdownItems,
               onChanged: (v) => setState(() => _selectedCikisId = v),
               onInputChanged: (value) => _cikisInput = value,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                key: const Key('swap_stops_button'),
+                tooltip: 'Çıkış ve uğramayı yer değiştir',
+                onPressed: _swapStops,
+                icon: const Icon(Icons.swap_vert),
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             TypeaheadField<String>(
@@ -607,6 +677,16 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
 
   String _displayStopLabel(String stopId, Map<String, String> ugramaMap) {
     return ugramaMap[stopId] ?? _resolvedStopLabels[stopId] ?? stopId;
+  }
+
+  String? _selectedMusteriLabel(String musteriId) {
+    final musterilerAsync = ref.watch(musteriListProvider);
+    if (musterilerAsync case AsyncData(value: final musteriler)) {
+      for (final item in musteriler) {
+        if (item.id == musteriId) return item.firmaKisaAd;
+      }
+    }
+    return null;
   }
 
   String _durumLabel(SiparisDurum durum) {

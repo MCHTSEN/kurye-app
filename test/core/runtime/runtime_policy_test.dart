@@ -1,6 +1,6 @@
-import 'package:bursamotokurye/core/runtime/cache_policy.dart';
-import 'package:bursamotokurye/core/runtime/retry_policy.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/core/runtime/cache_policy.dart';
+import 'package:kuryem/core/runtime/retry_policy.dart';
 
 void main() {
   group('CachePolicy', () {

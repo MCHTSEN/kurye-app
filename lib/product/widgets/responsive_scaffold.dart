@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
 
 import 'package:auto_route/auto_route.dart' hide CustomRoute;
 import 'package:flutter/material.dart';
@@ -145,7 +144,6 @@ class ResponsiveScaffold extends StatelessWidget {
       body: Row(
         children: [
           NavigationRail(
-            extended: false,
             selectedIndex: _selectedIndex,
             onDestinationSelected: (i) => _onNavigate(context, i),
             leading: Padding(
@@ -248,7 +246,7 @@ class ResponsiveScaffold extends StatelessWidget {
   }
 
   Widget _buildDesktopSidebar(BuildContext context, {required double width}) {
-    final groupedItems = LinkedHashMap<String, List<(int, NavItem)>>();
+    final groupedItems = <String, List<(int, NavItem)>>{};
     for (var i = 0; i < navItems.length; i++) {
       final item = navItems[i];
       groupedItems.putIfAbsent(item.section, () => <(int, NavItem)>[]).add((
@@ -305,7 +303,7 @@ class ResponsiveScaffold extends StatelessWidget {
                           if (headerSubtitle != null)
                             Text(
                               headerSubtitle!,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 14,
                                 color: _NavigationTheme.textMuted,
                               ),

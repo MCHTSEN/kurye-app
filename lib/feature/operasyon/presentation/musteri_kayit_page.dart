@@ -1,7 +1,7 @@
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -171,7 +171,7 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
           },
           child: WorkbenchSplitView(
             header: listAsync.maybeWhen(
-              data: (list) => _buildHeader(list),
+              data: _buildHeader,
               orElse: () => null,
             ),
             editorPane: _buildEditorPane(),
@@ -363,7 +363,7 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
                 ),
               );
             },
-            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.xs),
+            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.xs),
           );
 
     final card = AppSectionCard(

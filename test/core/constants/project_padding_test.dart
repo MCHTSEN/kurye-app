@@ -1,6 +1,6 @@
-import 'package:bursamotokurye/core/constants/project_padding.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/core/constants/project_padding.dart';
 
 void main() {
   group('ProjectPadding', () {

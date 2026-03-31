@@ -1,4 +1,4 @@
-import 'package:bursamotokurye/product/services/order_alert_service.dart';
+import 'package:kuryem/product/services/order_alert_service.dart';
 
 /// Spy [OrderAlertService] that records triggers without playing real audio.
 class FakeOrderAlertService extends OrderAlertService {
