@@ -32,7 +32,7 @@ aksiyonlar için optimize edilir.
     müşteri-adı uğraması güvenli çözümleme ile oluşturulabilir.
   - Çıkış ve uğrama alanları tek tık swap aksiyonu ile yer değiştirebilir.
 - **UgramaYonetim**: Lokasyon/uğrama yönetimi
-- **OperasyonAyarlar**: Yönetim sayfalarına giriş, hesap özeti ve çıkış aksiyonu
+- **OperasyonAyarlar**: Yönetim sayfalarına giriş, hesap özeti, çıkış ve hesap silme aksiyonu
 - **MusteriKayit**: Desktop'ta split-view CRUD formu + filtrelenebilir liste
 - **MusteriPersonelKayit**: Desktop'ta split-view CRUD formu + filtrelenebilir liste
 - **KuryeYonetim**: Desktop'ta split-view CRUD formu + filtrelenebilir liste
@@ -55,4 +55,4 @@ aksiyonlar için optimize edilir.
 - Devam eden sipariş düzenleme dialog'una kurala bağlı alan/rol kısıtları eklenebilir.
 
 ## Last Updated
-- 2026-03-31
+- 2026-04-01

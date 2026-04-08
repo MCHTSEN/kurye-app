@@ -1,0 +1,1 @@
+kurye,sipariş,takip,moto,teslimat,lojistik,operasyon

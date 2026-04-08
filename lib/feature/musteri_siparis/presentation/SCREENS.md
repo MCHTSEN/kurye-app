@@ -30,3 +30,6 @@
 - 3 sekme: Sipariş / Geçmiş / Uğrama
 - Sekmeler arası geçiş `AutoTabsScaffold` ile yapılır
 - Drawer navigasyon problemini ortadan kaldırır
+- App bar aksiyonları:
+  - `Çıkış Yap`
+  - `Hesabı Sil` (onay dialog'u sonrası merkezi auth silme akışı)

@@ -11,6 +11,60 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-04-01
+- Scope: 3 rol ekranı için hesap silme akışı (operasyon/kurye/müşteri)
+- Summary:
+  - Auth kontratına `deleteAccount` eklendi (`AuthGateway`, `AuthRepository`, `AuthRepositoryImpl`) ve analytics event kataloğuna `auth_account_deleted` olayı tanımlandı.
+  - `AuthController` içine merkezi `deleteAccount` aksiyonu eklendi; başarı durumunda profil invalidation + login gereksinimi akışı korundu.
+  - Backend adapter'lar güncellendi:
+    - `mock`: oturumu kapatıp local state'i temizler
+    - `custom`: `DELETE /auth/account` çağrısı sonrası oturum temizler
+    - `supabase`: `delete_current_user` RPC çağrısı sonrası sign-out
+    - `firebase`: mevcut kullanıcıyı silip sign-out
+  - Ortak `confirmAndDeleteAccount` helper eklendi; iki adımlı onay dialog'u ve hata snackbar davranışı merkezi hale getirildi.
+  - 3 rol ekranında hesap silme aksiyonu eklendi:
+    - `OperasyonAyarlarPage`: hesap kartına `Hesabı Sil` butonu
+    - `KuryeAnaPage`: app bar aksiyonuna hesap silme ikonu
+    - `MusteriShellPage`: app bar aksiyonuna hesap silme ikonu
+  - Feature/screen living docs güncellendi (`operasyon`, `kurye`, `musteri_siparis`, `auth`).
+  - Test kapsamı genişletildi:
+    - Auth repository unit testine `deleteAccount` senaryosu eklendi
+    - 3 rol ekranında hesap silme dialog etkileşimi için widget testleri eklendi
+    - Integration test auth fake implementasyonları yeni kontrata uyumlandı
+- Files:
+  - `lib/feature/auth/DOC.md`
+  - `lib/feature/auth/application/auth_controller.dart`
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_ayarlar_page.dart`
+  - `lib/feature/kurye/DOC.md`
+  - `lib/feature/kurye/presentation/SCREENS.md`
+  - `lib/feature/kurye/presentation/kurye_ana_page.dart`
+  - `lib/feature/musteri_siparis/DOC.md`
+  - `lib/feature/musteri_siparis/presentation/SCREENS.md`
+  - `lib/feature/musteri_siparis/presentation/musteri_shell_page.dart`
+  - `lib/product/navigation/account_delete_helper.dart`
+  - `lib/product/DOC.md`
+  - `packages/backend_core/lib/src/auth_gateway.dart`
+  - `packages/backend_core/lib/src/auth_repository.dart`
+  - `packages/backend_core/lib/src/auth_repository_impl.dart`
+  - `packages/backend_core/lib/src/domain/app_events.dart`
+  - `packages/backend_custom/lib/src/custom_api_auth_gateway.dart`
+  - `packages/backend_firebase/lib/src/firebase_auth_gateway.dart`
+  - `packages/backend_mock/lib/src/mock_auth_gateway.dart`
+  - `packages/backend_supabase/lib/src/supabase_auth_gateway.dart`
+  - `test/product/auth/auth_repository_impl_test.dart`
+  - `test/feature/operasyon/operasyon_ayarlar_page_test.dart`
+  - `test/feature/kurye/kurye_ana_page_test.dart`
+  - `test/feature/musteri_siparis/musteri_shell_page_test.dart`
+  - `integration_test/app_smoke_test.dart`
+  - `integration_test/operasyon_navigation_smoke_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `flutter test test/product/auth/auth_repository_impl_test.dart test/feature/operasyon/operasyon_ayarlar_page_test.dart test/feature/kurye/kurye_ana_page_test.dart test/feature/musteri_siparis/musteri_shell_page_test.dart` → passed.
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog (yeni hesap silme değişiklikleri kaynaklı ek lint yok).
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`, `%60.76 pixel diff`).
+
 ### 2026-03-31 (Devam)
 - Scope: Müşteri mobil shell çift app bar düzeltmesi
 - Summary:

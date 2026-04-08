@@ -53,7 +53,8 @@ void main() {
       ProviderScope(
         child: MaterialApp.router(
           routerConfig: router.config(
-            deepLinkBuilder: (_) => DeepLink.path(CustomRoute.musteriSiparis.path),
+            deepLinkBuilder: (_) =>
+                DeepLink.path(CustomRoute.musteriSiparis.path),
           ),
         ),
       ),
@@ -70,5 +71,14 @@ void main() {
     await tester.tap(find.text(musteriPrimaryMobileNavItems[2].label));
     await tester.pumpAndSettle();
     expect(find.text('Uğrama body'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('musteri_delete_account_btn')));
+    await tester.pumpAndSettle();
+    expect(find.text('Hesabı Sil'), findsWidgets);
+    expect(find.textContaining('Bu işlem geri alınamaz'), findsOneWidget);
+
+    await tester.tap(find.text('Vazgeç'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Bu işlem geri alınamaz'), findsNothing);
   });
 }

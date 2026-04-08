@@ -9,6 +9,7 @@ class _FakeGateway implements AuthGateway {
   bool signInAnonymousCalled = false;
   bool signInWithEmailCalled = false;
   bool signOutCalled = false;
+  bool deleteAccountCalled = false;
 
   @override
   Stream<AuthSession?> authStateChanges() => _controller.stream;
@@ -70,12 +71,20 @@ class _FakeGateway implements AuthGateway {
   }
 
   @override
-  Set<SocialLoginMethod> get supportedSocialLogins =>
-      const {SocialLoginMethod.google};
+  Set<SocialLoginMethod> get supportedSocialLogins => const {
+    SocialLoginMethod.google,
+  };
 
   @override
   Future<void> signOut() async {
     signOutCalled = true;
+    _session = null;
+    _controller.add(null);
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    deleteAccountCalled = true;
     _session = null;
     _controller.add(null);
   }
@@ -147,6 +156,13 @@ void main() {
 
       expect(gateway.signOutCalled, isTrue);
       expect(analytics.trackedEvents, contains('auth_sign_out'));
+    });
+
+    test('deleteAccount delegates to gateway and tracks analytics', () async {
+      await repository.deleteAccount();
+
+      expect(gateway.deleteAccountCalled, isTrue);
+      expect(analytics.trackedEvents, contains('auth_account_deleted'));
     });
 
     test('currentSession delegates to gateway', () async {

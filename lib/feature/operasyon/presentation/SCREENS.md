@@ -64,12 +64,15 @@
 ## OperasyonAyarlarPage
 - Purpose: Mobil ayarlar hub ekranı
 - Sections:
-  - `Hesap`: profil özeti + çıkış
+  - `Hesap`: profil özeti + çıkış + hesap silme
   - `Yönetim`: müşteri, personel, kurye, rol onay
   - `Kayıt ve Talepler`: geçmiş siparişler, uğrama talepleri
 - Navigation:
   - Secondary operasyon sayfalarını ayarlar stack'ine push eder
   - Bottom nav görünür kalır, aktif sekme `Ayarlar` olur
+- Critical actions:
+  - `Hesabı Sil` aksiyonu iki adımlı onay dialog'u ile çalışır
+  - Onay sonrası merkezi auth akışı kullanıcıyı login sürecine döndürür
 
 ## MusteriKayitPage / MusteriPersonelKayitPage / UgramaYonetimPage / GecmisSiparisPage
 - Mobilde `Ayarlar` stack'i altında açılır
@@ -87,4 +90,4 @@
   - `Esc` seçili siparişi kapatır
 
 ## Last Updated
-- 2026-03-31
+- 2026-04-01

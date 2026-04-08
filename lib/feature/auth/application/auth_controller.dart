@@ -36,11 +36,13 @@ class AuthController extends _$AuthController {
   }) async {
     state = const AsyncLoading();
     final nextState = await AsyncValue.guard(
-      () => ref.read(authRepositoryProvider).register(
-        email: email,
-        password: password,
-        name: name,
-      ),
+      () => ref
+          .read(authRepositoryProvider)
+          .register(
+            email: email,
+            password: password,
+            name: name,
+          ),
     );
     if (!ref.mounted) return;
     state = nextState;
@@ -78,6 +80,18 @@ class AuthController extends _$AuthController {
     ref.read(appNavigationStateProvider).requireLogin();
   }
 
+  Future<void> deleteAccount() async {
+    state = const AsyncLoading();
+    final nextState = await AsyncValue.guard(
+      () => ref.read(authRepositoryProvider).deleteAccount(),
+    );
+    if (!ref.mounted) return;
+    state = nextState;
+    if (nextState.hasError) return;
+    ref.invalidate(currentUserProfileProvider);
+    ref.read(appNavigationStateProvider).requireLogin();
+  }
+
   Future<void> _navigateAfterAuth() async {
     ref.invalidate(currentUserProfileProvider);
     ref.read(appNavigationStateProvider).clearAll();
@@ -97,7 +111,6 @@ class AuthController extends _$AuthController {
     if (!ref.mounted) return;
 
     final targetPath = AppAccessGuard.homePathForRole(profile?.role);
-    final router = ref.read(appRouterProvider);
-    router.replacePath(targetPath);
+    await ref.read(appRouterProvider).replacePath(targetPath);
   }
 }

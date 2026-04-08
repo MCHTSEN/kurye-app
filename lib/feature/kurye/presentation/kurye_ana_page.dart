@@ -7,10 +7,12 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../product/kurye/kurye_providers.dart';
+import '../../../product/navigation/account_delete_helper.dart';
 import '../../../product/navigation/logout_helper.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../auth/application/auth_controller.dart';
 
 /// Courier main screen — active/passive toggle + assigned order list
 /// with timestamp punching (çıkış, uğrama, uğrama1).
@@ -20,6 +22,9 @@ class KuryeAnaPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final kuryeAsync = ref.watch(currentKuryeProvider);
+    final authActionLoading = ref.watch(
+      authControllerProvider.select((state) => state.isLoading),
+    );
 
     final logout = logoutCallback(ref);
 
@@ -37,7 +42,15 @@ class KuryeAnaPage extends ConsumerWidget {
             key: const Key('kurye_logout_btn'),
             icon: const Icon(Icons.logout),
             tooltip: 'Çıkış Yap',
-            onPressed: logout,
+            onPressed: authActionLoading ? null : logout,
+          ),
+          IconButton(
+            key: const Key('kurye_delete_account_btn'),
+            icon: const Icon(Icons.delete_forever_rounded),
+            tooltip: 'Hesabı Sil',
+            onPressed: authActionLoading
+                ? null
+                : () => confirmAndDeleteAccount(context, ref),
           ),
         ],
       ),
@@ -65,8 +78,7 @@ class _KuryeBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ordersAsync =
-        ref.watch(siparisStreamByKuryeProvider(kurye.id));
+    final ordersAsync = ref.watch(siparisStreamByKuryeProvider(kurye.id));
 
     // Build ugrama name map (D027 pattern).
     final ugramaListAsync = ref.watch(ugramaListProvider);
@@ -163,9 +175,9 @@ class _OnlineToggleCardState extends ConsumerState<_OnlineToggleCard> {
               Text(
                 statusText,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: _isOnline ? AppColors.secondary : AppColors.textMuted,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: _isOnline ? AppColors.secondary : AppColors.textMuted,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -245,8 +257,8 @@ class _OrderCard extends ConsumerWidget {
           '$cikis → $ugrama'
           '${ugrama1 != null ? ' → $ugrama1' : ''}',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: AppSpacing.xs),
         // Timestamp buttons row.

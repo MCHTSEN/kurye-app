@@ -31,6 +31,7 @@ void main() {
       expect(find.text('Operasyon Test'), findsOneWidget);
       expect(find.text('Rol: operasyon'), findsOneWidget);
       expect(find.textContaining('Çıkış'), findsOneWidget);
+      expect(find.text('Hesabı Sil'), findsOneWidget);
       expect(find.text('Yönetim'), findsOneWidget);
       expect(find.text('Müşteri Kayıt'), findsWidgets);
       expect(find.text('Personel Kayıt'), findsWidgets);
@@ -68,6 +69,28 @@ void main() {
       expect(find.byType(Drawer), findsNothing);
       expect(find.byType(NavigationRail), findsNothing);
       expect(find.text('Ayarlar'), findsOneWidget);
+    });
+
+    testWidgets('opens delete-account confirmation dialog', (tester) async {
+      await tester.pumpApp(
+        const OperasyonAyarlarPage(),
+        overrides: [
+          currentUserProfileProvider.overrideWithBuild(
+            (ref, notifier) => _operasyonProfile,
+          ),
+        ],
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('operasyon_delete_account_btn')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Hesabı Sil'), findsWidgets);
+      expect(find.textContaining('Bu işlem geri alınamaz'), findsOneWidget);
+
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Bu işlem geri alınamaz'), findsNothing);
     });
   });
 }

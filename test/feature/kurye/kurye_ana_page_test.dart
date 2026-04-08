@@ -232,5 +232,19 @@ void main() {
         expect(find.text('unknown-x → unknown-y'), findsOneWidget);
       },
     );
+
+    testWidgets('(h) opens delete-account confirmation dialog', (tester) async {
+      await pumpPage(tester);
+
+      await tester.tap(find.byKey(const Key('kurye_delete_account_btn')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Hesabı Sil'), findsWidgets);
+      expect(find.textContaining('Bu işlem geri alınamaz'), findsOneWidget);
+
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Bu işlem geri alınamaz'), findsNothing);
+    });
   });
 }

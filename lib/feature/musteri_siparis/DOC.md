@@ -17,6 +17,7 @@ Müşteri personelinin sipariş oluşturması, aktif siparişlerini takip etmesi
 - **GecmisSiparisler**: Tarih filtreli sayfalı liste
 - **UgramaTalebi**: Yeni uğrama adı/adres girişi → talep oluştur → durum chip'leri ile izleme
 - **MobilShellNavigasyon**: Mobilde drawer yerine alt sekmeler ile sipariş / geçmiş / uğrama geçişi
+  - Shell app bar'ında çıkış ve hesap silme aksiyonları bulunur.
 
 ## Dependencies
 - `UserProfileRepository` — müşteri bilgisi
@@ -30,3 +31,6 @@ Müşteri personelinin sipariş oluşturması, aktif siparişlerini takip etmesi
 - Sipariş oluşturulduğunda operasyon ekranına realtime bildirim
 - Uğrama talebi açıldığında operasyon tarafına bildirim
 - Uğrama çözümleme stratejileri (normalize, eşleşme önceliği, popup metinleri)
+
+## Last Updated
+- 2026-04-01

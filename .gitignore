@@ -76,3 +76,8 @@ tmp/
 
 # ── GSD baseline (auto-generated) ──
 .gsd/completed-units.json
+
+# API Keys
+keys/
+fastlane/report.xml
+fastlane/.env

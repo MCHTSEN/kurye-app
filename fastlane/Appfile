@@ -1,0 +1,5 @@
+app_identifier "com.lukeristudio.kuryem"
+apple_id ENV["APPLE_ID"]
+
+itc_team_id "97N3KD5DJN"
+team_id     "97N3KD5DJN"

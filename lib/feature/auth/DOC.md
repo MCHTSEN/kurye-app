@@ -12,6 +12,7 @@ Current default path is anonymous sign-in for quick project bootstrapping.
 - `authStateProvider`
 - `authRepositoryProvider`
 - `tokenRefreshServiceProvider`
+- Account lifecycle aksiyonları: `signOut`, `deleteAccount`
 
 ## Dependencies
 - `product/auth` contracts and adapters
@@ -22,6 +23,7 @@ Current default path is anonymous sign-in for quick project bootstrapping.
 - Add email/password and social providers.
 - Add MFA and session refresh policy.
 - Add backend-specific error mapping.
+- Account deletion için backend-specific yeniden kimlik doğrulama akışları.
 
 ## Open Tasks
 - Add form validation flow.
@@ -29,4 +31,4 @@ Current default path is anonymous sign-in for quick project bootstrapping.
 - Implement custom API refresh contract with token store.
 
 ## Last Updated
-- 2026-03-08
+- 2026-04-01
