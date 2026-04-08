@@ -653,11 +653,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     return result;
   }
 
-  Future<void> _onEditActiveOrder(
+  Future<void> _onEditOrder(
     Siparis order, {
     required Map<String, String> ugramaMap,
     required Map<String, String> kuryeMap,
     required Map<String, String> personelMap,
+    required String dialogTitle,
+    required String successMessage,
   }) async {
     try {
       final ugramaItems =
@@ -676,11 +678,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
               .toList()
             ..sort((a, b) => a.label.compareTo(b.label));
 
-      final payload = await _showActiveOrderEditDialog(
+      final payload = await _showOrderEditDialog(
         order: order,
         ugramaItems: ugramaItems,
         personelItems: personelItems,
         kuryeItems: kuryeItems,
+        title: dialogTitle,
       );
 
       if (payload == null || payload.isEmpty) {
@@ -694,11 +697,11 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Devam eden sipariş güncellendi')),
+          SnackBar(content: Text(successMessage)),
         );
       }
     } on Exception catch (e) {
-      _log.e('Active order edit failed', error: e);
+      _log.e('Order edit failed', error: e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Düzenleme hatası: $e')),
@@ -707,11 +710,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     }
   }
 
-  Future<Map<String, dynamic>?> _showActiveOrderEditDialog({
+  Future<Map<String, dynamic>?> _showOrderEditDialog({
     required Siparis order,
     required List<({String value, String label})> ugramaItems,
     required List<({String value, String label})> personelItems,
     required List<({String value, String label})> kuryeItems,
+    required String title,
   }) async {
     final noteController = TextEditingController(text: order.not1 ?? '');
     var selectedPersonelId = order.personelId;
@@ -727,7 +731,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Devam Eden Siparişi Düzenle'),
+              title: Text(title),
               content: SizedBox(
                 width: 520,
                 child: SingleChildScrollView(
@@ -1689,6 +1693,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           onChanged: (v) => setState(() => _selectedKuryeId = v),
           value: _selectedKuryeId,
           placeholder: 'Kurye Seç',
+          minWidth: 160,
+          maxWidth: 160,
+          selectedTextStyle: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
+          placeholderTextStyle: const TextStyle(color: Colors.white70),
         );
         final ataButton = SizedBox(
           height: 38,
@@ -1767,17 +1778,29 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                   return Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SearchableDropdown<String>(
-                          key: const Key('kurye_dropdown'),
-                          items: activeKuryeler
-                              .map((k) => (value: k.id, label: k.ad))
-                              .toList(),
-                          onChanged: (v) =>
-                              setState(() => _selectedKuryeId = v),
-                          value: _selectedKuryeId,
-                          placeholder: 'Kurye Seç',
+                        SizedBox(
+                          width: 180,
+                          child: SearchableDropdown<String>(
+                            key: const Key('kurye_dropdown'),
+                            items: activeKuryeler
+                                .map((k) => (value: k.id, label: k.ad))
+                                .toList(),
+                            onChanged: (v) =>
+                                setState(() => _selectedKuryeId = v),
+                            value: _selectedKuryeId,
+                            placeholder: 'Kurye Seç',
+                            minWidth: 180,
+                            maxWidth: 180,
+                            selectedTextStyle: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            placeholderTextStyle: const TextStyle(
+                              color: Colors.white70,
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         SizedBox(
@@ -1864,6 +1887,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   ) {
     final isSelected = _waitingSelected.contains(s.id);
     final theme = _OperasyonTheme.of(context);
+    final kuryeMap = <String, String>{};
+    final kuryeListAsync = ref.watch(kuryeListProvider);
+    if (kuryeListAsync case AsyncData(value: final kuryeler)) {
+      for (final k in kuryeler) {
+        kuryeMap[k.id] = k.ad;
+      }
+    }
     final timeStr = s.createdAt != null
         ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
         : '--:--';
@@ -1915,18 +1945,17 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      musteriMap[s.musteriId] ?? s.musteriId,
+                      _customerPersonelLabel(
+                        s,
+                        musteriMap: musteriMap,
+                        personelMap: personelMap,
+                      ),
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                         color: theme.textPrimary,
                       ),
                     ),
-                    if (s.personelId != null)
-                      Text(
-                        personelMap[s.personelId!] ?? '',
-                        style: TextStyle(fontSize: 12, color: theme.textMuted),
-                      ),
                     const SizedBox(height: 4),
                     Text(
                       _routeLabel(s, ugramaMap: ugramaMap),
@@ -1940,13 +1969,41 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                timeStr,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: theme.textMuted,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    timeStr,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                      color: theme.textMuted,
+                    ),
+                  ),
+                  IconButton(
+                    key: Key('edit_waiting_${s.id}'),
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 32,
+                      height: 32,
+                    ),
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(
+                      Icons.edit_note_rounded,
+                      color: Color(0xFFF59E0B),
+                      size: 20,
+                    ),
+                    tooltip: 'Siparişi düzenle',
+                    onPressed: () => _onEditOrder(
+                      s,
+                      ugramaMap: ugramaMap,
+                      kuryeMap: kuryeMap,
+                      personelMap: personelMap,
+                      dialogTitle: 'Bekleyen Siparişi Düzenle',
+                      successMessage: 'Bekleyen sipariş güncellendi',
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -2105,11 +2162,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     size: 22,
                   ),
                   tooltip: 'Siparişi düzenle',
-                  onPressed: () => _onEditActiveOrder(
+                  onPressed: () => _onEditOrder(
                     s,
                     ugramaMap: ugramaMap,
                     kuryeMap: kuryeMap,
                     personelMap: personelMap,
+                    dialogTitle: 'Devam Eden Siparişi Düzenle',
+                    successMessage: 'Devam eden sipariş güncellendi',
                   ),
                 ),
               ],
@@ -2233,9 +2292,15 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final isDesktop = layoutTypeOf(context) == LayoutType.desktop;
     final theme = _OperasyonTheme.of(context);
     final titleFont = isDesktop ? 14.0 : 13.0;
-    final subFont = isDesktop ? 12.0 : 11.0;
     final timeFont = isDesktop ? 14.0 : 13.0;
     final routeFont = isDesktop ? 13.0 : 12.0;
+    final kuryeMap = <String, String>{};
+    final kuryeListAsync = ref.watch(kuryeListProvider);
+    if (kuryeListAsync case AsyncData(value: final kuryeler)) {
+      for (final k in kuryeler) {
+        kuryeMap[k.id] = k.ad;
+      }
+    }
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       decoration: BoxDecoration(
@@ -2272,21 +2337,17 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        musteriMap[s.musteriId] ?? s.musteriId,
+                        _customerPersonelLabel(
+                          s,
+                          musteriMap: musteriMap,
+                          personelMap: personelMap,
+                        ),
                         style: TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: titleFont,
                           color: theme.textPrimary,
                         ),
                       ),
-                      if (s.personelId != null)
-                        Text(
-                          personelMap[s.personelId!] ?? '',
-                          style: TextStyle(
-                            fontSize: subFont,
-                            color: theme.textMuted,
-                          ),
-                        ),
                     ],
                   ),
                 ),
@@ -2316,13 +2377,25 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
-              child: Icon(
-                Icons.edit_note_rounded,
-                color: Color(0xFFF59E0B),
-                size: 22,
+              child: IconButton(
+                key: Key('edit_waiting_${s.id}'),
+                icon: const Icon(
+                  Icons.edit_note_rounded,
+                  color: Color(0xFFF59E0B),
+                  size: 22,
+                ),
+                tooltip: 'Siparişi düzenle',
+                onPressed: () => _onEditOrder(
+                  s,
+                  ugramaMap: ugramaMap,
+                  kuryeMap: kuryeMap,
+                  personelMap: personelMap,
+                  dialogTitle: 'Bekleyen Siparişi Düzenle',
+                  successMessage: 'Bekleyen sipariş güncellendi',
+                ),
               ),
             ),
           ),
@@ -2427,11 +2500,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                   size: 22,
                 ),
                 tooltip: 'Siparişi düzenle',
-                onPressed: () => _onEditActiveOrder(
+                onPressed: () => _onEditOrder(
                   s,
                   ugramaMap: ugramaMap,
                   kuryeMap: kuryeMap,
                   personelMap: personelMap,
+                  dialogTitle: 'Devam Eden Siparişi Düzenle',
+                  successMessage: 'Devam eden sipariş güncellendi',
                 ),
               ),
             ),
@@ -2542,6 +2617,21 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
   String _displayStopLabel(String stopId, Map<String, String> ugramaMap) {
     return ugramaMap[stopId] ?? _resolvedStopLabels[stopId] ?? stopId;
+  }
+
+  String _customerPersonelLabel(
+    Siparis order, {
+    required Map<String, String> musteriMap,
+    required Map<String, String> personelMap,
+  }) {
+    final musteriLabel = musteriMap[order.musteriId] ?? order.musteriId;
+    final personelId = order.personelId;
+    if (personelId == null) {
+      return musteriLabel;
+    }
+
+    final personelLabel = personelMap[personelId] ?? personelId;
+    return '$musteriLabel • $personelLabel';
   }
 
   String? _selectedMusteriLabel(String musteriId) {

@@ -31,8 +31,13 @@
 
 ## OperasyonEkranPage
 - Panel A: Sipariş oluşturma formu
-- Panel B: Kurye Bekleyenler (checkbox + kurye atama)
+- Panel B: Kurye Bekleyenler (checkbox + kurye atama + satır bazlı düzenleme)
 - Panel C: Devam Edenler (checkbox + bitir + satır bazlı düzenleme)
+- Kurye bekleyen siparişte düzenlenebilir alanlar:
+  - Kurye
+  - Personel
+  - Çıkış / Uğrama / Uğrama 1
+  - Not (rehber) ve serbest not
 - Devam eden siparişte düzenlenebilir alanlar:
   - Kurye
   - Personel
@@ -41,6 +46,8 @@
 - Realtime güncelleme, sesli uyarı
 - Görsel tema: koyu gri zemin + koyu kart yüzeyleri; metin/ikonlar açık tonda kontrastlı okunabilir
 - Tipografi: tablo başlık/satır metinleri responsive olarak büyür, küçük ekranda taşma önlenir
+- Kurye atama dropdown'u kompakt genişlikte kalır; kapanmış durumdaki seçili kurye adı koyu temada beyaz görünür
+- Bekleyen siparişlerde personel adı müşteri kısa adının yanında aynı satırda gösterilir
 - Mobile nav: `Operasyon` tab'ı
 - Desktop UX:
   - 3 kolon bağımsız scroll alanı olarak çalışır, panel oranları genişlikte dinamik ayarlanır
@@ -83,11 +90,19 @@
   - `Esc` aktif düzenlemeyi kapatır
 
 ## OperasyonGecmisPage
+- Filtre dropdown'ları tam genişlik yerine kompakt kontrol boyutunda görünür
 - Desktop UX:
   - Sol tarafta filtre ve tablo, sağ tarafta seçili sipariş detay/düzenleme paneli
   - Durum quick filter chip'leri ve metin araması bulunur
   - `/` arama alanını focus eder
   - `Esc` seçili siparişi kapatır
+- Liste:
+  - Son sütunda satır bazlı `Faturalandırıldı` checkbox'ı bulunur
+  - Satırdan değiştirildiğinde de aynı onay dialog'u ile kalıcı kayıt yapılır
+- Edit panel:
+  - `Faturalandırıldı` checkbox'ı siparişte kalıcı boolean alanı yönetir
+  - Değer değiştirildiyse `Kaydet` öncesi yönüne göre emin misin dialog'u açılır
+  - Seçili sipariş özetinde `Faturalandırıldı: Evet/Hayır` bilgisi gösterilir
 
 ## Last Updated
-- 2026-04-01
+- 2026-04-08

@@ -49,6 +49,7 @@ void main() {
         'not_id': 'ugrama-not',
         'not1': 'Acil teslimat',
         'durum': 'kurye_bekliyor',
+        'faturalandirildi': true,
         'ucret': 150.50,
         'cikis_saat': '2026-03-15T09:00:00.000Z',
         'ugrama_saat': '2026-03-15T09:30:00.000Z',
@@ -71,6 +72,7 @@ void main() {
       expect(siparis.notId, 'ugrama-not');
       expect(siparis.not1, 'Acil teslimat');
       expect(siparis.durum, SiparisDurum.kuryeBekliyor);
+      expect(siparis.faturalandirildi, isTrue);
       expect(siparis.ucret, 150.50);
       expect(siparis.cikisSaat, isNotNull);
       expect(siparis.ugramaSaat, isNotNull);
@@ -84,6 +86,7 @@ void main() {
       final output = siparis.toJson();
       expect(output['musteri_id'], 'musteri-1');
       expect(output['durum'], 'kurye_bekliyor');
+      expect(output['faturalandirildi'], isTrue);
       expect(output['ucret'], 150.50);
       expect(output['not1'], 'Acil teslimat');
       expect(output['not_id'], 'ugrama-not');
@@ -104,6 +107,7 @@ void main() {
       expect(siparis.ugrama1Id, isNull);
       expect(siparis.notId, isNull);
       expect(siparis.not1, isNull);
+      expect(siparis.faturalandirildi, isFalse);
       expect(siparis.ucret, isNull);
       expect(siparis.cikisSaat, isNull);
       expect(siparis.ugramaSaat, isNull);
@@ -144,10 +148,26 @@ void main() {
       expect(json['ugrama1_id'], isNull);
       expect(json['not_id'], isNull);
       expect(json['not1'], isNull);
+      expect(json['faturalandirildi'], isFalse);
       expect(json['ucret'], isNull);
       expect(json['cikis_saat'], isNull);
       expect(json['ugrama_saat'], isNull);
       expect(json['created_at'], isNull);
     });
+
+    test(
+      'fromJson defaults faturalandirildi to false when field is missing',
+      () {
+        final siparis = Siparis.fromJson({
+          'id': 'siparis-legacy',
+          'musteri_id': 'musteri-1',
+          'cikis_id': 'ugrama-cikis',
+          'ugrama_id': 'ugrama-ugrama',
+          'durum': 'tamamlandi',
+        });
+
+        expect(siparis.faturalandirildi, isFalse);
+      },
+    );
   });
 }

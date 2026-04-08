@@ -168,6 +168,25 @@ void main() {
     });
 
     testWidgets(
+      '(b1) waiting order shows customer and personnel on the same line',
+      (tester) async {
+        fakeSiparisRepo.store['s1'] = const Siparis(
+          id: 's1',
+          musteriId: 'musteri-1',
+          personelId: 'personel-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+        );
+
+        await pumpPage(tester);
+
+        await reveal(tester, find.textContaining('KURYE BEKLEYENLER'));
+
+        expect(find.text('Firma A • Personel A'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
       '(b2) order form supports unknown stop with confirmation popup',
       (tester) async {
         await pumpPage(tester);
@@ -561,6 +580,39 @@ void main() {
       final updated = fakeSiparisRepo.store['s-edit']!;
       expect(updated.not1, 'Müşteri telefonda teyit edildi');
       expect(updated.durum, SiparisDurum.devamEdiyor);
+    });
+
+    testWidgets('(f1) waiting order can be edited and saved from row action', (
+      tester,
+    ) async {
+      fakeSiparisRepo.store['s-wait-edit'] = const Siparis(
+        id: 's-wait-edit',
+        musteriId: 'musteri-1',
+        personelId: 'personel-1',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+      );
+
+      await pumpPage(tester);
+
+      await reveal(tester, find.byKey(const Key('edit_waiting_s-wait-edit')));
+      await tester.tap(find.byKey(const Key('edit_waiting_s-wait-edit')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bekleyen Siparişi Düzenle'), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const Key('active_edit_note_field')),
+        'Bekleyen sipariş notu güncellendi',
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('active_edit_save_button')));
+      await tester.pumpAndSettle();
+
+      final updated = fakeSiparisRepo.store['s-wait-edit']!;
+      expect(updated.not1, 'Bekleyen sipariş notu güncellendi');
+      expect(updated.durum, SiparisDurum.kuryeBekliyor);
     });
 
     testWidgets(

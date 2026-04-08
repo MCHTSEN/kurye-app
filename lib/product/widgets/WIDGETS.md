@@ -38,6 +38,8 @@ Defines reusable widget contracts used across features.
   - Alan boşken tıklamada da mevcut seçenekleri listeleyerek açar
 - `SearchableDropdown<T>`
   - `ShadSelect.withSearch` tabanlı arama destekli seçim alanı
+  - `minWidth` / `maxWidth` ile kompakt veya tam genişlik kullanımını destekler
+  - Kapanmış durumdaki seçili değer ve placeholder metni ekran temasına göre stillenebilir
 
 ## Usage Rules
 - Use shared widgets before creating new duplicates.
@@ -51,4 +53,4 @@ Defines reusable widget contracts used across features.
   split-view workbenches instead of long single-column forms.
 
 ## Last Updated
-- 2026-03-31
+- 2026-04-08

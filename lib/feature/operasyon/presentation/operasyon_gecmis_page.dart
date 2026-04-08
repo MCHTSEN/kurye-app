@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,7 +30,8 @@ class OperasyonGecmisPage extends ConsumerStatefulWidget {
   const OperasyonGecmisPage({super.key});
 
   @override
-  ConsumerState<OperasyonGecmisPage> createState() => _OperasyonGecmisPageState();
+  ConsumerState<OperasyonGecmisPage> createState() =>
+      _OperasyonGecmisPageState();
 }
 
 class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
@@ -49,6 +52,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
   String? _editCikisId;
   String? _editUgramaId;
   String? _editDurum;
+  bool _editFaturalandirildi = false;
   final _editUcretController = TextEditingController();
   final _editNot1Controller = TextEditingController();
   bool _isSaving = false;
@@ -158,7 +162,10 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       _editCikisId = order.cikisId;
       _editUgramaId = order.ugramaId;
       _editDurum = order.durum.value;
-      _editUcretController.text = order.ucret != null ? order.ucret!.toStringAsFixed(2) : '';
+      _editFaturalandirildi = order.faturalandirildi;
+      _editUcretController.text = order.ucret != null
+          ? order.ucret!.toStringAsFixed(2)
+          : '';
       _editNot1Controller.text = order.not1 ?? '';
     });
   }
@@ -170,6 +177,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       _editCikisId = null;
       _editUgramaId = null;
       _editDurum = null;
+      _editFaturalandirildi = false;
       _editUcretController.clear();
       _editNot1Controller.clear();
     });
@@ -177,6 +185,16 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
 
   Future<void> _onSave() async {
     if (_selectedOrder == null) return;
+
+    final selectedOrder = _selectedOrder!;
+    if (_editFaturalandirildi != selectedOrder.faturalandirildi) {
+      final confirmed = await _showFaturalandirmaConfirmDialog(
+        willMarkAsBilled: _editFaturalandirildi,
+      );
+      if (confirmed != true) {
+        return;
+      }
+    }
 
     setState(() => _isSaving = true);
 
@@ -186,7 +204,10 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
         'cikis_id': _editCikisId,
         'ugrama_id': _editUgramaId,
         'durum': _editDurum,
-        'not1': _editNot1Controller.text.trim().isNotEmpty ? _editNot1Controller.text.trim() : null,
+        'faturalandirildi': _editFaturalandirildi,
+        'not1': _editNot1Controller.text.trim().isNotEmpty
+            ? _editNot1Controller.text.trim()
+            : null,
       };
 
       final parsedUcret = double.tryParse(_editUcretController.text);
@@ -194,7 +215,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
         fields['ucret'] = parsedUcret;
       }
 
-      await ref.read(siparisRepositoryProvider).update(_selectedOrder!.id, fields);
+      await ref
+          .read(siparisRepositoryProvider)
+          .update(selectedOrder.id, fields);
 
       ref.invalidate(siparisHistoryProvider);
       _clearEditPanel();
@@ -213,6 +236,87 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<bool?> _showFaturalandirmaConfirmDialog({
+    required bool willMarkAsBilled,
+  }) {
+    final message = willMarkAsBilled
+        ? 'Bu siparişi faturalandırıldı olarak işaretlemek istediğinize emin misiniz?'
+        : 'Bu siparişin faturalandırıldı işaretini kaldırmak istediğinize emin misiniz?';
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Faturalandırma Onayı'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Vazgeç'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Evet'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _onListFaturalandirildiToggle(
+    Siparis order, {
+    required bool nextValue,
+  }) async {
+    final confirmed = await _showFaturalandirmaConfirmDialog(
+      willMarkAsBilled: nextValue,
+    );
+    if (confirmed != true) {
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final updated = await ref.read(siparisRepositoryProvider).update(
+        order.id,
+        {
+          'faturalandirildi': nextValue,
+        },
+      );
+
+      ref.invalidate(siparisHistoryProvider);
+
+      if (mounted) {
+        setState(() {
+          if (_selectedOrder?.id == order.id) {
+            _selectedOrder = updated;
+            _editFaturalandirildi = updated.faturalandirildi;
+          }
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              nextValue
+                  ? 'Sipariş faturalandırıldı olarak işaretlendi'
+                  : 'Siparişin faturalandırıldı işareti kaldırıldı',
+            ),
+          ),
+        );
+      }
+    } on Exception catch (e) {
+      _log.e('Billing toggle failed', error: e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Hata: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -306,9 +410,12 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       ),
     );
 
-    if (filteredHistoryAsync case AsyncData(
-      value: final orders,
-    ) when _selectedOrder != null && orders.every((item) => item.id != _selectedOrder!.id)) {
+    if (filteredHistoryAsync
+        case AsyncData(
+          value: final orders,
+        )
+        when _selectedOrder != null &&
+            orders.every((item) => item.id != _selectedOrder!.id)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _selectedOrder != null) {
           _clearEditPanel();
@@ -326,24 +433,28 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       body: Shortcuts(
         shortcuts: isDesktop
             ? const {
-                SingleActivator(LogicalKeyboardKey.slash): _FocusHistorySearchIntent(),
-                SingleActivator(LogicalKeyboardKey.escape): _ClearHistorySelectionIntent(),
+                SingleActivator(LogicalKeyboardKey.slash):
+                    _FocusHistorySearchIntent(),
+                SingleActivator(LogicalKeyboardKey.escape):
+                    _ClearHistorySelectionIntent(),
               }
             : const {},
         child: Actions(
           actions: {
-            _FocusHistorySearchIntent: CallbackAction<_FocusHistorySearchIntent>(
-              onInvoke: (_) {
-                _searchFocusNode.requestFocus();
-                return null;
-              },
-            ),
-            _ClearHistorySelectionIntent: CallbackAction<_ClearHistorySelectionIntent>(
-              onInvoke: (_) {
-                _clearEditPanel();
-                return null;
-              },
-            ),
+            _FocusHistorySearchIntent:
+                CallbackAction<_FocusHistorySearchIntent>(
+                  onInvoke: (_) {
+                    _searchFocusNode.requestFocus();
+                    return null;
+                  },
+                ),
+            _ClearHistorySelectionIntent:
+                CallbackAction<_ClearHistorySelectionIntent>(
+                  onInvoke: (_) {
+                    _clearEditPanel();
+                    return null;
+                  },
+                ),
           },
           child: isDesktop
               ? WorkbenchSplitView(
@@ -378,8 +489,10 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                   children: [
                     _buildRevenueCard(filteredHistoryAsync),
                     const SizedBox(height: AppSpacing.md),
-                    if (_selectedOrder != null) _buildEditPanel(musteriListAsync, ugramaListAsync),
-                    if (_selectedOrder != null) const SizedBox(height: AppSpacing.md),
+                    if (_selectedOrder != null)
+                      _buildEditPanel(musteriListAsync, ugramaListAsync),
+                    if (_selectedOrder != null)
+                      const SizedBox(height: AppSpacing.md),
                     _buildSearchAndStatusCard(historyAsync),
                     const SizedBox(height: AppSpacing.md),
                     _buildFilterBar(musteriListAsync, ugramaListAsync),
@@ -402,7 +515,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       0,
       (sum, item) => sum + (item.ucret ?? 0),
     );
-    final completedCount = orders.where((item) => item.durum == SiparisDurum.tamamlandi).length;
+    final completedCount = orders
+        .where((item) => item.durum == SiparisDurum.tamamlandi)
+        .length;
 
     return Container(
       decoration: BoxDecoration(
@@ -419,9 +534,17 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       child: Row(
         children: [
-          _buildHeaderMetric('GÖRÜNEN SİPARİŞ', '${orders.length}', const Color(0xFF6366F1)),
+          _buildHeaderMetric(
+            'GÖRÜNEN SİPARİŞ',
+            '${orders.length}',
+            const Color(0xFF6366F1),
+          ),
           const SizedBox(width: 32),
-          _buildHeaderMetric('TAMAMLANAN', '$completedCount', const Color(0xFF10B981)),
+          _buildHeaderMetric(
+            'TAMAMLANAN',
+            '$completedCount',
+            const Color(0xFF10B981),
+          ),
           const SizedBox(width: 32),
           _buildHeaderMetric(
             'TOPLAM CİRO',
@@ -444,7 +567,11 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
               SizedBox(height: 4),
               Text(
                 '/ arama, Esc kapatır',
-                style: TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -469,7 +596,11 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+          ),
         ),
       ],
     );
@@ -513,7 +644,8 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
         if (_selectedOrder == null)
           const AppSectionCard(
             title: 'Sipariş Detayı',
-            description: 'Tablodan bir sipariş seçildiğinde düzenleme paneli burada açılır.',
+            description:
+                'Tablodan bir sipariş seçildiğinde düzenleme paneli burada açılır.',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -562,6 +694,10 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                       ? 'Ücret: ₺${selected.ucret!.toStringAsFixed(2)}'
                       : 'Ücret henüz girilmedi',
                 ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Faturalandırıldı: ${selected.faturalandirildi ? 'Evet' : 'Hayır'}',
+                ),
               ],
             ),
     );
@@ -582,9 +718,13 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
 
     final filteredStops = ugramalar;
 
-    final musteriItems = musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList();
+    final musteriItems = musteriler
+        .map((m) => (value: m.id, label: m.firmaKisaAd))
+        .toList();
 
-    final stopItems = filteredStops.map((u) => (value: u.id, label: u.ugramaAdi)).toList();
+    final stopItems = filteredStops
+        .map((u) => (value: u.id, label: u.ugramaAdi))
+        .toList();
 
     final durumItems = [
       SiparisDurum.tamamlandi,
@@ -648,6 +788,18 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             onChanged: (v) => setState(() => _editDurum = v),
           ),
           const SizedBox(height: AppSpacing.xs),
+          CheckboxListTile(
+            key: const Key('edit_faturalandirildi_checkbox'),
+            value: _editFaturalandirildi,
+            contentPadding: EdgeInsets.zero,
+            controlAffinity: ListTileControlAffinity.leading,
+            title: const Text('Faturalandırıldı'),
+            onChanged: (value) {
+              if (value == null) return;
+              setState(() => _editFaturalandirildi = value);
+            },
+          ),
+          const SizedBox(height: AppSpacing.xs),
           TextFormField(
             key: const Key('edit_not1_field'),
             controller: _editNot1Controller,
@@ -692,7 +844,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
           SiparisDurum.tamamlandi.value: orders
               .where((item) => item.durum == SiparisDurum.tamamlandi)
               .length,
-          SiparisDurum.iptal.value: orders.where((item) => item.durum == SiparisDurum.iptal).length,
+          SiparisDurum.iptal.value: orders
+              .where((item) => item.durum == SiparisDurum.iptal)
+              .length,
           SiparisDurum.devamEdiyor.value: orders
               .where((item) => item.durum == SiparisDurum.devamEdiyor)
               .length,
@@ -706,7 +860,8 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
 
     return AppSectionCard(
       title: 'Hızlı Arama',
-      description: 'Sipariş ID, müşteri, uğrama, kurye veya not ile filtreleyin.',
+      description:
+          'Sipariş ID, müşteri, uğrama, kurye veya not ile filtreleyin.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -789,8 +944,14 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     AsyncValue<List<Musteri>> musteriListAsync,
     AsyncValue<List<Ugrama>> ugramaListAsync,
   ) {
-    final musteriler = musteriListAsync.maybeWhen(data: (d) => d, orElse: () => <Musteri>[]);
-    final ugramalar = ugramaListAsync.maybeWhen(data: (d) => d, orElse: () => <Ugrama>[]);
+    final musteriler = musteriListAsync.maybeWhen(
+      data: (d) => d,
+      orElse: () => <Musteri>[],
+    );
+    final ugramalar = ugramaListAsync.maybeWhen(
+      data: (d) => d,
+      orElse: () => <Ugrama>[],
+    );
 
     return _PremiumCard(
       title: 'FİLTRELER',
@@ -833,7 +994,10 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                         child: Text(
                           '${_formatDate(_dateRange.start)} - ${_formatDate(_dateRange.end)}',
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ],
@@ -848,16 +1012,24 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             value: _filterMusteriId,
             label: 'MÜŞTERİ',
             placeholder: 'Hepsi',
-            items: musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList(),
+            items: musteriler
+                .map((m) => (value: m.id, label: m.firmaKisaAd))
+                .toList(),
             onChanged: _onFilterMusteriChanged,
+            minWidth: 220,
+            maxWidth: 220,
           );
 
           final guzergahField = SearchableDropdown<String>(
             value: _filterCikisId,
             label: 'GÜZERGAH',
             placeholder: 'Hepsi',
-            items: ugramalar.map((u) => (value: u.id, label: u.ugramaAdi)).toList(),
+            items: ugramalar
+                .map((u) => (value: u.id, label: u.ugramaAdi))
+                .toList(),
             onChanged: (v) => setState(() => _filterCikisId = v),
+            minWidth: 220,
+            maxWidth: 220,
           );
 
           final clearButton = SizedBox(
@@ -869,7 +1041,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                 backgroundColor: const Color(0xFFF1F5F9),
                 foregroundColor: AppColors.textPrimary,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: const Icon(Icons.refresh_rounded),
             ),
@@ -894,9 +1068,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             children: [
               Expanded(child: dateField),
               const SizedBox(width: 16),
-              Expanded(child: musteriField),
+              SizedBox(width: 220, child: musteriField),
               const SizedBox(width: 16),
-              Expanded(child: guzergahField),
+              SizedBox(width: 220, child: guzergahField),
               const SizedBox(width: 16),
               clearButton,
             ],
@@ -922,15 +1096,29 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
           child: Column(
             key: const Key('history_data_table'),
             children: [
-              _buildTableHeader(['Tarih', 'Müşteri', 'Çıkış', 'Uğrama', 'Kurye', 'Ücret', 'Durum']),
+              _buildTableHeader([
+                'Tarih',
+                'Müşteri',
+                'Çıkış',
+                'Uğrama',
+                'Kurye',
+                'Ücret',
+                'Durum',
+                'Faturalandırıldı',
+              ]),
               const Divider(height: 1),
               if (orders.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 40),
-                  child: Text('Kayıt bulunamadı', style: TextStyle(color: AppColors.textMuted)),
+                  child: Text(
+                    'Kayıt bulunamadı',
+                    style: TextStyle(color: AppColors.textMuted),
+                  ),
                 )
               else
-                ...orders.map((s) => _buildDataRow(s, musteriMap, ugramaMap, kuryeMap)),
+                ...orders.map(
+                  (s) => _buildDataRow(s, musteriMap, ugramaMap, kuryeMap),
+                ),
             ],
           ),
         );
@@ -975,7 +1163,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.05) : null,
+          color: isSelected
+              ? const Color(0xFF6366F1).withValues(alpha: 0.05)
+              : null,
           border: const Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
         ),
         child: Row(
@@ -983,17 +1173,26 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             Expanded(
               child: Text(
                 s.createdAt != null ? _formatDate(s.createdAt!) : '-',
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             Expanded(
               child: Text(
                 musteriMap[s.musteriId] ?? s.musteriId,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
             Expanded(
-              child: Text(ugramaMap[s.cikisId] ?? s.cikisId, style: const TextStyle(fontSize: 13)),
+              child: Text(
+                ugramaMap[s.cikisId] ?? s.cikisId,
+                style: const TextStyle(fontSize: 13),
+              ),
             ),
             Expanded(
               child: Text(
@@ -1004,13 +1203,19 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             Expanded(
               child: Text(
                 kuryeMap[s.kuryeId] ?? '-',
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
             Expanded(
               child: Text(
                 s.ucret != null ? '₺${s.ucret!.toStringAsFixed(2)}' : '-',
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
             Expanded(
@@ -1028,6 +1233,28 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                     fontSize: 9,
                     fontWeight: FontWeight.w900,
                   ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Align(
+                alignment: Alignment.center,
+                child: Checkbox(
+                  key: Key('history_billed_${s.id}'),
+                  value: s.faturalandirildi,
+                  onChanged: _isSaving
+                      ? null
+                      : (value) {
+                          if (value == null || value == s.faturalandirildi) {
+                            return;
+                          }
+                          unawaited(
+                            _onListFaturalandirildiToggle(
+                              s,
+                              nextValue: value,
+                            ),
+                          );
+                        },
                 ),
               ),
             ),

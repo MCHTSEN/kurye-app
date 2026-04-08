@@ -11,6 +11,55 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-04-08
+- Scope: Geçmiş sipariş edit paneline kalıcı faturalandırıldı alanı
+- Summary:
+  - `Siparis` domain modeline varsayılanı `false` olan kalıcı `faturalandirildi` boolean alanı eklendi; JSON mapping, fake repository ve Supabase create/update akışı bu alanı taşıyacak şekilde güncellendi.
+  - `siparisler` tablosuna `faturalandirildi` kolonu ekleyen Supabase migration yazıldı.
+  - `OperasyonGecmisPage` düzenleme paneline `Faturalandırıldı` checkbox'ı eklendi; değer değişikliği kaydetmeden hemen önce yönüne göre onay dialog'u gösteriliyor.
+  - Geçmiş sipariş listesi son sütununa satır bazlı `Faturalandırıldı` checkbox'ı eklendi; hızlı güncelleme aynı onay popup'ı ile kalıcı olarak kaydediliyor.
+  - Seçili sipariş özet kartı `Faturalandırıldı: Evet/Hayır` satırıyla genişletildi.
+  - Operasyon living doc'ları ve test kapsamı yeni faturalandırma akışı için güncellendi.
+- Files:
+  - `packages/backend_core/lib/src/domain/siparis.dart`
+  - `packages/backend_supabase/lib/src/supabase_siparis_repository.dart`
+  - `supabase/migrations/20260408103000_add_faturalandirildi_to_siparisler.sql`
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_gecmis_page.dart`
+  - `test/helpers/fakes/fake_siparis_repository.dart`
+  - `test/domain/siparis_test.dart`
+  - `test/feature/operasyon/operasyon_gecmis_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `flutter test test/domain/siparis_test.dart test/feature/operasyon/operasyon_gecmis_page_test.dart` → passed.
+  - `flutter analyze` → failed (`15 issues`): repo genelindeki mevcut info/warning backlog; yeni faturalandırıldı akışına özgü analyze hatası oluşmadı.
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`, `%60.76 pixel diff`).
+
+- Scope: Operasyon ekranı bekleyen sipariş düzenleme + kompakt dropdown iyileştirmeleri
+- Summary:
+  - Operasyon ekranında kurye bekleyen siparişler için satır/kart bazlı düzenleme aksiyonu eklendi; bekleyen siparişler artık devam eden siparişlerle aynı dialog altyapısı üzerinden güncellenebiliyor.
+  - Bekleyen sipariş görünümünde personel adı müşteri kısa adının yanına taşındı; sipariş satırı tek bakışta okunur hale getirildi.
+  - Kurye atama dropdown'u için shared `SearchableDropdown` bileşeni genişlik ve kapalı durum metin stili destekleyecek şekilde genişletildi.
+  - Operasyon ekranındaki kurye seçimi dropdown'u kompakt genişliğe çekildi; koyu temada kapalı durumdaki seçili isim beyaz gösteriliyor.
+  - Geçmiş sipariş ekranında filtre dropdown'ları tam genişlik yerine kompakt genişlikte render ediliyor.
+  - Operasyon feature/screen ve shared widget living doc'ları güncellendi; operasyon widget test kapsamı bekleyen sipariş düzenleme ve kompakt filtre genişliği için genişletildi.
+- Files:
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_gecmis_page.dart`
+  - `lib/product/widgets/WIDGETS.md`
+  - `lib/product/widgets/searchable_dropdown.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `test/feature/operasyon/operasyon_gecmis_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/product/widgets/searchable_dropdown.dart lib/feature/operasyon/presentation/operasyon_ekran_page.dart lib/feature/operasyon/presentation/operasyon_gecmis_page.dart test/feature/operasyon/operasyon_ekran_page_test.dart test/feature/operasyon/operasyon_gecmis_page_test.dart` → passed.
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; yeni değişikliklerden kaynaklanan ek analyze hatası görülmedi.
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart test/feature/operasyon/operasyon_gecmis_page_test.dart` → passed.
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`, `%60.76 pixel diff`).
+
 ### 2026-04-01
 - Scope: 3 rol ekranı için hesap silme akışı (operasyon/kurye/müşteri)
 - Summary:

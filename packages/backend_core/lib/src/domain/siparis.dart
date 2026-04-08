@@ -31,6 +31,7 @@ class Siparis {
     this.notId,
     this.not1,
     this.durum = SiparisDurum.kuryeBekliyor,
+    this.faturalandirildi = false,
     this.ucret,
     this.cikisSaat,
     this.ugramaSaat,
@@ -55,6 +56,7 @@ class Siparis {
       notId: json['not_id'] as String?,
       not1: json['not1'] as String?,
       durum: SiparisDurum.fromValue(json['durum'] as String),
+      faturalandirildi: json['faturalandirildi'] as bool? ?? false,
       ucret: (json['ucret'] as num?)?.toDouble(),
       cikisSaat: json['cikis_saat'] != null
           ? DateTime.parse(json['cikis_saat'] as String)
@@ -93,6 +95,7 @@ class Siparis {
   final String? notId;
   final String? not1;
   final SiparisDurum durum;
+  final bool faturalandirildi;
   final double? ucret;
   final DateTime? cikisSaat;
   final DateTime? ugramaSaat;
@@ -104,24 +107,25 @@ class Siparis {
   final DateTime? updatedAt;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'musteri_id': musteriId,
-        'personel_id': personelId,
-        'kurye_id': kuryeId,
-        'cikis_id': cikisId,
-        'ugrama_id': ugramaId,
-        'ugrama1_id': ugrama1Id,
-        'not_id': notId,
-        'not1': not1,
-        'durum': durum.value,
-        'ucret': ucret,
-        'cikis_saat': cikisSaat?.toIso8601String(),
-        'ugrama_saat': ugramaSaat?.toIso8601String(),
-        'ugrama1_saat': ugrama1Saat?.toIso8601String(),
-        'atanma_saat': atanmaSaat?.toIso8601String(),
-        'bitis_saat': bitisSaat?.toIso8601String(),
-        'olusturan_id': olusturanId,
-        'created_at': createdAt?.toIso8601String(),
-        'updated_at': updatedAt?.toIso8601String(),
-      };
+    'id': id,
+    'musteri_id': musteriId,
+    'personel_id': personelId,
+    'kurye_id': kuryeId,
+    'cikis_id': cikisId,
+    'ugrama_id': ugramaId,
+    'ugrama1_id': ugrama1Id,
+    'not_id': notId,
+    'not1': not1,
+    'durum': durum.value,
+    'faturalandirildi': faturalandirildi,
+    'ucret': ucret,
+    'cikis_saat': cikisSaat?.toIso8601String(),
+    'ugrama_saat': ugramaSaat?.toIso8601String(),
+    'ugrama1_saat': ugrama1Saat?.toIso8601String(),
+    'atanma_saat': atanmaSaat?.toIso8601String(),
+    'bitis_saat': bitisSaat?.toIso8601String(),
+    'olusturan_id': olusturanId,
+    'created_at': createdAt?.toIso8601String(),
+    'updated_at': updatedAt?.toIso8601String(),
+  };
 }

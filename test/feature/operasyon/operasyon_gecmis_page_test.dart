@@ -117,6 +117,8 @@ void main() {
       expect(find.text('Şube A'), findsWidgets);
       expect(find.text('Ali Kurye'), findsOneWidget);
       expect(find.text('Veli Kurye'), findsOneWidget);
+      expect(find.byKey(const Key('history_billed_s1')), findsOneWidget);
+      expect(find.byKey(const Key('history_billed_s2')), findsOneWidget);
     });
 
     testWidgets('(b) revenue total shows correct sum', (tester) async {
@@ -157,6 +159,7 @@ void main() {
         cikisId: 'ugrama-1',
         ugramaId: 'ugrama-2',
         durum: SiparisDurum.tamamlandi,
+        faturalandirildi: true,
         ucret: 75,
         not1: 'Test not',
         createdAt: DateTime.now().subtract(const Duration(days: 1)),
@@ -211,6 +214,11 @@ void main() {
         find.byKey(const Key('edit_not1_field')),
       );
       expect(not1Field.controller?.text, 'Test not');
+
+      final billedCheckbox = tester.widget<CheckboxListTile>(
+        find.byKey(const Key('edit_faturalandirildi_checkbox')),
+      );
+      expect(billedCheckbox.value, isTrue);
     });
 
     testWidgets('(d) edit panel save triggers update and refreshes list', (
@@ -274,6 +282,146 @@ void main() {
 
       // Snackbar should appear.
       expect(find.text('Sipariş güncellendi'), findsOneWidget);
+    });
+
+    testWidgets('(d2) billed toggle asks confirmation and cancels cleanly', (
+      tester,
+    ) async {
+      fakeSiparisRepo.store['s1'] = Siparis(
+        id: 's1',
+        musteriId: 'musteri-1',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+        durum: SiparisDurum.tamamlandi,
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      );
+
+      await pumpPage(tester);
+
+      await tester.scrollUntilVisible(
+        find.text('Firma A'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Firma A'));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('edit_faturalandirildi_checkbox')),
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('edit_faturalandirildi_checkbox')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('edit_save_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Faturalandırma Onayı'), findsOneWidget);
+      expect(
+        find.text(
+          'Bu siparişi faturalandırıldı olarak işaretlemek istediğinize emin misiniz?',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+
+      expect(fakeSiparisRepo.updateCallCount, 0);
+      expect(fakeSiparisRepo.store['s1']!.faturalandirildi, isFalse);
+      expect(find.text('Sipariş Düzenle'), findsOneWidget);
+    });
+
+    testWidgets('(d3) billed toggle confirms and saves payload', (
+      tester,
+    ) async {
+      fakeSiparisRepo.store['s1'] = Siparis(
+        id: 's1',
+        musteriId: 'musteri-1',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+        durum: SiparisDurum.tamamlandi,
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      );
+
+      await pumpPage(tester);
+
+      await tester.scrollUntilVisible(
+        find.text('Firma A'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Firma A'));
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('edit_faturalandirildi_checkbox')),
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('edit_faturalandirildi_checkbox')));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('edit_save_button')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Evet'));
+      await tester.pumpAndSettle();
+
+      expect(fakeSiparisRepo.updateCallCount, 1);
+      expect(
+        fakeSiparisRepo.lastUpdatedFields,
+        containsPair('faturalandirildi', true),
+      );
+      expect(fakeSiparisRepo.store['s1']!.faturalandirildi, isTrue);
+      expect(find.text('Sipariş güncellendi'), findsOneWidget);
+    });
+
+    testWidgets('(d4) list billed checkbox confirms and saves payload', (
+      tester,
+    ) async {
+      fakeSiparisRepo.store['s1'] = Siparis(
+        id: 's1',
+        musteriId: 'musteri-1',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+        durum: SiparisDurum.tamamlandi,
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      );
+
+      await pumpPage(tester);
+
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('history_billed_s1')),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('history_billed_s1')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Faturalandırma Onayı'), findsOneWidget);
+
+      await tester.tap(find.text('Evet'));
+      await tester.pumpAndSettle();
+
+      expect(fakeSiparisRepo.updateCallCount, 1);
+      expect(
+        fakeSiparisRepo.lastUpdatedFields,
+        containsPair('faturalandirildi', true),
+      );
+      expect(fakeSiparisRepo.store['s1']!.faturalandirildi, isTrue);
+      expect(
+        find.text('Sipariş faturalandırıldı olarak işaretlendi'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('(e) filter application changes displayed results', (
@@ -347,6 +495,18 @@ void main() {
         find.text('/ arama, Esc kapatır'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('(g) desktop filters use compact dropdown width', (
+      tester,
+    ) async {
+      await pumpDesktopPage(tester);
+
+      final musteriSize = tester.getSize(
+        find.byKey(const Key('filter_musteri_dropdown')),
+      );
+
+      expect(musteriSize.width, lessThan(260));
     });
   });
 }
