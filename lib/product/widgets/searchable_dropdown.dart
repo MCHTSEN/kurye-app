@@ -68,9 +68,7 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
   List<({T value, String label})> get _filtered {
     if (_search.isEmpty) return widget.items;
     final q = _search.toLowerCase();
-    return widget.items
-        .where((item) => item.label.toLowerCase().contains(q))
-        .toList();
+    return widget.items.where((item) => item.label.toLowerCase().contains(q)).toList();
   }
 
   @override
@@ -79,8 +77,6 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
     final errorText = widget.validator?.call(widget.value);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
       children: [
         if (widget.label != null)
           Padding(
@@ -142,9 +138,7 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
           child: Text(
             errorText ?? '',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: errorText != null
-                  ? theme.colorScheme.error
-                  : Colors.transparent,
+              color: errorText != null ? theme.colorScheme.error : Colors.transparent,
             ),
           ),
         ),

@@ -12,12 +12,59 @@ Project audit log for major changes.
 ## Entries
 
 ### 2026-04-08
+- Scope: Operasyon ekranı bugünkü kazanç yanında aktif kurye sayısı
+- Summary:
+  - `OperasyonEkranPage` desktop özet barında `Bugünkü Kazanç` metriğinin yanına online kurye sayısı eklendi.
+  - Operasyon ekran living doc'u özet bar metriğini yansıtacak şekilde güncellendi.
+  - Widget test eklendi/güncellendi; desktop özet barda aktif kurye sayısının render edildiği doğrulandı.
+- Files:
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/feature/operasyon/presentation/operasyon_ekran_page.dart test/feature/operasyon/operasyon_ekran_page_test.dart` → passed.
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; bu değişikliğe özgü yeni analyzer hatası görünmedi.
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` → passed (`20/20`).
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`, `%60.76 pixel diff`).
+
+- Scope: Operasyon desktop tablo başlık/satır kolon hizası düzeltmesi
+- Summary:
+  - Operasyon ekranında desktop bekleyen ve devam eden tablolar için başlık kolonları satırlarla aynı `flex` oranını kullanacak şekilde güncellendi.
+  - `SAAT` kolonunda başlık ve değerler merkez hizaya alındı; saat değerleri başlığın tam altında görünecek şekilde hizalama tutarlı hale getirildi.
+- Files:
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/feature/operasyon/presentation/operasyon_ekran_page.dart` → passed.
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` → passed (`19/19`).
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; hizalama değişikliğine özgü yeni analyzer hatası oluşmadı.
+
+- Scope: Operasyon ekranı uzun bekleyen/aktif listelerinde desktop overflow düzeltmesi
+- Summary:
+  - `OperasyonEkranPage` içinde `Kurye Bekleyenler` ve `Devam Eden İşler` kartları desktop'ta sabit kart yüksekliğini koruyup kendi içlerinde scroll edecek şekilde güncellendi.
+  - Kart gövdesi için genişleyebilir layout desteği eklendi; uzun sipariş listeleri artık aşağı doğru taşıp `RenderFlex overflowed` üretmiyor.
+  - Operasyon feature/screen living doc'ları masaüstü iç scroll davranışını yansıtacak şekilde güncellendi.
+  - Widget testi eklendi; yoğun veri altında iki dispatch panelinin scroll edebildiği ve overflow exception üretmediği doğrulandı.
+- Files:
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/feature/operasyon/presentation/operasyon_ekran_page.dart test/feature/operasyon/operasyon_ekran_page_test.dart` → passed.
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; bu overflow düzeltmesine özgü yeni analyzer hatası görünmedi.
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` → passed (`19/19`).
+
 - Scope: Geçmiş sipariş edit paneline kalıcı faturalandırıldı alanı
 - Summary:
   - `Siparis` domain modeline varsayılanı `false` olan kalıcı `faturalandirildi` boolean alanı eklendi; JSON mapping, fake repository ve Supabase create/update akışı bu alanı taşıyacak şekilde güncellendi.
   - `siparisler` tablosuna `faturalandirildi` kolonu ekleyen Supabase migration yazıldı.
-  - `OperasyonGecmisPage` düzenleme paneline `Faturalandırıldı` checkbox'ı eklendi; değer değişikliği kaydetmeden hemen önce yönüne göre onay dialog'u gösteriliyor.
-  - Geçmiş sipariş listesi son sütununa satır bazlı `Faturalandırıldı` checkbox'ı eklendi; hızlı güncelleme aynı onay popup'ı ile kalıcı olarak kaydediliyor.
+  - `OperasyonGecmisPage` düzenleme paneline `Faturalandırıldı` checkbox'ı eklendi; `Kaydet` ile kalıcı olarak siparişe yazılıyor.
+  - Geçmiş sipariş listesi son sütununa satır bazlı `Faturalandırıldı` checkbox'ı eklendi; tek tıkla kalıcı güncelleniyor.
+  - Geçmiş liste header'ına toplu `Faturalandırıldı` toggle aksiyonu eklendi; filtrelenmiş görünür listeye uygulanıyor.
   - Seçili sipariş özet kartı `Faturalandırıldı: Evet/Hayır` satırıyla genişletildi.
   - Operasyon living doc'ları ve test kapsamı yeni faturalandırma akışı için güncellendi.
 - Files:

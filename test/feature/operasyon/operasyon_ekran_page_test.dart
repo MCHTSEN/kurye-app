@@ -49,7 +49,7 @@ final _testUgramalar = [
 ];
 
 final _testKuryeler = [
-  const Kurye(id: 'kurye-1', ad: 'Ali Kurye'),
+  const Kurye(id: 'kurye-1', ad: 'Ali Kurye', isOnline: true),
   const Kurye(id: 'kurye-2', ad: 'Veli Kurye', isActive: false),
 ];
 
@@ -147,6 +147,21 @@ void main() {
       await reveal(tester, find.textContaining('DEVAM EDEN İŞLER'));
       expect(find.textContaining('DEVAM EDEN İŞLER'), findsOneWidget);
     });
+
+    testWidgets(
+      '(a0) desktop summary shows active courier count next to revenue',
+      (tester) async {
+        await pumpPage(
+          tester,
+          size: const Size(1440, 1200),
+        );
+
+        final textWidget = tester.widget<Text>(
+          find.byKey(const Key('desktop_active_kurye_count')),
+        );
+        expect(textWidget.data, '1');
+      },
+    );
 
     testWidgets('(b) kurye bekleyenler shows waiting orders', (tester) async {
       // Seed a waiting order.
@@ -614,6 +629,52 @@ void main() {
       expect(updated.not1, 'Bekleyen sipariş notu güncellendi');
       expect(updated.durum, SiparisDurum.kuryeBekliyor);
     });
+
+    testWidgets(
+      '(f2) desktop dispatch lists stay scrollable without overflow on long data',
+      (tester) async {
+        for (var i = 0; i < 18; i++) {
+          fakeSiparisRepo.store['wait-$i'] = Siparis(
+            id: 'wait-$i',
+            musteriId: 'musteri-1',
+            personelId: 'personel-1',
+            cikisId: 'ugrama-1',
+            ugramaId: 'ugrama-2',
+            createdAt: DateTime(2026, 4, 8, 10, i),
+          );
+          fakeSiparisRepo.store['active-$i'] = Siparis(
+            id: 'active-$i',
+            musteriId: 'musteri-1',
+            personelId: 'personel-1',
+            cikisId: 'ugrama-2',
+            ugramaId: 'ugrama-3',
+            kuryeId: 'kurye-1',
+            durum: SiparisDurum.devamEdiyor,
+            createdAt: DateTime(2026, 4, 8, 11, i),
+          );
+        }
+
+        await pumpPage(tester, size: const Size(1440, 900));
+
+        expect(find.byKey(const Key('waiting_panel_scroll')), findsOneWidget);
+        expect(find.byKey(const Key('active_panel_scroll')), findsOneWidget);
+        expect(tester.takeException(), isNull);
+
+        await tester.drag(
+          find.byKey(const Key('waiting_panel_scroll')),
+          const Offset(0, -300),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.drag(
+          find.byKey(const Key('active_panel_scroll')),
+          const Offset(0, -300),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      },
+    );
 
     testWidgets(
       '(g) sound alert fires only on genuinely new kurye_bekliyor orders',

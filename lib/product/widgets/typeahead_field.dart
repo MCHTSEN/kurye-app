@@ -66,8 +66,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
   bool _pointerSelectionInProgress = false;
   Timer? _blurCloseTimer;
 
-  FocusNode get _focusNode =>
-      widget.focusNode ?? (_internalFocusNode ??= FocusNode());
+  FocusNode get _focusNode => widget.focusNode ?? (_internalFocusNode ??= FocusNode());
 
   @override
   void initState() {
@@ -144,9 +143,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
       _filtered = List.of(widget.items);
     } else {
       final q = query.toLowerCase();
-      _filtered = widget.items
-          .where((item) => item.label.toLowerCase().contains(q))
-          .toList();
+      _filtered = widget.items.where((item) => item.label.toLowerCase().contains(q)).toList();
     }
     _highlightIndex = 0;
   }
@@ -281,8 +278,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
   }
 
   double _fieldWidth() {
-    final renderBox =
-        _fieldKey.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox = _fieldKey.currentContext?.findRenderObject() as RenderBox?;
     return renderBox?.size.width ?? 200;
   }
 
@@ -385,9 +381,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
                     : Icon(
                         Icons.keyboard_arrow_down_rounded,
                         size: 18,
-                        color:
-                            widget.textColor?.withValues(alpha: 0.7) ??
-                            AppColors.textMuted,
+                        color: widget.textColor?.withValues(alpha: 0.7) ?? AppColors.textMuted,
                       ),
               ),
             ),
@@ -447,16 +441,12 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
                       horizontal: 12,
                       vertical: 10,
                     ),
-                    color: isHighlighted
-                        ? AppColors.primary.withValues(alpha: 0.08)
-                        : null,
+                    color: isHighlighted ? AppColors.primary.withValues(alpha: 0.08) : null,
                     child: Text(
                       item.label,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isHighlighted
-                            ? FontWeight.w700
-                            : FontWeight.w500,
+                        fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w500,
                         color: isHighlighted
                             ? (widget.textColor ?? AppColors.primary)
                             : (widget.textColor ?? AppColors.textPrimary),

@@ -261,9 +261,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         ugramaId: resolvedUgramaId,
         ugrama1Id: _selectedUgrama1Id,
         notId: _selectedNotId,
-        not1: _not1Controller.text.trim().isNotEmpty
-            ? _not1Controller.text.trim()
-            : null,
+        not1: _not1Controller.text.trim().isNotEmpty ? _not1Controller.text.trim() : null,
         olusturanId: userId,
       );
 
@@ -447,17 +445,14 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     itemCount: candidates.length,
                     itemBuilder: (context, index) {
                       final candidate = candidates[index];
-                      final subtitle =
-                          (candidate.adres == null ||
-                              candidate.adres!.trim().isEmpty)
+                      final subtitle = (candidate.adres == null || candidate.adres!.trim().isEmpty)
                           ? 'Adres yok'
                           : candidate.adres!;
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(candidate.ugramaAdi),
                         subtitle: Text(subtitle),
-                        onTap: () =>
-                            Navigator.of(dialogContext).pop(candidate.id),
+                        onTap: () => Navigator.of(dialogContext).pop(candidate.id),
                       );
                     },
                   ),
@@ -471,8 +466,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
               child: const Text('İptal'),
             ),
             FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(_createNewChoiceValue),
+              onPressed: () => Navigator.of(dialogContext).pop(_createNewChoiceValue),
               child: const Text('Yeni Oluştur'),
             ),
           ],
@@ -663,19 +657,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   }) async {
     try {
       final ugramaItems =
-          ugramaMap.entries
-              .map((entry) => (value: entry.key, label: entry.value))
-              .toList()
+          ugramaMap.entries.map((entry) => (value: entry.key, label: entry.value)).toList()
             ..sort((a, b) => a.label.compareTo(b.label));
       final kuryeItems =
-          kuryeMap.entries
-              .map((entry) => (value: entry.key, label: entry.value))
-              .toList()
+          kuryeMap.entries.map((entry) => (value: entry.key, label: entry.value)).toList()
             ..sort((a, b) => a.label.compareTo(b.label));
       final personelItems =
-          personelMap.entries
-              .map((entry) => (value: entry.key, label: entry.value))
-              .toList()
+          personelMap.entries.map((entry) => (value: entry.key, label: entry.value)).toList()
             ..sort((a, b) => a.label.compareTo(b.label));
 
       final payload = await _showOrderEditDialog(
@@ -923,22 +911,20 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       body: Shortcuts(
         shortcuts: isDesktop
             ? const {
-                SingleActivator(LogicalKeyboardKey.escape):
-                    _ClearDeskSelectionIntent(),
+                SingleActivator(LogicalKeyboardKey.escape): _ClearDeskSelectionIntent(),
               }
             : const {},
         child: Actions(
           actions: {
-            _ClearDeskSelectionIntent:
-                CallbackAction<_ClearDeskSelectionIntent>(
-                  onInvoke: (_) {
-                    setState(() {
-                      _waitingSelected.clear();
-                      _activeSelected.clear();
-                    });
-                    return null;
-                  },
-                ),
+            _ClearDeskSelectionIntent: CallbackAction<_ClearDeskSelectionIntent>(
+              onInvoke: (_) {
+                setState(() {
+                  _waitingSelected.clear();
+                  _activeSelected.clear();
+                });
+                return null;
+              },
+            ),
           },
           child: Stack(
             children: [
@@ -1056,6 +1042,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final todayRevenueAsync = ref.watch(
       siparisHistoryProvider(startDate: startOfDay, endDate: endOfDay),
     );
+    final kuryeListAsync = ref.watch(kuryeListProvider);
 
     final todayRevenue = todayRevenueAsync.maybeWhen(
       data: (orders) => orders
@@ -1067,6 +1054,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final todayRevenueLabel = todayRevenueAsync.maybeWhen(
       loading: () => '...',
       orElse: () => '${todayRevenue.toStringAsFixed(0)} TL',
+    );
+
+    final activeCourierCountLabel = kuryeListAsync.maybeWhen(
+      data: (list) => '${list.where((k) => k.isOnline).length}',
+      loading: () => '...',
+      orElse: () => '?',
     );
 
     return Container(
@@ -1158,6 +1151,36 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     ),
                   ],
                 ),
+                const SizedBox(width: 12),
+                Container(
+                  width: 1,
+                  height: 36,
+                  color: const Color(0xFF2F5E49),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'AKTİF KURYE',
+                      style: TextStyle(
+                        color: Color(0xFFBBF7D0),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    Text(
+                      activeCourierCountLabel,
+                      key: const Key('desktop_active_kurye_count'),
+                      style: const TextStyle(
+                        color: Color(0xFFBBF7D0),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(width: 16),
               ],
             ),
@@ -1237,12 +1260,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     Map<String, String> personelMap,
   })
   _resolveDispatchData(List<Siparis> allOrders) {
-    final waiting = allOrders
-        .where((s) => s.durum == SiparisDurum.kuryeBekliyor)
-        .toList();
-    final active = allOrders
-        .where((s) => s.durum == SiparisDurum.devamEdiyor)
-        .toList();
+    final waiting = allOrders.where((s) => s.durum == SiparisDurum.kuryeBekliyor).toList();
+    final active = allOrders.where((s) => s.durum == SiparisDurum.devamEdiyor).toList();
 
     // Build name-resolution maps (D027 pattern).
     final ugramaListAsync = ref.watch(ugramaListProvider);
@@ -1326,8 +1345,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       isDarkHeader: true,
       accentColor: Colors.white,
       child: musteriListAsync.when(
-        data: (musteriler) =>
-            _buildOrderForm(musteriler: musteriler, userId: userId),
+        data: (musteriler) => _buildOrderForm(musteriler: musteriler, userId: userId),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => const Text('Müşteriler alınamadı.'),
       ),
@@ -1338,9 +1356,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     required List<Musteri> musteriler,
     required String userId,
   }) {
-    final musteriItems = musteriler
-        .map((m) => (value: m.id, label: m.firmaKisaAd))
-        .toList();
+    final musteriItems = musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList();
 
     // Personel items: populated when müşteri is selected.
     final personelItems = <({String value, String label})>[];
@@ -1705,10 +1721,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           height: 38,
           child: ElevatedButton(
             key: const Key('assign_courier_button'),
-            onPressed:
-                _waitingSelected.isNotEmpty &&
-                    _selectedKuryeId != null &&
-                    !_isAssigning
+            onPressed: _waitingSelected.isNotEmpty && _selectedKuryeId != null && !_isAssigning
                 ? () => _onAssign(userId: userId, waitingOrders: waiting)
                 : null,
             style: ElevatedButton.styleFrom(
@@ -1740,7 +1753,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           return null;
         }
         return Row(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(width: 140, child: dropdown),
             const SizedBox(width: 8),
@@ -1766,15 +1779,12 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                 )
               else
                 ...waiting.map(
-                  (s) =>
-                      _buildWaitingCard(s, musteriMap, personelMap, ugramaMap),
+                  (s) => _buildWaitingCard(s, musteriMap, personelMap, ugramaMap),
                 ),
               // Assign controls at bottom on mobile.
               kuryeListAsync.maybeWhen(
                 data: (kuryeler) {
-                  final activeKuryeler = kuryeler
-                      .where((k) => k.isActive)
-                      .toList();
+                  final activeKuryeler = kuryeler.where((k) => k.isActive).toList();
                   return Padding(
                     padding: const EdgeInsets.only(top: 12),
                     child: Column(
@@ -1784,11 +1794,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                           width: 180,
                           child: SearchableDropdown<String>(
                             key: const Key('kurye_dropdown'),
-                            items: activeKuryeler
-                                .map((k) => (value: k.id, label: k.ad))
-                                .toList(),
-                            onChanged: (v) =>
-                                setState(() => _selectedKuryeId = v),
+                            items: activeKuryeler.map((k) => (value: k.id, label: k.ad)).toList(),
+                            onChanged: (v) => setState(() => _selectedKuryeId = v),
                             value: _selectedKuryeId,
                             placeholder: 'Kurye Seç',
                             minWidth: 180,
@@ -1850,7 +1857,20 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           )
         : Column(
             children: [
-              _buildTableHeader(['MÜŞTERİ', 'SAAT', 'GÜZERGAH', 'İŞLEM']),
+              _buildTableHeader([
+                (
+                  label: 'MÜŞTERİ',
+                  flex: 2,
+                  alignment: Alignment.centerLeft,
+                ),
+                (label: 'SAAT', flex: 1, alignment: Alignment.center),
+                (
+                  label: 'GÜZERGAH',
+                  flex: 2,
+                  alignment: Alignment.centerLeft,
+                ),
+                (label: 'İŞLEM', flex: 1, alignment: Alignment.centerLeft),
+              ]),
               Divider(height: 1, color: _OperasyonTheme.of(context).divider),
               if (waiting.isEmpty)
                 Padding(
@@ -1864,8 +1884,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                 )
               else
                 ...waiting.map(
-                  (s) =>
-                      _buildWaitingRow(s, musteriMap, personelMap, ugramaMap),
+                  (s) => _buildWaitingRow(s, musteriMap, personelMap, ugramaMap),
                 ),
             ],
           );
@@ -1875,7 +1894,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       icon: Icons.access_time_filled_rounded,
       accentColor: const Color(0xFFF59E0B),
       action: assignControls,
-      child: listBody,
+      expandBody: !isMobile,
+      child: isMobile
+          ? listBody
+          : ListView(
+              key: const Key('waiting_panel_scroll'),
+              children: [listBody],
+            ),
     );
   }
 
@@ -2052,11 +2077,27 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         : Column(
             children: [
               _buildTableHeader([
-                'FİRMA/PERSONEL',
-                'SAAT',
-                'GÜZERGAH',
-                'DÜZENLE',
-                'KURYE & İŞLEM',
+                (
+                  label: 'FİRMA/PERSONEL',
+                  flex: 1,
+                  alignment: Alignment.centerLeft,
+                ),
+                (label: 'SAAT', flex: 1, alignment: Alignment.center),
+                (
+                  label: 'GÜZERGAH',
+                  flex: 2,
+                  alignment: Alignment.centerLeft,
+                ),
+                (
+                  label: 'DÜZENLE',
+                  flex: 1,
+                  alignment: Alignment.centerLeft,
+                ),
+                (
+                  label: 'KURYE & İŞLEM',
+                  flex: 2,
+                  alignment: Alignment.centerLeft,
+                ),
               ]),
               Divider(height: 1, color: _OperasyonTheme.of(context).divider),
               if (active.isEmpty)
@@ -2088,7 +2129,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       title: 'DEVAM EDEN İŞLER (${active.length})',
       icon: Icons.directions_bike_rounded,
       accentColor: const Color(0xFF6366F1),
-      child: listBody,
+      expandBody: !isMobile,
+      child: isMobile
+          ? listBody
+          : ListView(
+              key: const Key('active_panel_scroll'),
+              children: [listBody],
+            ),
     );
   }
 
@@ -2256,18 +2303,26 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     );
   }
 
-  Widget _buildTableHeader(List<String> labels) {
+  Widget _buildTableHeader(
+    List<({String label, int flex, Alignment alignment})> columns,
+  ) {
     final isDesktop = layoutTypeOf(context) == LayoutType.desktop;
     final headerFontSize = isDesktop ? 12.0 : 11.0;
     final theme = _OperasyonTheme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       child: Row(
-        children: labels
+        children: columns
             .map(
-              (l) => Expanded(
+              (column) => Expanded(
+                flex: column.flex,
                 child: Text(
-                  l,
+                  column.label,
+                  textAlign: switch (column.alignment) {
+                    Alignment.center => TextAlign.center,
+                    Alignment.centerRight => TextAlign.right,
+                    _ => TextAlign.left,
+                  },
                   style: TextStyle(
                     fontSize: headerFontSize,
                     fontWeight: FontWeight.w800,
@@ -2309,6 +2364,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       child: Row(
         children: [
           Expanded(
+            flex: 2,
+
             child: Row(
               children: [
                 SizedBox(
@@ -2355,14 +2412,16 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
             ),
           ),
           Expanded(
-            child: Text(
-              s.createdAt != null
-                  ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
-                  : '--:--',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: timeFont,
-                color: theme.textPrimary,
+            child: Center(
+              child: Text(
+                s.createdAt != null
+                    ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
+                    : '--:--',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: timeFont,
+                  color: theme.textPrimary,
+                ),
               ),
             ),
           ),
@@ -2379,7 +2438,6 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           ),
           Expanded(
             child: Align(
-              alignment: Alignment.centerLeft,
               child: IconButton(
                 key: Key('edit_waiting_${s.id}'),
                 icon: const Icon(
@@ -2467,14 +2525,16 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
             ),
           ),
           Expanded(
-            child: Text(
-              s.createdAt != null
-                  ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
-                  : '--:--',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: timeFont,
-                color: theme.textPrimary,
+            child: Center(
+              child: Text(
+                s.createdAt != null
+                    ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
+                    : '--:--',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: timeFont,
+                  color: theme.textPrimary,
+                ),
               ),
             ),
           ),
@@ -2491,7 +2551,6 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           ),
           Expanded(
             child: Align(
-              alignment: Alignment.centerLeft,
               child: IconButton(
                 key: Key('edit_active_${s.id}'),
                 icon: const Icon(
@@ -2734,6 +2793,7 @@ class _PremiumCard extends StatelessWidget {
     this.icon,
     this.accentColor,
     this.isDarkHeader = false,
+    this.expandBody = false,
     this.action,
   });
 
@@ -2742,6 +2802,7 @@ class _PremiumCard extends StatelessWidget {
   final IconData? icon;
   final Color? accentColor;
   final bool isDarkHeader;
+  final bool expandBody;
   final Widget? action;
 
   @override
@@ -2767,9 +2828,11 @@ class _PremiumCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
             color: headerColor,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (icon != null) ...[
                   Icon(
@@ -2799,10 +2862,18 @@ class _PremiumCard extends StatelessWidget {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: child,
-          ),
+          if (expandBody)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: child,
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: child,
+            ),
         ],
       ),
     ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);

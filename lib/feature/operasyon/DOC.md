@@ -33,6 +33,7 @@ aksiyonlar için optimize edilir.
   - Çıkış ve uğrama alanları tek tık swap aksiyonu ile yer değiştirebilir.
   - Kurye atama dropdown'u kompakt genişlikte tutulur; seçili kurye adı koyu temada beyaz görünür.
   - Bekleyen sipariş satırında personel adı müşteri adının yanında birlikte gösterilir.
+  - Desktop'ta bekleyen ve devam eden sipariş listeleri kart gövdesi içinde kendi iç scroll alanında akar; uzun listelerde sayfa altına taşmaz.
 - **UgramaYonetim**: Lokasyon/uğrama yönetimi
 - **OperasyonAyarlar**: Yönetim sayfalarına giriş, hesap özeti, çıkış ve hesap silme aksiyonu
 - **MusteriKayit**: Desktop'ta split-view CRUD formu + filtrelenebilir liste
@@ -40,8 +41,9 @@ aksiyonlar için optimize edilir.
 - **KuryeYonetim**: Desktop'ta split-view CRUD formu + filtrelenebilir liste
 - **GecmisSiparis**: Hızlı filtre, arama ve sağ detay paneli ile geçmiş yönetimi
   - Filtre dropdown'ları tam genişliğe yayılmadan kompakt kontrol olarak görünür.
-  - Düzenleme panelindeki `faturalandırıldı` alanı siparişe kalıcı yazılır; değer değişikliği kaydetmeden önce onay dialog'u gösterilir.
-  - Geçmiş listesi son sütunda satır bazlı `faturalandırıldı` checkbox'ı sunar; aynı onay akışıyla hızlı güncelleme yapılabilir.
+  - Düzenleme panelindeki `faturalandırıldı` alanı siparişe kalıcı yazılır.
+  - Geçmiş listesi son sütunda satır bazlı `faturalandırıldı` checkbox'ı sunar.
+  - Header'daki toplu `faturalandırıldı` toggle aksiyonu, o anki filtrelenmiş görünür listeye uygulanır.
 
 ## Dependencies
 - Tüm repository'ler

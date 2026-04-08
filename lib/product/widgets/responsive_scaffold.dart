@@ -488,9 +488,7 @@ class _DrawerNavTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
-        color: isSelected
-            ? AppColors.primary.withValues(alpha: 0.2)
-            : Colors.transparent,
+        color: isSelected ? AppColors.primary.withValues(alpha: 0.2) : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
@@ -502,9 +500,7 @@ class _DrawerNavTile extends StatelessWidget {
                 Icon(
                   icon,
                   size: iconSize,
-                  color: isSelected
-                      ? AppColors.primary
-                      : _NavigationTheme.textMuted,
+                  color: isSelected ? AppColors.primary : _NavigationTheme.textMuted,
                 ),
                 const SizedBox(width: 14),
                 Text(
@@ -512,9 +508,7 @@ class _DrawerNavTile extends StatelessWidget {
                   style: TextStyle(
                     fontSize: labelFontSize,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isSelected
-                        ? AppColors.primary
-                        : _NavigationTheme.textPrimary,
+                    color: isSelected ? AppColors.primary : _NavigationTheme.textPrimary,
                   ),
                 ),
                 if (isSelected) ...[
@@ -562,9 +556,7 @@ class _DesktopNavTile extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 3),
         child: Material(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.1)
-              : Colors.transparent,
+          color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
           child: InkWell(
             onTap: onTap,
@@ -584,9 +576,7 @@ class _DesktopNavTile extends StatelessWidget {
                     ),
                     child: Icon(
                       icon,
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textMuted,
+                      color: isSelected ? AppColors.primary : AppColors.textMuted,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -595,9 +585,7 @@ class _DesktopNavTile extends StatelessWidget {
                       label,
                       style: TextStyle(
                         fontSize: labelFontSize,
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                         color: isSelected
                             ? _NavigationTheme.textPrimary
                             : _NavigationTheme.textMuted,

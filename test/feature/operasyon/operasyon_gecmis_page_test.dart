@@ -119,6 +119,10 @@ void main() {
       expect(find.text('Veli Kurye'), findsOneWidget);
       expect(find.byKey(const Key('history_billed_s1')), findsOneWidget);
       expect(find.byKey(const Key('history_billed_s2')), findsOneWidget);
+      expect(
+        find.byKey(const Key('history_billed_bulk_toggle')),
+        findsOneWidget,
+      );
     });
 
     testWidgets('(b) revenue total shows correct sum', (tester) async {
@@ -284,7 +288,7 @@ void main() {
       expect(find.text('Sipariş güncellendi'), findsOneWidget);
     });
 
-    testWidgets('(d2) billed toggle asks confirmation and cancels cleanly', (
+    testWidgets('(d2) billed toggle saves without confirmation', (
       tester,
     ) async {
       fakeSiparisRepo.store['s1'] = Siparis(
@@ -320,23 +324,13 @@ void main() {
       await tester.tap(find.byKey(const Key('edit_save_button')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Faturalandırma Onayı'), findsOneWidget);
-      expect(
-        find.text(
-          'Bu siparişi faturalandırıldı olarak işaretlemek istediğinize emin misiniz?',
-        ),
-        findsOneWidget,
-      );
-
-      await tester.tap(find.text('Vazgeç'));
-      await tester.pumpAndSettle();
-
-      expect(fakeSiparisRepo.updateCallCount, 0);
-      expect(fakeSiparisRepo.store['s1']!.faturalandirildi, isFalse);
-      expect(find.text('Sipariş Düzenle'), findsOneWidget);
+      expect(find.text('Faturalandırma Onayı'), findsNothing);
+      expect(fakeSiparisRepo.updateCallCount, 1);
+      expect(fakeSiparisRepo.store['s1']!.faturalandirildi, isTrue);
+      expect(find.text('Sipariş Düzenle'), findsNothing);
     });
 
-    testWidgets('(d3) billed toggle confirms and saves payload', (
+    testWidgets('(d3) billed toggle can be unset without confirmation', (
       tester,
     ) async {
       fakeSiparisRepo.store['s1'] = Siparis(
@@ -345,6 +339,7 @@ void main() {
         cikisId: 'ugrama-1',
         ugramaId: 'ugrama-2',
         durum: SiparisDurum.tamamlandi,
+        faturalandirildi: true,
         createdAt: DateTime.now().subtract(const Duration(days: 1)),
       );
 
@@ -370,20 +365,18 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('edit_save_button')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Evet'));
       await tester.pumpAndSettle();
 
       expect(fakeSiparisRepo.updateCallCount, 1);
       expect(
         fakeSiparisRepo.lastUpdatedFields,
-        containsPair('faturalandirildi', true),
+        containsPair('faturalandirildi', false),
       );
-      expect(fakeSiparisRepo.store['s1']!.faturalandirildi, isTrue);
+      expect(fakeSiparisRepo.store['s1']!.faturalandirildi, isFalse);
       expect(find.text('Sipariş güncellendi'), findsOneWidget);
     });
 
-    testWidgets('(d4) list billed checkbox confirms and saves payload', (
+    testWidgets('(d4) list billed checkbox saves without confirmation', (
       tester,
     ) async {
       fakeSiparisRepo.store['s1'] = Siparis(
@@ -407,11 +400,7 @@ void main() {
       await tester.tap(find.byKey(const Key('history_billed_s1')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Faturalandırma Onayı'), findsOneWidget);
-
-      await tester.tap(find.text('Evet'));
-      await tester.pumpAndSettle();
-
+      expect(find.text('Faturalandırma Onayı'), findsNothing);
       expect(fakeSiparisRepo.updateCallCount, 1);
       expect(
         fakeSiparisRepo.lastUpdatedFields,
@@ -422,6 +411,49 @@ void main() {
         find.text('Sipariş faturalandırıldı olarak işaretlendi'),
         findsOneWidget,
       );
+    });
+
+    testWidgets('(d5) bulk billed toggle updates all visible orders', (
+      tester,
+    ) async {
+      fakeSiparisRepo.store['s1'] = Siparis(
+        id: 's1',
+        musteriId: 'musteri-1',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+        durum: SiparisDurum.tamamlandi,
+        faturalandirildi: false,
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      );
+      fakeSiparisRepo.store['s2'] = Siparis(
+        id: 's2',
+        musteriId: 'musteri-2',
+        cikisId: 'ugrama-3',
+        ugramaId: 'ugrama-3',
+        durum: SiparisDurum.tamamlandi,
+        faturalandirildi: true,
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
+      );
+
+      await pumpPage(tester);
+
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('history_billed_bulk_toggle')),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('history_billed_bulk_toggle')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Toplu Faturalandırma'), findsOneWidget);
+      await tester.tap(find.text('Evet'));
+      await tester.pumpAndSettle();
+
+      expect(fakeSiparisRepo.updateCallCount, 1);
+      expect(fakeSiparisRepo.store['s1']!.faturalandirildi, isTrue);
+      expect(fakeSiparisRepo.store['s2']!.faturalandirildi, isTrue);
     });
 
     testWidgets('(e) filter application changes displayed results', (
