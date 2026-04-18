@@ -5,6 +5,7 @@ import '../../../app/router/app_router.dart';
 import '../../../app/router/guards/app_access_guard.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/navigation/navigation_providers.dart';
+import '../../../product/role_request/role_request_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 
 part 'auth_controller.g.dart';
@@ -110,7 +111,21 @@ class AuthController extends _$AuthController {
 
     if (!ref.mounted) return;
 
-    final targetPath = AppAccessGuard.homePathForRole(profile?.role);
+    var hasPendingRoleRequest = false;
+    if (profile == null) {
+      try {
+        final roleRequestRepo = ref.read(roleRequestRepositoryProvider);
+        hasPendingRoleRequest =
+            await roleRequestRepo.getMyPendingRequest(session.user.id) != null;
+      } on Object {
+        hasPendingRoleRequest = false;
+      }
+    }
+
+    final targetPath = AppAccessGuard.landingPathForUserState(
+      profile: profile,
+      hasPendingRoleRequest: hasPendingRoleRequest,
+    );
     await ref.read(appRouterProvider).replacePath(targetPath);
   }
 }

@@ -11,6 +11,84 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-04-12
+- Scope: Pending hesap akışını app içine alma + bekleyen kullanıcı için hesap silme
+- Summary:
+  - Pending rol talebi olan fakat henüz profili oluşmamış kullanıcılar için guard ve auth yönlendirme akışı güncellendi; bu kullanıcılar artık ayrı bekleme sayfasında kalmak yerine uygulama içindeki `home` ekranına alınır.
+  - `HomePage` bekleyen hesap durumunu taşıyacak şekilde genişletildi; kullanıcı rol talebi özetini görebilir, durumu yenileyebilir, çıkış yapabilir ve hesap silme akışını başlatabilir.
+  - Rol talebi gönderildikten sonra kullanıcı doğrudan uygulama içindeki pending `home` durumuna yönlendirilir; operasyon tarafındaki bekleyen rol onayı görünümü değişmeden korunur.
+  - Home ve role-selection living doc'ları yeni davranışı yansıtacak şekilde güncellendi.
+  - Guard karar mantığı ve pending home davranışı için test kapsamı eklendi.
+- Files:
+  - `lib/app/router/guards/app_access_guard.dart`
+  - `lib/feature/auth/application/auth_controller.dart`
+  - `lib/feature/home/DOC.md`
+  - `lib/feature/home/presentation/SCREENS.md`
+  - `lib/feature/home/presentation/home_page.dart`
+  - `lib/feature/role_selection/DOC.md`
+  - `lib/feature/role_selection/presentation/role_selection_page.dart`
+  - `test/app/router/guard_role_routing_test.dart`
+  - `test/feature/home/home_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/app/router/guards/app_access_guard.dart lib/feature/auth/application/auth_controller.dart lib/feature/role_selection/presentation/role_selection_page.dart lib/feature/home/presentation/home_page.dart test/app/router/guard_role_routing_test.dart test/feature/home/home_page_test.dart` → passed.
+  - `flutter test test/app/router/guard_role_routing_test.dart test/feature/home/home_page_test.dart` → passed (`8/8`).
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; bu değişikliğe özgü analyze error yok.
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`, `60.76% pixel diff`).
+
+### 2026-04-17
+- Scope: Pending hesap redirect loop düzeltmesi + kurye self-servis seçim kaldırımı
+- Summary:
+  - `AppAccessGuard` aynı path'e tekrar redirect atmayacak şekilde güncellendi; `/home -> /home` döngüsü kesildi.
+  - `RoleSelectionPage` pending ve onaylı taleplerde bekleme ekranını render etmek yerine kullanıcıyı app içine yönlendirecek şekilde güncellendi.
+  - Rol seçim formundan `Kurye` self-servis seçeneği kaldırıldı; yeni talepler yalnızca `Müşteri Personeli` olarak açılabiliyor.
+  - Widget test kapsamı yeni davranış için genişletildi.
+- Files:
+  - `lib/app/router/guards/app_access_guard.dart`
+  - `lib/feature/role_selection/DOC.md`
+  - `lib/feature/role_selection/presentation/role_selection_page.dart`
+  - `test/feature/home/home_page_test.dart`
+  - `test/feature/role_selection/role_selection_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/app/router/guards/app_access_guard.dart lib/feature/role_selection/presentation/role_selection_page.dart test/feature/home/home_page_test.dart test/feature/role_selection/role_selection_page_test.dart` → passed.
+  - `flutter test test/app/router/guard_role_routing_test.dart test/feature/home/home_page_test.dart test/feature/role_selection/role_selection_page_test.dart` → passed (`9/9`).
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; bu düzeltmeye özgü analyze error yok.
+
+- Scope: Rol talebi formunda submit state yenilenmemesi düzeltmesi
+- Summary:
+  - `RoleSelectionPage` form controller'larına listener eklendi; kullanıcı ad/telefon/not alanlarını güncellediğinde widget yeniden çiziliyor.
+  - `Talep Gönder` butonu için merkezi `_canSubmit` kontrolü eklendi; isim ve rol seçimi sonrası buton artık doğru şekilde aktifleşiyor.
+  - Widget testi genişletildi; kullanıcı rol seçip ad girdikten sonra talep oluşturma akışının gerçekten repository'ye ulaştığı doğrulandı.
+- Files:
+  - `lib/feature/role_selection/presentation/role_selection_page.dart`
+  - `test/feature/role_selection/role_selection_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/feature/role_selection/presentation/role_selection_page.dart test/feature/role_selection/role_selection_page_test.dart` → passed.
+  - `flutter test test/feature/role_selection/role_selection_page_test.dart` → passed (`2/2`).
+
+- Scope: Pending kullanıcı için provisional profil + müşteri seçimli rol talebi
+- Summary:
+  - Rol talebi formuna müşteri seçimi eklendi; self-servis müşteri personeli başvuruları artık hangi müşteri adına açıldığını taşıyor.
+  - Supabase role request akışı, başvuru oluşturulurken kullanıcı için `is_active=false` provisional `app_users` profili oluşturacak şekilde genişletildi.
+  - Bu provisional profil sayesinde kullanıcı app içinde müşteri akışlarını kullanabilir; operasyon tarafında rol talebi yine `beklemede` olarak görünmeye devam eder.
+  - Rol onay ekranı başvurudan gelen müşteri seçimini default olarak kullanacak şekilde güncellendi.
+  - Supabase migration ile `role_requests.musteri_id` alanı ve authenticated kullanıcılar için müşteri listesi + kontrollü pending profile insert politikaları eklendi.
+- Files:
+  - `packages/backend_core/lib/src/domain/role_request.dart`
+  - `packages/backend_supabase/lib/src/supabase_role_request_repository.dart`
+  - `lib/feature/role_selection/presentation/role_selection_page.dart`
+  - `lib/feature/role_selection/DOC.md`
+  - `lib/feature/operasyon/presentation/rol_onay_page.dart`
+  - `supabase/migrations/20260417173000_pending_profile_role_request_musteri.sql`
+  - `test/feature/role_selection/role_selection_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format packages/backend_core/lib/src/domain/role_request.dart packages/backend_supabase/lib/src/supabase_role_request_repository.dart lib/feature/role_selection/presentation/role_selection_page.dart lib/feature/operasyon/presentation/rol_onay_page.dart test/feature/role_selection/role_selection_page_test.dart` → passed.
+  - `flutter test test/feature/role_selection/role_selection_page_test.dart test/app/router/guard_role_routing_test.dart test/feature/home/home_page_test.dart` → passed (`10/10`).
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; bu değişikliklere özgü analyze error yok.
+
 ### 2026-04-08
 - Scope: Operasyon ekranı bugünkü kazanç yanında aktif kurye sayısı
 - Summary:
@@ -696,6 +774,30 @@ Project audit log for major changes.
 - Validation:
   - `dart analyze lib/feature/operasyon/presentation/operasyon_gecmis_page.dart` passed.
   - `flutter test test/feature/operasyon/operasyon_gecmis_page_test.dart` passed.
+
+---
+
+### 2026-04-17 — Signup split for new-customer vs existing-customer employee
+- Scope: `feature/role_selection`, `feature/home`, `app/router`, `backend_supabase`, `supabase`
+- Summary: Split post-signup customer onboarding into two paths: users can now either create a new customer company or join an existing customer as staff. New-customer requests create a provisional `musteriler` record plus linked provisional `app_users` profile; existing-customer staff requests bind to the selected customer immediately. Pending customer users now land on `home` first, where new-customer signups can complete company details and all linked customer users can enter the customer panel before final ops approval.
+- Files:
+  - `lib/feature/role_selection/DOC.md`
+  - `lib/feature/role_selection/presentation/role_selection_page.dart`
+  - `lib/feature/home/DOC.md`
+  - `lib/feature/home/presentation/SCREENS.md`
+  - `lib/feature/home/presentation/home_page.dart`
+  - `lib/app/router/guards/app_access_guard.dart`
+  - `lib/product/musteri/musteri_providers.dart`
+  - `lib/feature/operasyon/presentation/rol_onay_page.dart`
+  - `packages/backend_core/lib/src/domain/role_request.dart`
+  - `packages/backend_supabase/lib/src/supabase_role_request_repository.dart`
+  - `supabase/migrations/20260417173000_pending_profile_role_request_musteri.sql`
+  - `test/app/router/guard_role_routing_test.dart`
+  - `test/feature/role_selection/role_selection_page_test.dart`
+  - `test/feature/home/home_page_test.dart`
+- Validation:
+  - `flutter test test/app/router/guard_role_routing_test.dart test/feature/role_selection/role_selection_page_test.dart test/feature/home/home_page_test.dart` passed.
+  - `flutter analyze` completed with the repo's existing 13 issues; no new analyze error introduced by this change set.
 
 ---
 

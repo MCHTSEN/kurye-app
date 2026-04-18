@@ -31,7 +31,7 @@ class OrderAlertService {
         AssetSource('sounds/new_order.wav'),
         mode: PlayerMode.lowLatency,
       );
-    } on Exception catch (e, st) {
+    } on Object catch (e, st) {
       _log.e(
         'OrderAlertService: playback failed',
         error: e,

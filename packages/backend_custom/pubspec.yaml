@@ -1,5 +1,5 @@
 name: backend_custom
-description: Custom API (Dio) backend implementation for eipat.
+description: Custom API (Dio) backend implementation for Kuryem.
 publish_to: 'none'
 version: 0.1.0
 

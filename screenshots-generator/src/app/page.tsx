@@ -3,9 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 
-// ─── Canvas dimensions (design at largest iPhone size) ───────────────────────
+// ─── iPhone canvas dimensions (design at largest iPhone size) ─────────────────
 const W = 1320;
 const H = 2868;
+
+// ─── iPad canvas dimensions (design at largest iPad size) ─────────────────────
+const IW = 2064;
+const IH = 2752;
 
 // iPhone mockup measurements
 const MK_W = 1022;
@@ -17,13 +21,21 @@ const SC_H = (1990 / MK_H) * 100;
 const SC_RX = (126 / 918) * 100;
 const SC_RY = (126 / 1990) * 100;
 
-// Export sizes
-const SIZES = [
+// iPhone export sizes
+const IPHONE_SIZES = [
   { label: '6.9"', w: 1320, h: 2868 },
   { label: '6.5"', w: 1284, h: 2778 },
   { label: '6.3"', w: 1206, h: 2622 },
   { label: '6.1"', w: 1125, h: 2436 },
 ] as const;
+
+// iPad export sizes
+const IPAD_SIZES = [
+  { label: '13"', w: 2064, h: 2752 },
+  { label: '12.9"', w: 2048, h: 2732 },
+] as const;
+
+type Device = "iphone" | "ipad";
 
 // ─── Brand colors ─────────────────────────────────────────────────────────────
 const C = {
@@ -94,6 +106,93 @@ function Phone({
   );
 }
 
+// ─── iPad mockup component (CSS-only) ────────────────────────────────────────
+function IPad({
+  src,
+  alt,
+  style,
+  className = "",
+}: {
+  src: string;
+  alt: string;
+  style?: React.CSSProperties;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`relative ${className}`}
+      style={{ aspectRatio: "770/1000", ...style }}
+    >
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          borderRadius: "5% / 3.6%",
+          background: "linear-gradient(180deg, #2C2C2E 0%, #1C1C1E 100%)",
+          position: "relative",
+          overflow: "hidden",
+          boxShadow:
+            "inset 0 0 0 1px rgba(255,255,255,0.1), 0 8px 40px rgba(0,0,0,0.6)",
+        }}
+      >
+        {/* Front camera dot */}
+        <div
+          style={{
+            position: "absolute",
+            top: "1.2%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "0.9%",
+            height: "0.65%",
+            borderRadius: "50%",
+            background: "#111113",
+            border: "1px solid rgba(255,255,255,0.08)",
+            zIndex: 20,
+          }}
+        />
+        {/* Bezel edge highlight */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: "5% / 3.6%",
+            border: "1px solid rgba(255,255,255,0.06)",
+            pointerEvents: "none",
+            zIndex: 15,
+          }}
+        />
+        {/* Screen area */}
+        <div
+          style={{
+            position: "absolute",
+            left: "4%",
+            top: "2.8%",
+            width: "92%",
+            height: "94.4%",
+            borderRadius: "2.2% / 1.6%",
+            overflow: "hidden",
+            background: "#000",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={alt}
+            style={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "top",
+            }}
+            draggable={false}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Caption component ────────────────────────────────────────────────────────
 function Caption({
   label,
@@ -108,7 +207,6 @@ function Caption({
   align?: "left" | "center" | "right";
   canvasW?: number;
 }) {
-  const ratio = canvasW / W;
   return (
     <div style={{ textAlign: align }}>
       <p
@@ -165,7 +263,9 @@ function Blob({
   );
 }
 
-// ─── SLIDE COMPONENTS ─────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+// ─── iPhone SLIDE COMPONENTS ──────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
 
 /** Slide 1 — Hero (DARK) */
 function Slide1() {
@@ -182,12 +282,10 @@ function Slide1() {
         alignItems: "center",
       }}
     >
-      {/* Blobs */}
       <Blob color={C.blue} size={900} style={{ top: -200, left: -200 }} />
       <Blob color={C.lime} size={600} style={{ top: 300, right: -250, opacity: 0.25 }} />
       <Blob color="#6B3AED" size={700} style={{ bottom: 400, left: -300 }} />
 
-      {/* App icon */}
       <div
         style={{
           marginTop: W * 0.09,
@@ -210,7 +308,6 @@ function Slide1() {
         />
       </div>
 
-      {/* Caption */}
       <div
         style={{
           marginTop: W * 0.055,
@@ -234,7 +331,6 @@ function Slide1() {
         />
       </div>
 
-      {/* Phone — centered, bottom */}
       <Phone
         src="/screenshots/tr/03-bekleyenler.png"
         alt="Operasyon ekranı"
@@ -266,7 +362,6 @@ function Slide2() {
         flexDirection: "column",
       }}
     >
-      {/* Top blue accent bar */}
       <div
         style={{
           position: "absolute",
@@ -278,11 +373,8 @@ function Slide2() {
           zIndex: 0,
         }}
       />
-
-      {/* Blob accent */}
       <Blob color={C.lime} size={500} style={{ top: H * 0.1, right: -200, opacity: 0.3 }} />
 
-      {/* Caption */}
       <div
         style={{
           position: "relative",
@@ -306,7 +398,6 @@ function Slide2() {
         />
       </div>
 
-      {/* Phone — centered, bottom */}
       <Phone
         src="/screenshots/tr/01-siparis-formu.png"
         alt="Sipariş formu"
@@ -338,7 +429,6 @@ function Slide3() {
         flexDirection: "column",
       }}
     >
-      {/* Left blue stripe */}
       <div
         style={{
           position: "absolute",
@@ -350,12 +440,9 @@ function Slide3() {
           zIndex: 0,
         }}
       />
-
-      {/* Lime accent blob top-right */}
       <Blob color={C.lime} size={600} style={{ top: -200, right: -200, opacity: 0.18 }} />
       <Blob color={C.blue} size={400} style={{ bottom: H * 0.3, right: -100, opacity: 0.12 }} />
 
-      {/* Caption — right side */}
       <div
         style={{
           position: "absolute",
@@ -379,7 +466,6 @@ function Slide3() {
         />
       </div>
 
-      {/* Phone — left-offset, bottom */}
       <Phone
         src="/screenshots/tr/03-bekleyenler.png"
         alt="Kurye bekleyenler"
@@ -392,8 +478,6 @@ function Slide3() {
           filter: "drop-shadow(0 30px 60px rgba(0,0,0,0.2))",
         }}
       />
-
-      {/* Second phone — right, back */}
       <Phone
         src="/screenshots/tr/04-yeni-siparis.png"
         alt="Yeni sipariş"
@@ -431,7 +515,6 @@ function Slide4() {
       <Blob color={C.lime} size={500} style={{ top: 100, right: -200, opacity: 0.2 }} />
       <Blob color="#4F1DE8" size={800} style={{ bottom: 200, right: -300 }} />
 
-      {/* Caption */}
       <div
         style={{
           marginTop: W * 0.09,
@@ -455,7 +538,6 @@ function Slide4() {
         />
       </div>
 
-      {/* Stats pill */}
       <div
         style={{
           marginTop: W * 0.06,
@@ -503,7 +585,6 @@ function Slide4() {
         ))}
       </div>
 
-      {/* Phone */}
       <Phone
         src="/screenshots/tr/05-raporlar.png"
         alt="Raporlar"
@@ -535,7 +616,6 @@ function Slide5() {
         flexDirection: "column",
       }}
     >
-      {/* Bottom wave accent */}
       <div
         style={{
           position: "absolute",
@@ -550,7 +630,6 @@ function Slide5() {
       <Blob color={C.blue} size={500} style={{ top: H * 0.05, right: -200, opacity: 0.1 }} />
       <Blob color={C.lime} size={400} style={{ bottom: H * 0.1, left: -100, opacity: 0.3 }} />
 
-      {/* Caption */}
       <div
         style={{
           position: "relative",
@@ -573,7 +652,6 @@ function Slide5() {
         />
       </div>
 
-      {/* Phone */}
       <Phone
         src="/screenshots/tr/07-kurye.png"
         alt="Kurye ekranı"
@@ -605,7 +683,6 @@ function Slide6() {
         flexDirection: "column",
       }}
     >
-      {/* Lime top accent */}
       <div
         style={{
           position: "absolute",
@@ -619,7 +696,6 @@ function Slide6() {
       />
       <Blob color={C.blue} size={400} style={{ top: H * 0.1, left: -200, opacity: 0.15 }} />
 
-      {/* Caption */}
       <div
         style={{
           position: "relative",
@@ -657,7 +733,6 @@ function Slide6() {
         </h2>
       </div>
 
-      {/* Two phones */}
       <Phone
         src="/screenshots/tr/02-gecmis.png"
         alt="Geçmiş siparişler"
@@ -719,7 +794,6 @@ function Slide7() {
       <Blob color={C.blue} size={700} style={{ top: -200, right: -200 }} />
       <Blob color={C.lime} size={500} style={{ bottom: 300, left: -200, opacity: 0.2 }} />
 
-      {/* App icon */}
       <div
         style={{
           marginTop: W * 0.18,
@@ -741,7 +815,6 @@ function Slide7() {
         />
       </div>
 
-      {/* Caption */}
       <div
         style={{
           marginTop: W * 0.08,
@@ -764,7 +837,6 @@ function Slide7() {
         />
       </div>
 
-      {/* Feature pills */}
       <div
         style={{
           marginTop: W * 0.1,
@@ -796,7 +868,6 @@ function Slide7() {
         ))}
       </div>
 
-      {/* Divider + coming soon */}
       <div
         style={{
           marginTop: W * 0.12,
@@ -817,14 +888,7 @@ function Slide7() {
         >
           Yakında
         </p>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: W * 0.025,
-            justifyContent: "center",
-          }}
-        >
+        <div style={{ display: "flex", flexWrap: "wrap", gap: W * 0.025, justifyContent: "center" }}>
           {["Harita takibi", "Bildirimler", "İstatistikler"].map((f) => (
             <div
               key={f}
@@ -847,8 +911,662 @@ function Slide7() {
   );
 }
 
-// ─── Slide registry ───────────────────────────────────────────────────────────
-const SLIDES = [
+// ═══════════════════════════════════════════════════════════════════════════════
+// ─── iPad SLIDE COMPONENTS ────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/** iPad Slide 1 — Hero (DARK) */
+function IPadSlide1() {
+  return (
+    <div
+      style={{
+        width: IW,
+        height: IH,
+        position: "relative",
+        overflow: "hidden",
+        background: `linear-gradient(160deg, ${C.navy} 0%, ${C.navyMid} 60%, #0F1870 100%)`,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      <Blob color={C.blue} size={1400} style={{ top: -300, left: -300 }} />
+      <Blob color={C.lime} size={900} style={{ top: 400, right: -400, opacity: 0.25 }} />
+      <Blob color="#6B3AED" size={1100} style={{ bottom: 500, left: -400 }} />
+
+      <div
+        style={{
+          marginTop: IW * 0.06,
+          width: IW * 0.12,
+          height: IW * 0.12,
+          borderRadius: IW * 0.028,
+          overflow: "hidden",
+          boxShadow: `0 ${IW * 0.02}px ${IW * 0.05}px rgba(0,0,0,0.5)`,
+          flexShrink: 0,
+          zIndex: 2,
+          position: "relative",
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/app-icon.png"
+          alt="Kuryem"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          draggable={false}
+        />
+      </div>
+
+      <div
+        style={{
+          marginTop: IW * 0.04,
+          textAlign: "center",
+          zIndex: 2,
+          position: "relative",
+          padding: `0 ${IW * 0.1}px`,
+        }}
+      >
+        <Caption
+          label="Kuryem"
+          headline={
+            <>
+              Kurye yönetimi,
+              <br />
+              artık kolaylaştı.
+            </>
+          }
+          dark
+          align="center"
+          canvasW={IW}
+        />
+      </div>
+
+      <IPad
+        src="/screenshots/tr/03-bekleyenler.png"
+        alt="Operasyon ekranı"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: "50%",
+          transform: "translateX(-50%) translateY(10%)",
+          width: "66%",
+          zIndex: 3,
+          filter: "drop-shadow(0 40px 80px rgba(0,0,0,0.7))",
+        }}
+      />
+    </div>
+  );
+}
+
+/** iPad Slide 2 — Müşteri paneli (LIGHT) */
+function IPadSlide2() {
+  return (
+    <div
+      style={{
+        width: IW,
+        height: IH,
+        position: "relative",
+        overflow: "hidden",
+        background: C.surface,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: IH * 0.48,
+          background: `linear-gradient(180deg, ${C.blue} 0%, ${C.blueLight} 70%, ${C.surface} 100%)`,
+          zIndex: 0,
+        }}
+      />
+      <Blob color={C.lime} size={800} style={{ top: IH * 0.1, right: -300, opacity: 0.3 }} />
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          marginTop: IW * 0.1,
+          padding: `0 ${IW * 0.1}px`,
+          textAlign: "center",
+        }}
+      >
+        <Caption
+          label="Müşteri Paneli"
+          headline={
+            <>
+              Kurye çağır,
+              <br />
+              bir dokunuşla.
+            </>
+          }
+          dark
+          align="center"
+          canvasW={IW}
+        />
+      </div>
+
+      <IPad
+        src="/screenshots/tr/01-siparis-formu.png"
+        alt="Sipariş formu"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: "50%",
+          transform: "translateX(-50%) translateY(6%)",
+          width: "68%",
+          zIndex: 3,
+          filter: "drop-shadow(0 30px 60px rgba(7,33,232,0.25))",
+        }}
+      />
+    </div>
+  );
+}
+
+/** iPad Slide 3 — Operasyon ekranı (LIGHT, two iPads) */
+function IPadSlide3() {
+  return (
+    <div
+      style={{
+        width: IW,
+        height: IH,
+        position: "relative",
+        overflow: "hidden",
+        background: "#FFFFFF",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "40%",
+          height: "100%",
+          background: `linear-gradient(180deg, ${C.blueLight} 0%, ${C.blue} 100%)`,
+          zIndex: 0,
+        }}
+      />
+      <Blob color={C.lime} size={900} style={{ top: -300, right: -300, opacity: 0.18 }} />
+      <Blob color={C.blue} size={600} style={{ bottom: IH * 0.3, right: -200, opacity: 0.12 }} />
+
+      <div
+        style={{
+          position: "absolute",
+          top: IW * 0.1,
+          right: IW * 0.06,
+          width: "52%",
+          zIndex: 2,
+          textAlign: "right",
+        }}
+      >
+        <Caption
+          label="Operasyon"
+          headline={
+            <>
+              Tüm emirler,
+              <br />
+              tek ekranda.
+            </>
+          }
+          align="right"
+          canvasW={IW}
+        />
+      </div>
+
+      <IPad
+        src="/screenshots/tr/03-bekleyenler.png"
+        alt="Kurye bekleyenler"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: "-6%",
+          width: "64%",
+          zIndex: 3,
+          filter: "drop-shadow(0 30px 60px rgba(0,0,0,0.2))",
+        }}
+      />
+      <IPad
+        src="/screenshots/tr/04-yeni-siparis.png"
+        alt="Yeni sipariş"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          right: "-10%",
+          width: "52%",
+          zIndex: 2,
+          opacity: 0.6,
+          transform: "rotate(4deg) translateY(10%)",
+          filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.15))",
+        }}
+      />
+    </div>
+  );
+}
+
+/** iPad Slide 4 — Raporlar (DARK) */
+function IPadSlide4() {
+  return (
+    <div
+      style={{
+        width: IW,
+        height: IH,
+        position: "relative",
+        overflow: "hidden",
+        background: `linear-gradient(150deg, ${C.navy} 0%, #0A0F40 50%, #060B2A 100%)`,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      <Blob color={C.blue} size={1100} style={{ top: 300, left: -500 }} />
+      <Blob color={C.lime} size={800} style={{ top: 150, right: -350, opacity: 0.2 }} />
+      <Blob color="#4F1DE8" size={1200} style={{ bottom: 300, right: -500 }} />
+
+      <div
+        style={{
+          marginTop: IW * 0.07,
+          textAlign: "center",
+          zIndex: 2,
+          position: "relative",
+          padding: `0 ${IW * 0.08}px`,
+        }}
+      >
+        <Caption
+          label="Raporlar"
+          headline={
+            <>
+              Cironu anlık
+              <br />
+              takip et.
+            </>
+          }
+          dark
+          align="center"
+          canvasW={IW}
+        />
+      </div>
+
+      <div
+        style={{
+          marginTop: IW * 0.045,
+          zIndex: 2,
+          position: "relative",
+          background: "rgba(255,255,255,0.08)",
+          border: `1px solid rgba(255,255,255,0.12)`,
+          borderRadius: IW * 0.03,
+          padding: `${IW * 0.045}px ${IW * 0.06}px`,
+          display: "flex",
+          gap: IW * 0.08,
+          backdropFilter: "blur(20px)",
+        }}
+      >
+        {[
+          { value: "9.042", unit: "TL", label: "Bu ay" },
+          { value: "26", unit: "iş", label: "Sipariş" },
+          { value: "1", unit: "aktif", label: "Kurye" },
+        ].map((stat) => (
+          <div key={stat.label} style={{ textAlign: "center" }}>
+            <div
+              style={{
+                fontSize: IW * 0.065,
+                fontWeight: 800,
+                color: C.lime,
+                lineHeight: 1,
+              }}
+            >
+              {stat.value}
+              <span style={{ fontSize: IW * 0.028, color: "rgba(255,255,255,0.5)", marginLeft: 4 }}>
+                {stat.unit}
+              </span>
+            </div>
+            <div
+              style={{
+                fontSize: IW * 0.02,
+                color: "rgba(255,255,255,0.45)",
+                marginTop: IW * 0.008,
+                letterSpacing: "0.08em",
+              }}
+            >
+              {stat.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <IPad
+        src="/screenshots/tr/05-raporlar.png"
+        alt="Raporlar"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: "50%",
+          transform: "translateX(-50%) translateY(10%)",
+          width: "66%",
+          zIndex: 3,
+          filter: "drop-shadow(0 40px 80px rgba(0,0,0,0.7))",
+        }}
+      />
+    </div>
+  );
+}
+
+/** iPad Slide 5 — Kurye ekranı (LIGHT) */
+function IPadSlide5() {
+  return (
+    <div
+      style={{
+        width: IW,
+        height: IH,
+        position: "relative",
+        overflow: "hidden",
+        background: C.surface,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "55%",
+          background: `linear-gradient(0deg, ${C.blue}22 0%, transparent 100%)`,
+          zIndex: 0,
+        }}
+      />
+      <Blob color={C.blue} size={800} style={{ top: IH * 0.05, right: -300, opacity: 0.1 }} />
+      <Blob color={C.lime} size={600} style={{ bottom: IH * 0.1, left: -150, opacity: 0.3 }} />
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          marginTop: IW * 0.1,
+          padding: `0 ${IW * 0.1}px`,
+          textAlign: "center",
+        }}
+      >
+        <Caption
+          label="Kurye Ekranı"
+          headline={
+            <>
+              İş geldi,
+              <br />
+              hemen haberdar ol.
+            </>
+          }
+          align="center"
+          canvasW={IW}
+        />
+      </div>
+
+      <IPad
+        src="/screenshots/tr/07-kurye.png"
+        alt="Kurye ekranı"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: "50%",
+          transform: "translateX(-50%) translateY(6%)",
+          width: "68%",
+          zIndex: 3,
+          filter: "drop-shadow(0 30px 60px rgba(7,33,232,0.2))",
+        }}
+      />
+    </div>
+  );
+}
+
+/** iPad Slide 6 — Geçmiş (LIGHT, two iPads) */
+function IPadSlide6() {
+  return (
+    <div
+      style={{
+        width: IW,
+        height: IH,
+        position: "relative",
+        overflow: "hidden",
+        background: "#FFFFFF",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: IH * 0.42,
+          background: `linear-gradient(180deg, ${C.limeDark} 0%, ${C.lime} 50%, #FFFFFF 100%)`,
+          zIndex: 0,
+        }}
+      />
+      <Blob color={C.blue} size={600} style={{ top: IH * 0.1, left: -300, opacity: 0.15 }} />
+
+      <div
+        style={{
+          position: "relative",
+          zIndex: 2,
+          marginTop: IW * 0.1,
+          padding: `0 ${IW * 0.1}px`,
+          textAlign: "center",
+        }}
+      >
+        <p
+          style={{
+            fontSize: IW * 0.028,
+            fontWeight: 600,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase" as const,
+            color: C.textPrimary,
+            marginBottom: IW * 0.018,
+            lineHeight: 1,
+          }}
+        >
+          Sipariş Geçmişi
+        </p>
+        <h2
+          style={{
+            fontSize: IW * 0.093,
+            fontWeight: 800,
+            lineHeight: 1.0,
+            color: C.textPrimary,
+            margin: 0,
+          }}
+        >
+          Her teslimat,
+          <br />
+          kayıt altında.
+        </h2>
+      </div>
+
+      <IPad
+        src="/screenshots/tr/02-gecmis.png"
+        alt="Geçmiş siparişler"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: "-8%",
+          width: "54%",
+          zIndex: 2,
+          opacity: 0.6,
+          transform: "rotate(-4deg) translateY(10%)",
+          filter: "drop-shadow(0 20px 40px rgba(0,0,0,0.15))",
+        }}
+      />
+      <IPad
+        src="/screenshots/tr/01-siparis-formu.png"
+        alt="Sipariş formu"
+        style={{
+          position: "absolute",
+          bottom: 0,
+          right: "-4%",
+          width: "66%",
+          zIndex: 3,
+          transform: "translateY(8%)",
+          filter: "drop-shadow(0 30px 60px rgba(7,33,232,0.2))",
+        }}
+      />
+    </div>
+  );
+}
+
+/** iPad Slide 7 — More features (DARK) */
+function IPadSlide7() {
+  const features = [
+    "Müşteri yönetimi",
+    "Personel hesapları",
+    "Kurye atama",
+    "Uğrama talepleri",
+    "Ciro analizi",
+    "Gerçek zamanlı takip",
+    "Rol tabanlı erişim",
+    "Çoklu durak",
+    "Sipariş geçmişi",
+  ];
+
+  return (
+    <div
+      style={{
+        width: IW,
+        height: IH,
+        position: "relative",
+        overflow: "hidden",
+        background: `linear-gradient(160deg, ${C.navy} 0%, #0C1050 60%, #070830 100%)`,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      <Blob color={C.blue} size={1100} style={{ top: -300, right: -300 }} />
+      <Blob color={C.lime} size={800} style={{ bottom: 400, left: -300, opacity: 0.2 }} />
+
+      <div
+        style={{
+          marginTop: IW * 0.12,
+          width: IW * 0.13,
+          height: IW * 0.13,
+          borderRadius: IW * 0.03,
+          overflow: "hidden",
+          boxShadow: `0 ${IW * 0.02}px ${IW * 0.05}px rgba(0,0,0,0.6)`,
+          zIndex: 2,
+          flexShrink: 0,
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/app-icon.png"
+          alt="Kuryem"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          draggable={false}
+        />
+      </div>
+
+      <div
+        style={{
+          marginTop: IW * 0.06,
+          textAlign: "center",
+          zIndex: 2,
+          padding: `0 ${IW * 0.08}px`,
+        }}
+      >
+        <Caption
+          label="Kuryem"
+          headline={
+            <>
+              Ve çok daha
+              <br />
+              fazlası.
+            </>
+          }
+          dark
+          align="center"
+          canvasW={IW}
+        />
+      </div>
+
+      <div
+        style={{
+          marginTop: IW * 0.07,
+          zIndex: 2,
+          padding: `0 ${IW * 0.08}px`,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: IW * 0.02,
+          justifyContent: "center",
+        }}
+      >
+        {features.map((f) => (
+          <div
+            key={f}
+            style={{
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.14)",
+              borderRadius: IW * 0.08,
+              padding: `${IW * 0.018}px ${IW * 0.035}px`,
+              fontSize: IW * 0.028,
+              fontWeight: 600,
+              color: "rgba(255,255,255,0.85)",
+              letterSpacing: "0.02em",
+              backdropFilter: "blur(10px)",
+            }}
+          >
+            {f}
+          </div>
+        ))}
+      </div>
+
+      <div
+        style={{
+          marginTop: IW * 0.09,
+          zIndex: 2,
+          textAlign: "center",
+          padding: `0 ${IW * 0.08}px`,
+        }}
+      >
+        <p
+          style={{
+            fontSize: IW * 0.02,
+            fontWeight: 600,
+            letterSpacing: "0.12em",
+            color: "rgba(255,255,255,0.3)",
+            textTransform: "uppercase",
+            marginBottom: IW * 0.035,
+          }}
+        >
+          Yakında
+        </p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: IW * 0.02, justifyContent: "center" }}>
+          {["Harita takibi", "Bildirimler", "İstatistikler"].map((f) => (
+            <div
+              key={f}
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                borderRadius: IW * 0.08,
+                padding: `${IW * 0.018}px ${IW * 0.035}px`,
+                fontSize: IW * 0.028,
+                fontWeight: 600,
+                color: "rgba(255,255,255,0.3)",
+              }}
+            >
+              {f}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Slide registries ─────────────────────────────────────────────────────────
+const IPHONE_SLIDES = [
   { id: "01-hero", label: "Hero", Component: Slide1 },
   { id: "02-musteri", label: "Müşteri", Component: Slide2 },
   { id: "03-operasyon", label: "Operasyon", Component: Slide3 },
@@ -858,17 +1576,31 @@ const SLIDES = [
   { id: "07-more", label: "Daha Fazla", Component: Slide7 },
 ];
 
+const IPAD_SLIDES = [
+  { id: "01-hero", label: "Hero", Component: IPadSlide1 },
+  { id: "02-musteri", label: "Müşteri", Component: IPadSlide2 },
+  { id: "03-operasyon", label: "Operasyon", Component: IPadSlide3 },
+  { id: "04-raporlar", label: "Raporlar", Component: IPadSlide4 },
+  { id: "05-kurye", label: "Kurye", Component: IPadSlide5 },
+  { id: "06-gecmis", label: "Geçmiş", Component: IPadSlide6 },
+  { id: "07-more", label: "Daha Fazla", Component: IPadSlide7 },
+];
+
 // ─── Screenshot preview (scaled) ─────────────────────────────────────────────
 function ScreenshotPreview({
   slide,
   exportRef,
   onExport,
   exporting,
+  canvasW,
+  canvasH,
 }: {
-  slide: (typeof SLIDES)[number];
+  slide: { id: string; label: string; Component: React.ComponentType };
   exportRef: React.RefObject<HTMLDivElement | null>;
   onExport: () => void;
   exporting: boolean;
+  canvasW: number;
+  canvasH: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.2);
@@ -877,22 +1609,20 @@ function ScreenshotPreview({
     const el = containerRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      const s = el.clientWidth / W;
+      const s = el.clientWidth / canvasW;
       setScale(s);
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [canvasW]);
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Preview container */}
       <div
         ref={containerRef}
         style={{
           width: "100%",
-          height: `${(H / W) * 100}%`,
-          aspectRatio: `${W}/${H}`,
+          aspectRatio: `${canvasW}/${canvasH}`,
           position: "relative",
           overflow: "hidden",
           borderRadius: 8,
@@ -909,8 +1639,8 @@ function ScreenshotPreview({
             left: 0,
             transformOrigin: "top left",
             transform: `scale(${scale})`,
-            width: W,
-            height: H,
+            width: canvasW,
+            height: canvasH,
           }}
         >
           <slide.Component />
@@ -937,15 +1667,14 @@ function ScreenshotPreview({
         {slide.label}
       </p>
 
-      {/* Offscreen export element */}
       <div
         ref={exportRef}
         style={{
           position: "absolute",
           left: -9999,
           top: 0,
-          width: W,
-          height: H,
+          width: canvasW,
+          height: canvasH,
           zIndex: -1,
         }}
       >
@@ -957,29 +1686,36 @@ function ScreenshotPreview({
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function ScreenshotsPage() {
+  const [device, setDevice] = useState<Device>("iphone");
   const [sizeIndex, setSizeIndex] = useState(0);
   const [exportingIdx, setExportingIdx] = useState<number | null>(null);
   const [exportingAll, setExportingAll] = useState(false);
   const exportRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const size = SIZES[sizeIndex];
+  const isIpad = device === "ipad";
+  const SLIDES = isIpad ? IPAD_SLIDES : IPHONE_SLIDES;
+  const SIZES = isIpad ? IPAD_SIZES : IPHONE_SIZES;
+  const canvasW = isIpad ? IW : W;
+  const canvasH = isIpad ? IH : H;
 
-  async function exportSlide(idx: number, prefix?: string): Promise<void> {
+  const size = SIZES[Math.min(sizeIndex, SIZES.length - 1)];
+
+  async function exportSlide(idx: number, overrideSize?: { w: number; h: number }, overrideLabel?: string): Promise<void> {
     const el = exportRefs.current[idx];
     if (!el) return;
 
-    // Move on-screen temporarily
     el.style.left = "0px";
     el.style.opacity = "1";
     el.style.zIndex = "-1";
 
-    const opts = { width: W, height: H, pixelRatio: 1, cacheBust: true, fontFamily: "Inter, sans-serif" };
+    const opts = { width: canvasW, height: canvasH, pixelRatio: 1, cacheBust: true, fontFamily: "Inter, sans-serif" };
 
     try {
-      await toPng(el, opts); // warm-up call
+      await toPng(el, opts);
       const dataUrl = await toPng(el, opts);
 
-      // Scale to target size
+      const targetSize = overrideSize ?? size;
+
       const img = new Image();
       await new Promise<void>((res) => {
         img.onload = () => res();
@@ -987,15 +1723,16 @@ export default function ScreenshotsPage() {
       });
 
       const canvas = document.createElement("canvas");
-      canvas.width = size.w;
-      canvas.height = size.h;
+      canvas.width = targetSize.w;
+      canvas.height = targetSize.h;
       const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, size.w, size.h);
+      ctx.drawImage(img, 0, 0, targetSize.w, targetSize.h);
 
       const finalUrl = canvas.toDataURL("image/png");
       const a = document.createElement("a");
       const slideId = SLIDES[idx].id;
-      a.download = `${prefix || ""}${slideId}-${size.w}x${size.h}.png`;
+      const prefix = overrideLabel ? `${overrideLabel}_` : "";
+      a.download = `${prefix}${slideId}-${targetSize.w}x${targetSize.h}.png`;
       a.href = finalUrl;
       a.click();
     } finally {
@@ -1022,12 +1759,17 @@ export default function ScreenshotsPage() {
     setExportingAll(false);
   }
 
-  // Fastlane: export all slides at 6.9" and 6.5" with proper naming
   async function handleExportFastlane() {
-    const fastlaneSizes = [
+    const iphoneSizes = [
       { label: "iPhone6.9", w: 1320, h: 2868 },
       { label: "iPhone6.5", w: 1284, h: 2778 },
     ];
+    const ipadSizes = [
+      { label: "iPad13", w: 2064, h: 2752 },
+      { label: "iPad12.9", w: 2048, h: 2732 },
+    ];
+    const fastlaneSizes = isIpad ? ipadSizes : iphoneSizes;
+
     setExportingAll(true);
     for (const fs of fastlaneSizes) {
       for (let i = 0; i < SLIDES.length; i++) {
@@ -1037,7 +1779,7 @@ export default function ScreenshotsPage() {
         el.style.left = "0px";
         el.style.opacity = "1";
         el.style.zIndex = "-1";
-        const opts = { width: W, height: H, pixelRatio: 1, cacheBust: true, fontFamily: "Inter, sans-serif" };
+        const opts = { width: canvasW, height: canvasH, pixelRatio: 1, cacheBust: true, fontFamily: "Inter, sans-serif" };
         try {
           await toPng(el, opts);
           const dataUrl = await toPng(el, opts);
@@ -1080,6 +1822,29 @@ export default function ScreenshotsPage() {
         <span style={{ color: "#F8FAFC", fontWeight: 800, fontSize: 15, letterSpacing: "-0.02em" }}>
           Kuryem Screenshots
         </span>
+
+        {/* Device toggle */}
+        <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: 3 }}>
+          {(["iphone", "ipad"] as Device[]).map((d) => (
+            <button
+              key={d}
+              onClick={() => { setDevice(d); setSizeIndex(0); }}
+              style={{
+                padding: "5px 14px",
+                borderRadius: 6,
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: "pointer",
+                border: "none",
+                background: device === d ? C.blue : "transparent",
+                color: device === d ? "#fff" : "rgba(255,255,255,0.5)",
+                transition: "all 0.15s",
+              }}
+            >
+              {d === "iphone" ? "iPhone" : "iPad"}
+            </button>
+          ))}
+        </div>
 
         {/* Size selector */}
         <div style={{ display: "flex", gap: 6 }}>
@@ -1154,22 +1919,24 @@ export default function ScreenshotsPage() {
       >
         {SLIDES.map((slide, i) => (
           <ScreenshotPreview
-            key={slide.id}
+            key={`${device}-${slide.id}`}
             slide={slide}
             exportRef={{ current: exportRefs.current[i] } as React.RefObject<HTMLDivElement | null>}
             onExport={() => handleExportOne(i)}
             exporting={exportingIdx === i}
+            canvasW={canvasW}
+            canvasH={canvasH}
           />
         ))}
       </div>
 
-      {/* Off-screen export containers — one per slide */}
+      {/* Off-screen export containers */}
       <div style={{ position: "absolute", left: -9999, top: 0 }}>
         {SLIDES.map((slide, i) => (
           <div
-            key={slide.id}
+            key={`export-${device}-${slide.id}`}
             ref={(el) => { exportRefs.current[i] = el; }}
-            style={{ width: W, height: H }}
+            style={{ width: canvasW, height: canvasH }}
           >
             <slide.Component />
           </div>

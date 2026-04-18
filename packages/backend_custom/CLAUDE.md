@@ -1,6 +1,6 @@
 # backend_custom
 
-Custom REST API (Dio) backend implementation for eipat.
+Custom REST API (Dio) backend implementation for Kuryem.
 
 ## Purpose
 
@@ -35,4 +35,4 @@ lib/
 ## Dependency Rules
 
 - Only `dio` and `backend_core`
-- Never import from the main `eipat` package
+- Never import from the main `Kuryem` package

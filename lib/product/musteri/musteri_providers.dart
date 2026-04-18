@@ -21,3 +21,9 @@ Future<List<Musteri>> musteriList(Ref ref) async {
   final repo = ref.watch(musteriRepositoryProvider);
   return repo.getAll();
 }
+
+@riverpod
+Future<Musteri?> musteriById(Ref ref, String id) async {
+  final repo = ref.watch(musteriRepositoryProvider);
+  return repo.getById(id);
+}

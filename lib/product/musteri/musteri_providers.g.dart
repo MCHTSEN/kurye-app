@@ -94,3 +94,73 @@ final class MusteriListProvider
 }
 
 String _$musteriListHash() => r'e5500ab86a5af2f1a6e291c5dce6eae5425be4a0';
+
+@ProviderFor(musteriById)
+const musteriByIdProvider = MusteriByIdFamily._();
+
+final class MusteriByIdProvider
+    extends
+        $FunctionalProvider<AsyncValue<Musteri?>, Musteri?, FutureOr<Musteri?>>
+    with $FutureModifier<Musteri?>, $FutureProvider<Musteri?> {
+  const MusteriByIdProvider._({
+    required MusteriByIdFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'musteriByIdProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$musteriByIdHash();
+
+  @override
+  String toString() {
+    return r'musteriByIdProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<Musteri?> $createElement($ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<Musteri?> create(Ref ref) {
+    final argument = this.argument as String;
+    return musteriById(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MusteriByIdProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$musteriByIdHash() => r'a3928b4282054adde273f9f009f08aee101ea046';
+
+final class MusteriByIdFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<Musteri?>, String> {
+  const MusteriByIdFamily._()
+    : super(
+        retry: null,
+        name: r'musteriByIdProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  MusteriByIdProvider call(String id) =>
+      MusteriByIdProvider._(argument: id, from: this);
+
+  @override
+  String toString() => r'musteriByIdProvider';
+}

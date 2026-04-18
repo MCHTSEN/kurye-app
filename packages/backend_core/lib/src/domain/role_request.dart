@@ -1,5 +1,27 @@
 import 'user_role.dart';
 
+enum RoleRequestAccountType {
+  newCustomer('new_customer'),
+  existingCustomerEmployee('existing_customer_employee');
+
+  const RoleRequestAccountType(this.value);
+  final String value;
+
+  static RoleRequestAccountType? fromNullableValue(String? raw) {
+    if (raw == null || raw.isEmpty) {
+      return null;
+    }
+
+    for (final item in RoleRequestAccountType.values) {
+      if (item.value == raw) {
+        return item;
+      }
+    }
+
+    throw ArgumentError('Unknown RoleRequestAccountType: $raw');
+  }
+}
+
 enum RoleRequestStatus {
   beklemede('beklemede'),
   onaylandi('onaylandi'),
@@ -23,6 +45,9 @@ class RoleRequest {
     required this.requestedRole,
     required this.status,
     required this.displayName,
+    this.accountType,
+    this.companyName,
+    this.musteriId,
     this.phone,
     this.note,
     this.reviewedBy,
@@ -38,6 +63,11 @@ class RoleRequest {
       requestedRole: UserRole.fromValue(json['requested_role'] as String),
       status: RoleRequestStatus.fromValue(json['status'] as String),
       displayName: json['display_name'] as String,
+      accountType: RoleRequestAccountType.fromNullableValue(
+        json['account_type'] as String?,
+      ),
+      companyName: json['company_name'] as String?,
+      musteriId: json['musteri_id'] as String?,
       phone: json['phone'] as String?,
       note: json['note'] as String?,
       reviewedBy: json['reviewed_by'] as String?,
@@ -56,6 +86,9 @@ class RoleRequest {
   final UserRole requestedRole;
   final RoleRequestStatus status;
   final String displayName;
+  final RoleRequestAccountType? accountType;
+  final String? companyName;
+  final String? musteriId;
   final String? phone;
   final String? note;
   final String? reviewedBy;
@@ -67,6 +100,9 @@ class RoleRequest {
     'user_id': userId,
     'requested_role': requestedRole.value,
     'display_name': displayName,
+    'account_type': accountType?.value,
+    'company_name': companyName,
+    'musteri_id': musteriId,
     'phone': phone,
     'note': note,
   };

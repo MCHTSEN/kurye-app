@@ -131,9 +131,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
         ugramaId: resolvedUgramaId,
         ugrama1Id: _selectedUgrama1Id,
         notId: _selectedNotId,
-        not1: _not1Controller.text.trim().isNotEmpty
-            ? _not1Controller.text.trim()
-            : null,
+        not1: _not1Controller.text.trim().isNotEmpty ? _not1Controller.text.trim() : null,
         personelId: personel?.id,
         olusturanId: userId,
         // durum defaults to kuryeBekliyor in constructor
@@ -309,17 +307,14 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
                     itemCount: candidates.length,
                     itemBuilder: (context, index) {
                       final candidate = candidates[index];
-                      final subtitle =
-                          (candidate.adres == null ||
-                              candidate.adres!.trim().isEmpty)
+                      final subtitle = (candidate.adres == null || candidate.adres!.trim().isEmpty)
                           ? 'Adres yok'
                           : candidate.adres!;
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(candidate.ugramaAdi),
                         subtitle: Text(subtitle),
-                        onTap: () =>
-                            Navigator.of(dialogContext).pop(candidate.id),
+                        onTap: () => Navigator.of(dialogContext).pop(candidate.id),
                       );
                     },
                   ),
@@ -333,8 +328,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
               child: const Text('İptal'),
             ),
             FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(_createNewChoiceValue),
+              onPressed: () => Navigator.of(dialogContext).pop(_createNewChoiceValue),
               child: const Text('Yeni Oluştur'),
             ),
           ],
@@ -607,9 +601,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
       data: (orders) {
         final activeOrders = orders
             .where(
-              (s) =>
-                  s.durum == SiparisDurum.kuryeBekliyor ||
-                  s.durum == SiparisDurum.devamEdiyor,
+              (s) => s.durum == SiparisDurum.kuryeBekliyor || s.durum == SiparisDurum.devamEdiyor,
             )
             .toList();
 
@@ -626,9 +618,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
           child: activeOrders.isEmpty
               ? const Text('Aktif sipariş yok.')
               : Column(
-                  children: activeOrders
-                      .map((s) => _buildOrderCard(s, ugramaMap))
-                      .toList(),
+                  children: activeOrders.map((s) => _buildOrderCard(s, ugramaMap)).toList(),
                 ),
         );
       },
@@ -661,9 +651,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     return Card(
       child: ListTile(
         title: Text(routeLabel),
-        subtitle: siparis.createdAt != null
-            ? Text(_formatDate(siparis.createdAt!))
-            : null,
+        subtitle: siparis.createdAt != null ? Text(_formatDate(siparis.createdAt!)) : null,
         trailing: Chip(
           label: Text(
             durumLabel,
@@ -701,7 +689,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
 
   Color _durumColor(SiparisDurum durum) {
     return switch (durum) {
-      SiparisDurum.kuryeBekliyor => AppColors.secondary,
+      SiparisDurum.kuryeBekliyor => AppColors.textPrimary,
       SiparisDurum.devamEdiyor => AppColors.primary,
       SiparisDurum.tamamlandi => AppColors.secondaryDark,
       SiparisDurum.iptal => AppColors.primaryDark,
