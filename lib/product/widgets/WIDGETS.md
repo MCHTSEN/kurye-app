@@ -24,7 +24,8 @@ Defines reusable widget contracts used across features.
   - Drawer + desktop sidebar can use the same dark palette for visual continuity
   - Drawer header uses `assets/images/bmk-logo.png` logo block in the top area
   - Tablet: compact navigation rail
-  - Desktop: grouped navigation sidebar + body, responsive sidebar width
+  - Desktop: grouped navigation sidebar + body; sidebar opens on demand and
+    returns to compact icon mode after navigation so work surfaces keep width
   - Navigation labels scale by screen size for better readability
   - Supports disabling the mobile drawer for shell-based flows
 - `WorkbenchSplitView`
@@ -40,6 +41,7 @@ Defines reusable widget contracts used across features.
   - `ShadSelect.withSearch` tabanlı arama destekli seçim alanı
   - `minWidth` / `maxWidth` ile kompakt veya tam genişlik kullanımını destekler
   - Kapanmış durumdaki seçili değer ve placeholder metni ekran temasına göre stillenebilir
+  - Dışarıdan gelen `value` değiştiğinde kapalı görünüm de aynı değere senkronize olur
 
 ## Usage Rules
 - Use shared widgets before creating new duplicates.

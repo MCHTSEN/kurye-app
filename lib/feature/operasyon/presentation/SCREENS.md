@@ -13,7 +13,9 @@
   - Varsayılan açılış `Operasyon` sekmesidir.
 - Desktop/tablet:
   - Shell child route'u doğrudan gösterir.
-  - Sayfalar kendi `ResponsiveScaffold` desktop sidebar davranışını korur.
+  - Sayfalar kendi `ResponsiveScaffold` desktop sidebar davranışını korur;
+    sidebar varsayılan olarak kompakt ikon modundadır ve açıldıktan sonra
+    navigasyonda tekrar daralır.
 
 ## OperasyonDashboardPage
 - Purpose: Şifre ile açılan rapor ekranı
@@ -57,6 +59,8 @@
   - Üstte güncel operasyon özeti ve kısayol ipuçları yer alır
   - `Bugünkü Kazanç` kartı bugün tamamlanan siparişlerin toplam ücretiyle canlı hesaplanır
   - `Esc` seçimleri temizler
+  - Kurye ataması tamamlanınca bekleyen seçimleri ve kurye dropdown seçimi
+    temizlenir.
 - Etkileşim:
   - Sipariş formundaki typeahead alanlarında öneri satırına mouse/touch ile tıklama doğrudan seçim yapar; seçim için yalnızca Enter zorunlu değildir.
   - Çıkış/Uğrama alanlarında listede olmayan metin girilirse popup ile çözümleme yapılır:
@@ -70,6 +74,12 @@
 - Desktop UX:
   - Sol panel form / sağ panel uğrama listesi
   - Liste içinde hızlı arama
+  - Uğrama listesi müşteri dropdown filtresiyle belirli müşteriye göre süzülür
+
+## MusteriKayitPage
+- Desktop UX:
+  - Müşteri listesi Excel benzeri yatay kaydırılabilir tablo olarak gösterilir
+  - Satır seçimi düzenleme formunu doldurur
 
 ## OperasyonAyarlarPage
 - Purpose: Mobil ayarlar hub ekranı

@@ -34,7 +34,7 @@ class NavItem {
 
 /// A scaffold that shows a NavigationRail sidebar on desktop/tablet
 /// and a Drawer on mobile.
-class ResponsiveScaffold extends StatelessWidget {
+class ResponsiveScaffold extends StatefulWidget {
   const ResponsiveScaffold({
     required this.title,
     required this.body,
@@ -65,18 +65,28 @@ class ResponsiveScaffold extends StatelessWidget {
   final bool showMobileDrawer;
   final bool showAppBar;
 
+  @override
+  State<ResponsiveScaffold> createState() => _ResponsiveScaffoldState();
+}
+
+class _ResponsiveScaffoldState extends State<ResponsiveScaffold> {
+  bool _isDesktopSidebarExpanded = false;
+
   int? get _selectedIndex {
-    final current = currentRoute;
+    final current = widget.currentRoute;
     if (current == null) {
       return null;
     }
-    final idx = navItems.indexWhere((n) => n.route == current);
+    final idx = widget.navItems.indexWhere((n) => n.route == current);
     return idx >= 0 ? idx : null;
   }
 
   void _onNavigate(BuildContext context, int index) {
-    final target = navItems[index].route;
-    if (target == currentRoute) return;
+    final target = widget.navItems[index].route;
+    if (target == widget.currentRoute) return;
+    if (_isDesktopSidebarExpanded) {
+      setState(() => _isDesktopSidebarExpanded = false);
+    }
     try {
       unawaited(
         context.navigateToPath(
@@ -103,52 +113,57 @@ class ResponsiveScaffold extends StatelessWidget {
 
   Widget _buildMobileScaffold(BuildContext context) {
     return Scaffold(
-      appBar: showAppBar
+      appBar: widget.showAppBar
           ? AppBar(
-              title: Text(title),
-              actions: actions,
+              title: Text(widget.title),
+              actions: widget.actions,
             )
           : null,
-      drawer: showMobileDrawer ? _buildDrawer(context) : null,
-      body: body,
-      floatingActionButton: floatingActionButton,
+      drawer: widget.showMobileDrawer ? _buildDrawer(context) : null,
+      body: widget.body,
+      floatingActionButton: widget.floatingActionButton,
     );
   }
 
   Widget _buildDesktopScaffold(BuildContext context, LayoutType type) {
     if (type == LayoutType.desktop) {
       final width = MediaQuery.sizeOf(context).width;
-      final sidebarWidth = (width * 0.22).clamp(280.0, 360.0);
+      final expandedWidth = (width * 0.22).clamp(280.0, 340.0);
+      final sidebarWidth = _isDesktopSidebarExpanded ? expandedWidth : 96.0;
       return Scaffold(
-        appBar: showAppBar
+        appBar: widget.showAppBar
             ? AppBar(
-                title: Text(title),
-                actions: actions,
+                title: Text(widget.title),
+                actions: widget.actions,
               )
             : null,
-        floatingActionButton: floatingActionButton,
+        floatingActionButton: widget.floatingActionButton,
         body: Row(
           children: [
-            _buildDesktopSidebar(context, width: sidebarWidth),
+            _buildDesktopSidebar(
+              context,
+              width: sidebarWidth,
+              isExpanded: _isDesktopSidebarExpanded,
+            ),
             const VerticalDivider(
               thickness: 1,
               width: 1,
               color: _NavigationTheme.divider,
             ),
-            Expanded(child: body),
+            Expanded(child: widget.body),
           ],
         ),
       );
     }
 
     return Scaffold(
-      appBar: showAppBar
+      appBar: widget.showAppBar
           ? AppBar(
-              title: Text(title),
-              actions: actions,
+              title: Text(widget.title),
+              actions: widget.actions,
             )
           : null,
-      floatingActionButton: floatingActionButton,
+      floatingActionButton: widget.floatingActionButton,
       body: Row(
         children: [
           NavigationRail(
@@ -170,7 +185,7 @@ class ResponsiveScaffold extends StatelessWidget {
                 ),
               ),
             ),
-            trailing: onLogout != null
+            trailing: widget.onLogout != null
                 ? Expanded(
                     child: Align(
                       alignment: Alignment.bottomCenter,
@@ -179,14 +194,14 @@ class ResponsiveScaffold extends StatelessWidget {
                         child: IconButton(
                           icon: const Icon(Icons.logout_rounded),
                           tooltip: 'Cikis Yap',
-                          onPressed: onLogout,
+                          onPressed: widget.onLogout,
                           color: AppColors.textMuted,
                         ),
                       ),
                     ),
                   )
                 : null,
-            destinations: navItems
+            destinations: widget.navItems
                 .map(
                   (item) => NavigationRailDestination(
                     icon: Icon(item.icon),
@@ -201,7 +216,7 @@ class ResponsiveScaffold extends StatelessWidget {
             width: 1,
             color: _NavigationTheme.divider,
           ),
-          Expanded(child: body),
+          Expanded(child: widget.body),
         ],
       ),
     );
@@ -212,7 +227,7 @@ class ResponsiveScaffold extends StatelessWidget {
     required Widget child,
   }) {
     final shortcutMap = <ShortcutActivator, Intent>{};
-    final maxItems = navItems.length > 9 ? 9 : navItems.length;
+    final maxItems = widget.navItems.length > 9 ? 9 : widget.navItems.length;
 
     for (var i = 0; i < maxItems; i++) {
       final digitKey = switch (i) {
@@ -253,136 +268,179 @@ class ResponsiveScaffold extends StatelessWidget {
     );
   }
 
-  Widget _buildDesktopSidebar(BuildContext context, {required double width}) {
+  Widget _buildDesktopSidebar(
+    BuildContext context, {
+    required double width,
+    required bool isExpanded,
+  }) {
     final groupedItems = <String, List<(int, NavItem)>>{};
-    for (var i = 0; i < navItems.length; i++) {
-      final item = navItems[i];
+    for (var i = 0; i < widget.navItems.length; i++) {
+      final item = widget.navItems[i];
       groupedItems.putIfAbsent(item.section, () => <(int, NavItem)>[]).add((
         i,
         item,
       ));
     }
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
       width: width,
       color: _NavigationTheme.bg,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_NavigationTheme.surfaceAlt, _NavigationTheme.surface],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: ClipRect(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final showExpandedContent =
+                isExpanded && constraints.maxWidth > 220;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Icon(
-                        Icons.two_wheeler_rounded,
-                        color: Colors.white,
-                      ),
+                Container(
+                  padding: EdgeInsets.fromLTRB(
+                    showExpandedContent ? 24 : 16,
+                    18,
+                    showExpandedContent ? 24 : 16,
+                    14,
+                  ),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        _NavigationTheme.surfaceAlt,
+                        _NavigationTheme.surface,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: showExpandedContent
+                        ? CrossAxisAlignment.start
+                        : CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: showExpandedContent
+                            ? MainAxisAlignment.start
+                            : MainAxisAlignment.center,
                         children: [
-                          Text(
-                            headerTitle,
-                            style: const TextStyle(
-                              fontSize: 21,
-                              fontWeight: FontWeight.w800,
-                              color: _NavigationTheme.textPrimary,
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(
+                              Icons.two_wheeler_rounded,
+                              color: Colors.white,
                             ),
                           ),
-                          if (headerSubtitle != null)
-                            Text(
-                              headerSubtitle!,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: _NavigationTheme.textMuted,
+                          if (showExpandedContent) ...[
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    widget.headerTitle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 21,
+                                      fontWeight: FontWeight.w800,
+                                      color: _NavigationTheme.textPrimary,
+                                    ),
+                                  ),
+                                  if (widget.headerSubtitle != null)
+                                    Text(
+                                      widget.headerSubtitle!,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: _NavigationTheme.textMuted,
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
+                          ],
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.18),
-                    ),
-                  ),
-                  child: Text(
-                    'Kısayollar: Ctrl/Cmd + 1-${navItems.length > 9 ? 9 : navItems.length}',
-                    style: const TextStyle(
-                      color: _NavigationTheme.textPrimary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
-              children: [
-                for (final entry in groupedItems.entries) ...[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-                    child: Text(
-                      entry.key,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.3,
-                        color: _NavigationTheme.textMuted,
+                      const SizedBox(height: 12),
+                      _SidebarToggleButton(
+                        isExpanded: showExpandedContent,
+                        onPressed: () {
+                          setState(
+                            () => _isDesktopSidebarExpanded =
+                                !_isDesktopSidebarExpanded,
+                          );
+                        },
                       ),
-                    ),
+                    ],
                   ),
-                  for (final indexedItem in entry.value)
-                    _DesktopNavTile(
-                      icon: indexedItem.$2.icon,
-                      label: indexedItem.$2.label,
-                      shortcutLabel: _shortcutLabelFor(indexedItem.$1),
-                      isSelected: indexedItem.$1 == _selectedIndex,
-                      onTap: () => _onNavigate(context, indexedItem.$1),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
+                    children: [
+                      for (final entry in groupedItems.entries) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                          child: Text(
+                            showExpandedContent ? entry.key : '',
+                            textAlign: showExpandedContent
+                                ? TextAlign.left
+                                : TextAlign.center,
+                            style: TextStyle(
+                              fontSize: showExpandedContent ? 14 : 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0,
+                              color: _NavigationTheme.textMuted,
+                            ),
+                          ),
+                        ),
+                        for (final indexedItem in entry.value)
+                          _DesktopNavTile(
+                            icon: indexedItem.$2.icon,
+                            label: indexedItem.$2.label,
+                            shortcutLabel: _shortcutLabelFor(indexedItem.$1),
+                            isExpanded: showExpandedContent,
+                            isSelected: indexedItem.$1 == _selectedIndex,
+                            onTap: () => _onNavigate(context, indexedItem.$1),
+                          ),
+                        const SizedBox(height: 8),
+                      ],
+                    ],
+                  ),
+                ),
+                if (widget.onLogout != null)
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      showExpandedContent ? 16 : 12,
+                      0,
+                      showExpandedContent ? 16 : 12,
+                      20,
                     ),
-                  const SizedBox(height: 8),
-                ],
+                    child: showExpandedContent
+                        ? FilledButton.tonalIcon(
+                            onPressed: widget.onLogout,
+                            icon: const Icon(Icons.logout_rounded),
+                            label: const Text(
+                              'Çıkış Yap',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          )
+                        : IconButton.filledTonal(
+                            tooltip: 'Çıkış Yap',
+                            onPressed: widget.onLogout,
+                            icon: const Icon(Icons.logout_rounded),
+                          ),
+                  ),
               ],
-            ),
-          ),
-          if (onLogout != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-              child: FilledButton.tonalIcon(
-                onPressed: onLogout,
-                icon: const Icon(Icons.logout_rounded),
-                label: const Text('Çıkış Yap'),
-              ),
-            ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -433,10 +491,10 @@ class ResponsiveScaffold extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
-                for (var i = 0; i < navItems.length; i++)
+                for (var i = 0; i < widget.navItems.length; i++)
                   _DrawerNavTile(
-                    icon: navItems[i].icon,
-                    label: navItems[i].label,
+                    icon: widget.navItems[i].icon,
+                    label: widget.navItems[i].label,
                     isSelected: i == _selectedIndex,
                     onTap: () {
                       Navigator.pop(context);
@@ -447,7 +505,7 @@ class ResponsiveScaffold extends StatelessWidget {
             ),
           ),
           // ─── Logout ───
-          if (onLogout != null) ...[
+          if (widget.onLogout != null) ...[
             const Divider(height: 1, color: _NavigationTheme.divider),
             _DrawerNavTile(
               icon: Icons.logout_rounded,
@@ -455,12 +513,73 @@ class ResponsiveScaffold extends StatelessWidget {
               isSelected: false,
               onTap: () {
                 Navigator.pop(context);
-                onLogout!();
+                widget.onLogout!();
               },
             ),
             const SizedBox(height: 8),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _SidebarToggleButton extends StatelessWidget {
+  const _SidebarToggleButton({
+    required this.isExpanded,
+    required this.onPressed,
+  });
+
+  final bool isExpanded;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final tooltip = isExpanded ? 'Menüyü daralt' : 'Menüyü aç';
+
+    if (!isExpanded) {
+      return Tooltip(
+        message: tooltip,
+        child: SizedBox(
+          width: 52,
+          height: 56,
+          child: Material(
+            color: Colors.white.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(14),
+            child: InkWell(
+              onTap: onPressed,
+              borderRadius: BorderRadius.circular(14),
+              child: Center(
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: _NavigationTheme.surfaceAlt,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.menu_rounded,
+                    color: _NavigationTheme.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      height: 44,
+      child: FilledButton.tonalIcon(
+        onPressed: onPressed,
+        icon: const Icon(Icons.keyboard_double_arrow_left_rounded),
+        label: const Text(
+          'Menüyü daralt',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }
@@ -488,7 +607,9 @@ class _DrawerNavTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       child: Material(
-        color: isSelected ? AppColors.primary.withValues(alpha: 0.2) : Colors.transparent,
+        color: isSelected
+            ? AppColors.primary.withValues(alpha: 0.2)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(10),
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
@@ -500,7 +621,9 @@ class _DrawerNavTile extends StatelessWidget {
                 Icon(
                   icon,
                   size: iconSize,
-                  color: isSelected ? AppColors.primary : _NavigationTheme.textMuted,
+                  color: isSelected
+                      ? AppColors.primary
+                      : _NavigationTheme.textMuted,
                 ),
                 const SizedBox(width: 14),
                 Text(
@@ -508,7 +631,9 @@ class _DrawerNavTile extends StatelessWidget {
                   style: TextStyle(
                     fontSize: labelFontSize,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: isSelected ? AppColors.primary : _NavigationTheme.textPrimary,
+                    color: isSelected
+                        ? AppColors.primary
+                        : _NavigationTheme.textPrimary,
                   ),
                 ),
                 if (isSelected) ...[
@@ -537,6 +662,7 @@ class _DesktopNavTile extends StatelessWidget {
     required this.label,
     required this.isSelected,
     required this.onTap,
+    required this.isExpanded,
     this.shortcutLabel,
   });
 
@@ -544,6 +670,7 @@ class _DesktopNavTile extends StatelessWidget {
   final String label;
   final String? shortcutLabel;
   final bool isSelected;
+  final bool isExpanded;
   final VoidCallback onTap;
 
   @override
@@ -556,14 +683,22 @@ class _DesktopNavTile extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 3),
         child: Material(
-          color: isSelected ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(isExpanded ? 18 : 14),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              padding: EdgeInsets.symmetric(
+                horizontal: isExpanded ? 14 : 8,
+                vertical: isExpanded ? 14 : 10,
+              ),
               child: Row(
+                mainAxisAlignment: isExpanded
+                    ? MainAxisAlignment.start
+                    : MainAxisAlignment.center,
                 children: [
                   Container(
                     width: 36,
@@ -576,42 +711,48 @@ class _DesktopNavTile extends StatelessWidget {
                     ),
                     child: Icon(
                       icon,
-                      color: isSelected ? AppColors.primary : AppColors.textMuted,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textMuted,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: labelFontSize,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected
-                            ? _NavigationTheme.textPrimary
-                            : _NavigationTheme.textMuted,
-                      ),
-                    ),
-                  ),
-                  if (shortcutLabel != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _NavigationTheme.surfaceAlt,
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: _NavigationTheme.divider),
-                      ),
+                  if (isExpanded) ...[
+                    const SizedBox(width: 12),
+                    Expanded(
                       child: Text(
-                        shortcutLabel!,
+                        label,
                         style: TextStyle(
-                          fontSize: shortcutFontSize,
-                          fontWeight: FontWeight.w600,
-                          color: _NavigationTheme.textMuted,
+                          fontSize: labelFontSize,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: isSelected
+                              ? _NavigationTheme.textPrimary
+                              : _NavigationTheme.textMuted,
                         ),
                       ),
                     ),
+                    if (shortcutLabel != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _NavigationTheme.surfaceAlt,
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(color: _NavigationTheme.divider),
+                        ),
+                        child: Text(
+                          shortcutLabel!,
+                          style: TextStyle(
+                            fontSize: shortcutFontSize,
+                            fontWeight: FontWeight.w600,
+                            color: _NavigationTheme.textMuted,
+                          ),
+                        ),
+                      ),
+                  ],
                 ],
               ),
             ),

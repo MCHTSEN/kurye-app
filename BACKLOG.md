@@ -801,6 +801,23 @@ Project audit log for major changes.
 
 ---
 
+### 2026-05-01 — Operasyon masaüstü kullanım düzeltmeleri
+- Scope: `feature/operasyon`, `product/widgets`
+- Summary: Masaüstü sidebar varsayılanını kompakt ikon moduna aldı, navigasyon sonrası otomatik daralttı, devam eden iş satırlarını dar alanda taşmayacak şekilde yeniden hizaladı, kurye ataması sonrası seçili kurye dropdown'unu temizledi, müşteri listesini Excel benzeri tabloya çevirdi ve uğrama yönetimine müşteri filtresi ekledi.
+- Files:
+  - `lib/product/widgets/responsive_scaffold.dart`
+  - `lib/product/widgets/WIDGETS.md`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/feature/operasyon/presentation/musteri_kayit_page.dart`
+  - `lib/feature/operasyon/presentation/ugrama_yonetim_page.dart`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+- Validation:
+  - `flutter analyze` completed with existing repo issues only: deprecated theme/auth/dashboard_stats info items and two Supabase `rpc` inference warnings; no new issue in touched files.
+  - `flutter test test/product/widgets/responsive_scaffold_test.dart test/feature/operasyon/operasyon_ekran_page_test.dart` passed.
+  - `flutter test` ran 177 tests; failed only on existing `test/feature/example_feed/example_feed_page_golden_test.dart` golden pixel mismatch unrelated to this change.
+
+---
+
 ### 2026-03-16 — Local web debug CSP workaround
 - Scope: `tooling`, `docs`
 - Summary: Added a dedicated VS Code Chrome launch config and README command for local Flutter web debug in CSP-constrained environments. The workaround uses Chrome development flags only for localhost so production CSP behavior remains unchanged.

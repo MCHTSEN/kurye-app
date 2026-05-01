@@ -32,6 +32,7 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
   final _searchFocusNode = FocusNode();
 
   String? _editingId;
+  String? _musteriFilterId;
   bool _isSubmitting = false;
   final Set<String> _selectedMusteriIds = {};
 
@@ -314,16 +315,26 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
   ) {
     return ugramaAsync.when(
       data: (list) {
+        var visibleList = list;
         final musteriMap = <String, String>{};
         if (musteriAsync case AsyncData(value: final musteriler)) {
           for (final musteri in musteriler) {
             musteriMap[musteri.id] = musteri.firmaKisaAd;
           }
         }
+        if (_musteriFilterId != null) {
+          final byMusteriAsync = ref.watch(
+            ugramaListByMusteriProvider(_musteriFilterId!),
+          );
+          visibleList = byMusteriAsync.maybeWhen(
+            data: (items) => items,
+            orElse: () => const <Ugrama>[],
+          );
+        }
 
         final isMobile = layoutTypeOf(context) == LayoutType.mobile;
         final query = _searchController.text.trim().toLowerCase();
-        final filtered = list.where((ugrama) {
+        final filtered = visibleList.where((ugrama) {
           if (query.isEmpty) {
             return true;
           }
@@ -353,19 +364,61 @@ class _UgramaYonetimPageState extends ConsumerState<UgramaYonetimPage> {
         final card = AppSectionCard(
           title: 'Uğramalar (${filtered.length})',
           trailing: SizedBox(
-            width: 260,
-            child: TextField(
-              focusNode: _searchFocusNode,
-              controller: _searchController,
-              onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
-                hintText: 'Ara... (/)',
-                prefixIcon: Icon(Icons.search_rounded),
-                isDense: true,
-              ),
+            width: 520,
+            child: Wrap(
+              spacing: AppSpacing.xs,
+              runSpacing: AppSpacing.xs,
+              alignment: WrapAlignment.end,
+              children: [
+                SizedBox(
+                  width: 220,
+                  child: DropdownButtonFormField<String?>(
+                    initialValue: _musteriFilterId,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Müşteri',
+                      isDense: true,
+                    ),
+                    items: [
+                      const DropdownMenuItem<String?>(
+                        child: Text('Tüm müşteriler'),
+                      ),
+                      if (musteriAsync case AsyncData(value: final musteriler))
+                        ...musteriler.map(
+                          (musteri) => DropdownMenuItem<String?>(
+                            value: musteri.id,
+                            child: Text(musteri.firmaKisaAd),
+                          ),
+                        ),
+                    ],
+                    onChanged: (value) {
+                      setState(() => _musteriFilterId = value);
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: 260,
+                  child: TextField(
+                    focusNode: _searchFocusNode,
+                    controller: _searchController,
+                    onChanged: (_) => setState(() {}),
+                    decoration: const InputDecoration(
+                      hintText: 'Ara... (/)',
+                      prefixIcon: Icon(Icons.search_rounded),
+                      isDense: true,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          child: listView,
+          child:
+              _musteriFilterId != null &&
+                  ref
+                      .watch(ugramaListByMusteriProvider(_musteriFilterId!))
+                      .isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : listView,
         );
 
         return isMobile ? card : SizedBox.expand(child: card);

@@ -450,6 +450,8 @@ void main() {
       expect(log.eskiDurum, SiparisDurum.kuryeBekliyor);
       expect(log.yeniDurum, SiparisDurum.devamEdiyor);
       expect(log.degistirenId, _testUserId);
+      expect(find.text('Kurye Seç'), findsOneWidget);
+      expect(find.text('Ali Kurye'), findsNothing);
     });
 
     testWidgets('(d) finish with auto-pricing — historical match found', (

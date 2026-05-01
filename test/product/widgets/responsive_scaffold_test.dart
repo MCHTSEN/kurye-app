@@ -5,6 +5,44 @@ import 'package:kuryem/app/router/custom_route.dart';
 import 'package:kuryem/product/widgets/responsive_scaffold.dart';
 
 void main() {
+  testWidgets('desktop sidebar opens without overflow', (tester) async {
+    tester.view.physicalSize = const Size(1440, 1200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: ResponsiveScaffold(
+          title: 'Dashboard',
+          currentRoute: CustomRoute.operasyonDashboard,
+          navItems: [
+            NavItem(
+              icon: Icons.dashboard,
+              label: 'Dashboard',
+              route: CustomRoute.operasyonDashboard,
+            ),
+            NavItem(
+              icon: Icons.history,
+              label: 'Geçmiş',
+              route: CustomRoute.operasyonGecmis,
+            ),
+          ],
+          body: Center(child: Text('Dashboard body')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Menüyü aç'));
+    await tester.pump(const Duration(milliseconds: 30));
+    expect(tester.takeException(), isNull);
+    await tester.pump(const Duration(milliseconds: 80));
+    expect(tester.takeException(), isNull);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('desktop sidebar navigates across nested operasyon routes', (
     tester,
   ) async {
@@ -92,7 +130,7 @@ void main() {
 
     expect(find.text('Dashboard body'), findsOneWidget);
 
-    await tester.tap(find.text('Geçmiş'));
+    await tester.tap(find.byIcon(Icons.history).first);
     await tester.pumpAndSettle();
 
     expect(find.text('Geçmiş body'), findsOneWidget);
