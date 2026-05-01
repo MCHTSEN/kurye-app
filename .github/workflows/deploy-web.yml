@@ -1,0 +1,84 @@
+name: Deploy Web to app.bursamotokurye.com
+
+on:
+  push:
+    branches: [development, main]
+    paths:
+      - 'lib/**'
+      - 'packages/**'
+      - 'web/**'
+      - 'pubspec.yaml'
+      - 'pubspec.lock'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Pub get
+        run: flutter pub get
+
+      - name: Build web (release, supabase entry, dart-define inject)
+        env:
+          BACKEND_PROVIDER: ${{ secrets.BACKEND_PROVIDER }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          OPERASYON_REPORTS_PASSWORD: ${{ secrets.OPERASYON_REPORTS_PASSWORD }}
+          MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}
+        run: |
+          flutter build web \
+            --release \
+            --base-href=/ \
+            --target=lib/main_supabase.dart \
+            --dart-define=APP_ENV=production \
+            --dart-define=BACKEND_PROVIDER=${BACKEND_PROVIDER:-supabase} \
+            --dart-define=SUPABASE_URL=$SUPABASE_URL \
+            --dart-define=SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY \
+            --dart-define=OPERASYON_REPORTS_PASSWORD=$OPERASYON_REPORTS_PASSWORD \
+            --dart-define=MIXPANEL_TOKEN=$MIXPANEL_TOKEN \
+            --dart-define=ANALYTICS_ENABLED=true
+
+      - name: Copy .htaccess into build output
+        run: cp web/.htaccess build/web/.htaccess
+
+      - name: Verify build artifacts
+        run: |
+          test -f build/web/index.html || (echo "index.html missing"; exit 1)
+          test -f build/web/.htaccess  || (echo ".htaccess missing"; exit 1)
+          ls -la build/web/ | head -30
+          echo "Build size:"
+          du -sh build/web/
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR_APP }}
+          local-dir: ./build/web/
+          dangerous-clean-slate: false
+          log-level: verbose
+          timeout: 180000
+          exclude: |
+            **/.git*
+            **/.git*/**
