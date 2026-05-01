@@ -3,13 +3,6 @@ name: Deploy Web to app.bursamotokurye.com
 on:
   push:
     branches: [development, main]
-    paths:
-      - 'lib/**'
-      - 'packages/**'
-      - 'web/**'
-      - 'pubspec.yaml'
-      - 'pubspec.lock'
-      - '.github/workflows/deploy-web.yml'
   workflow_dispatch:
 
 concurrency:
