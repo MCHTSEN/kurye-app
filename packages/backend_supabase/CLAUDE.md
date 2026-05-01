@@ -1,6 +1,6 @@
 # backend_supabase
 
-Supabase SDK integration for eipat.
+Supabase SDK integration for Kuryem.
 
 ## Purpose
 
@@ -34,4 +34,4 @@ Supabase SDK exports its own `AuthUser` class. The import uses `hide AuthUser` t
 ## Dependency Rules
 
 - Only `supabase_flutter` and `backend_core`
-- Never import from the main `eipat` package
+- Never import from the main `Kuryem` package

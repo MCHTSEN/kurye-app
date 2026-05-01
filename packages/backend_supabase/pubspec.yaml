@@ -1,5 +1,5 @@
 name: backend_supabase
-description: Supabase backend implementation for eipat.
+description: Supabase backend implementation for Kuryem.
 publish_to: 'none'
 version: 0.1.0
 

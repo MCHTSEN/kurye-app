@@ -7,9 +7,9 @@ set -e
 
 NEW_NAME=$1
 BUNDLE_ID=${2:-"com.example.$NEW_NAME"}
-OLD_NAME="eipat"
-OLD_BUNDLE="com.example.eipat"
-OLD_CLASS="EipatApp"
+OLD_NAME="bursamotokurye"
+OLD_BUNDLE="com.lukeristudio.bursamotokurye"
+OLD_CLASS="BursamotoKuryeApp"
 
 if [ -z "$NEW_NAME" ]; then
   echo "Usage: ./rename.sh <new_name> [bundle_id]"
@@ -36,10 +36,12 @@ find lib test integration_test -name '*.dart' -exec sed -i '' "s/$OLD_CLASS/$NEW
 echo "[2/10] Android..."
 sed -i '' "s/$OLD_BUNDLE/$BUNDLE_ID/g" android/app/build.gradle.kts
 sed -i '' "s/$OLD_NAME/$NEW_NAME/g" android/app/src/main/AndroidManifest.xml
-sed -i '' "s/$OLD_BUNDLE/$BUNDLE_ID/g" android/app/src/main/kotlin/com/example/$OLD_NAME/MainActivity.kt
 
 OLD_PACKAGE_DIR="android/app/src/main/kotlin/$(echo $OLD_BUNDLE | tr '.' '/')"
 NEW_PACKAGE_DIR="android/app/src/main/kotlin/$(echo $BUNDLE_ID | tr '.' '/')"
+
+sed -i '' "s/$OLD_BUNDLE/$BUNDLE_ID/g" "$OLD_PACKAGE_DIR/MainActivity.kt"
+
 if [ "$OLD_PACKAGE_DIR" != "$NEW_PACKAGE_DIR" ]; then
   mkdir -p "$NEW_PACKAGE_DIR"
   mv "$OLD_PACKAGE_DIR/MainActivity.kt" "$NEW_PACKAGE_DIR/"

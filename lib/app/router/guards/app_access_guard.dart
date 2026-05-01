@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart' hide CustomRoute;
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/navigation/navigation_providers.dart';
 import '../../../product/onboarding/onboarding_providers.dart';
+import '../../../product/role_request/role_request_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../custom_route.dart';
 
@@ -27,6 +30,30 @@ class AppAccessGuard extends AutoRouteGuard {
       case null:
         return CustomRoute.roleSelection.path;
     }
+  }
+
+  static String landingPathForUserState({
+    required AppUserProfile? profile,
+    required bool hasPendingRoleRequest,
+  }) {
+    final role = profile?.role;
+    if (role != null) {
+      if (role == UserRole.musteriPersonel && profile?.isActive == false) {
+        return CustomRoute.home.path;
+      }
+
+      if (role == UserRole.musteriPersonel && profile?.musteriId == null) {
+        return CustomRoute.home.path;
+      }
+
+      return homePathForRole(role);
+    }
+
+    if (hasPendingRoleRequest) {
+      return CustomRoute.home.path;
+    }
+
+    return CustomRoute.roleSelection.path;
   }
 
   static bool _isRoleRestrictedRoute(String path) =>
@@ -75,22 +102,38 @@ class AppAccessGuard extends AutoRouteGuard {
 
     // 3. Authenticated kullanıcı
     if (isAuthenticated) {
-      // Profili doğrudan repository'den çek (stream bekleme yok)
-      final role = await _getUserRole(session.user.id);
-      final homePath = homePathForRole(role);
+      final profile = await _getUserProfile(session.user.id);
+      final role = profile?.role;
+      var hasPendingRoleRequest = false;
+      if (profile == null) {
+        hasPendingRoleRequest = await _hasPendingRoleRequest(session.user.id);
+      }
+      final homePath = landingPathForUserState(
+        profile: profile,
+        hasPendingRoleRequest: hasPendingRoleRequest,
+      );
 
       _log.d('guard: role=${role?.value ?? "none"} home=$homePath');
 
       // 3a. Rol kısıtlı rotalara erişim kontrolü
       if (_isRoleRestrictedRoute(targetPath)) {
-        if (role == null || !_canAccessRoute(role, targetPath)) {
+        final hasCompleteMusteriAccess =
+            role != UserRole.musteriPersonel || profile?.musteriId != null;
+
+        if (role == null ||
+            !_canAccessRoute(role, targetPath) ||
+            !hasCompleteMusteriAccess) {
           _redirect(router, resolver, homePath, 'role-restricted');
           return;
         }
       }
 
-      // 3b. Profil yoksa → rol seçim
-      if (role == null && targetPath != CustomRoute.roleSelection.path) {
+      // 3b. Profil yoksa:
+      // - pending talep varsa uygulama içi bekleme ekranında kal
+      // - talep yoksa rol seçime dön
+      if (role == null &&
+          !hasPendingRoleRequest &&
+          targetPath != CustomRoute.roleSelection.path) {
         _redirect(router, resolver, CustomRoute.roleSelection.path, 'no-role');
         return;
       }
@@ -116,14 +159,24 @@ class AppAccessGuard extends AutoRouteGuard {
     resolver.next();
   }
 
-  Future<UserRole?> _getUserRole(String userId) async {
+  Future<AppUserProfile?> _getUserProfile(String userId) async {
     try {
       final repo = _ref.read(userProfileRepositoryProvider);
-      final profile = await repo.getProfile(userId);
-      return profile?.role;
+      return repo.getProfile(userId);
     } on Object catch (e) {
-      _log.e('Failed to get user role', error: e);
+      _log.e('Failed to get user profile', error: e);
       return null;
+    }
+  }
+
+  Future<bool> _hasPendingRoleRequest(String userId) async {
+    try {
+      final repo = _ref.read(roleRequestRepositoryProvider);
+      final request = await repo.getMyPendingRequest(userId);
+      return request != null;
+    } on Object catch (e) {
+      _log.e('Failed to get pending role request', error: e);
+      return false;
     }
   }
 
@@ -133,8 +186,14 @@ class AppAccessGuard extends AutoRouteGuard {
     String path,
     String reason,
   ) {
+    if (resolver.route.path == path) {
+      _log.d('guard: skip redirect to same path $path ($reason)');
+      resolver.next();
+      return;
+    }
+
     _log.i('guard: redirect to $path ($reason)');
-    router.replacePath(path);
+    unawaited(router.replacePath(path));
     resolver.next(false);
   }
 }

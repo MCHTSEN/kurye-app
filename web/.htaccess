@@ -1,0 +1,89 @@
+# Kuryem web app - LiteSpeed/Apache .htaccess
+# Subdomain: app.bursamotokurye.com
+# Tek kullanıcılı operasyon paneli — index'lenmemeli, cache'lenmemeli
+
+# ---------------------------------------------------------------------
+# 1) SPA Routing — tüm path'leri index.html'e yönlendir (Flutter web)
+# ---------------------------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # HTTPS zorla
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+  # Mevcut dosya/dizin varsa dokunma
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Aksi halde index.html'e fallback (SPA deep-link refresh sorunu çözümü)
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# ---------------------------------------------------------------------
+# 2) Robots: arama motorlarına "girme" sinyali (HTTP header seviyesi)
+# ---------------------------------------------------------------------
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow, noarchive, nosnippet"
+
+  # Güvenlik header'ları
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set Permissions-Policy "geolocation=(self), camera=(), microphone=()"
+</IfModule>
+
+# ---------------------------------------------------------------------
+# 3) Compression — LiteSpeed brotli'yi otomatik kullanır, fallback gzip
+# ---------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE application/wasm font/ttf font/otf
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# ---------------------------------------------------------------------
+# 4) Cache — Flutter build hashed asset isimleri kullanır, uzun cache OK
+#    Ama index.html ve flutter_service_worker.js HER ZAMAN fresh olmalı
+# ---------------------------------------------------------------------
+<IfModule mod_expires.c>
+  ExpiresActive On
+
+  # HTML ve service worker — cache'leme (yoksa eski sürüm yapışır)
+  ExpiresByType text/html "access plus 0 seconds"
+  <FilesMatch "(index\.html|flutter_service_worker\.js|manifest\.json)$">
+    ExpiresDefault "access plus 0 seconds"
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+  </FilesMatch>
+
+  # Hashed assets — 1 yıl cache (Flutter build name-mangling yapar)
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType application/wasm "access plus 1 year"
+</IfModule>
+
+# ---------------------------------------------------------------------
+# 5) MIME types — Flutter'ın .wasm ve .js.map dosyaları
+# ---------------------------------------------------------------------
+<IfModule mod_mime.c>
+  AddType application/wasm .wasm
+  AddType application/json .map
+</IfModule>
+
+# ---------------------------------------------------------------------
+# 6) Hassas dosyaları engelle
+# ---------------------------------------------------------------------
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+<FilesMatch "(\.env|\.git|\.DS_Store)$">
+  Require all denied
+</FilesMatch>

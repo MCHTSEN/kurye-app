@@ -1,0 +1,16 @@
+Kuryem, moto kurye operasyonlarını uçtan uca yöneten bir sipariş ve takip uygulamasıdır.
+
+Müşteri Personel:
+• Kolayca kurye talebi oluşturun
+• Sipariş durumunu anlık olarak takip edin
+• Geçmiş siparişlerinizi görüntüleyin
+
+Operasyon Ekibi:
+• Gelen siparişleri anlık takip edin
+• Kurye atayın ve yönetin
+• Ciro ve performans verilerini analiz edin
+
+Kurye:
+• Siparişleri anında alın
+• Çıkış ve teslimat saatlerini kaydedin
+• Konum paylaşımı ile operasyonu bilgilendirin

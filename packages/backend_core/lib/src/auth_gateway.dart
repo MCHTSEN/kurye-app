@@ -22,6 +22,8 @@ abstract class AuthGateway {
 
   Future<void> signOut();
 
+  Future<void> deleteAccount();
+
   /// Which social login methods this gateway supports.
   Set<SocialLoginMethod> get supportedSocialLogins;
 }

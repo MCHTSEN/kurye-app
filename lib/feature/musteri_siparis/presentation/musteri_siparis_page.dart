@@ -6,24 +6,29 @@ import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/musteri_personel/musteri_personel_providers.dart';
 import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
+import '../../../product/ugrama/ugrama_resolution_service.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 import '../../../product/widgets/searchable_dropdown.dart';
+import '../../../product/widgets/typeahead_field.dart';
+
+const _createNewChoiceValue = '__create_new__';
+const _selfStopVirtualValue = '__self_stop__';
 
 class MusteriSiparisPage extends ConsumerStatefulWidget {
   const MusteriSiparisPage({super.key});
 
   @override
-  ConsumerState<MusteriSiparisPage> createState() =>
-      _MusteriSiparisPageState();
+  ConsumerState<MusteriSiparisPage> createState() => _MusteriSiparisPageState();
 }
 
 class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
@@ -34,6 +39,9 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
   String? _selectedUgrama1Id;
   String? _selectedNotId;
   final _not1Controller = TextEditingController();
+  String _cikisInput = '';
+  String _ugramaInput = '';
+  final _resolvedStopLabels = <String, String>{};
 
   bool _isSubmitting = false;
 
@@ -49,9 +57,23 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
       _selectedUgramaId = null;
       _selectedUgrama1Id = null;
       _selectedNotId = null;
+      _cikisInput = '';
+      _ugramaInput = '';
       _not1Controller.clear();
     });
     _formKey.currentState?.reset();
+  }
+
+  void _swapStops() {
+    setState(() {
+      final cikisId = _selectedCikisId;
+      _selectedCikisId = _selectedUgramaId;
+      _selectedUgramaId = cikisId;
+
+      final cikisInput = _cikisInput;
+      _cikisInput = _ugramaInput;
+      _ugramaInput = cikisInput;
+    });
   }
 
   Future<void> _onSubmit({
@@ -59,10 +81,9 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     required String userId,
   }) async {
     // Manual validation for SearchableDropdown fields (not FormField).
-    final hasValidationErrors = _selectedCikisId == null ||
-        _selectedCikisId!.isEmpty ||
-        _selectedUgramaId == null ||
-        _selectedUgramaId!.isEmpty;
+    final hasValidationErrors =
+        (_selectedCikisId == null && _cikisInput.trim().isEmpty) ||
+        (_selectedUgramaId == null && _ugramaInput.trim().isEmpty);
 
     if (!_formKey.currentState!.validate() || hasValidationErrors) {
       if (hasValidationErrors) {
@@ -76,6 +97,29 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     setState(() => _isSubmitting = true);
 
     try {
+      final musteriLabel = _selectedMusteriLabel(musteriId);
+      final resolvedCikisId = await _resolveRequiredStopId(
+        musteriId: musteriId,
+        musteriLabel: musteriLabel,
+        fieldLabel: 'Çıkış',
+        selectedId: _selectedCikisId,
+        rawInput: _cikisInput,
+      );
+      if (resolvedCikisId == null) {
+        return;
+      }
+
+      final resolvedUgramaId = await _resolveRequiredStopId(
+        musteriId: musteriId,
+        musteriLabel: musteriLabel,
+        fieldLabel: 'Uğrama',
+        selectedId: _selectedUgramaId,
+        rawInput: _ugramaInput,
+      );
+      if (resolvedUgramaId == null) {
+        return;
+      }
+
       // Resolve personel_id — allowed to be null.
       final personelRepo = ref.read(musteriPersonelRepositoryProvider);
       final personel = await personelRepo.getByUserId(userId);
@@ -83,13 +127,11 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
       final siparis = Siparis(
         id: '',
         musteriId: musteriId,
-        cikisId: _selectedCikisId!,
-        ugramaId: _selectedUgramaId!,
+        cikisId: resolvedCikisId,
+        ugramaId: resolvedUgramaId,
         ugrama1Id: _selectedUgrama1Id,
         notId: _selectedNotId,
-        not1: _not1Controller.text.trim().isNotEmpty
-            ? _not1Controller.text.trim()
-            : null,
+        not1: _not1Controller.text.trim().isNotEmpty ? _not1Controller.text.trim() : null,
         personelId: personel?.id,
         olusturanId: userId,
         // durum defaults to kuryeBekliyor in constructor
@@ -118,6 +160,183 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     }
   }
 
+  Future<String?> _resolveRequiredStopId({
+    required String musteriId,
+    required String? musteriLabel,
+    required String fieldLabel,
+    required String? selectedId,
+    required String rawInput,
+  }) async {
+    if (selectedId == _selfStopVirtualValue) {
+      final selfName = (musteriLabel ?? '').trim();
+      if (selfName.isEmpty) return null;
+
+      final service = ref.read(ugramaResolutionServiceProvider);
+      var selfResult = await service.resolveForMusteri(
+        musteriId: musteriId,
+        ugramaAdi: selfName,
+      );
+
+      if (selfResult.resolutionType == UgramaResolutionType.notFound ||
+          selfResult.resolutionType == UgramaResolutionType.ambiguousName) {
+        selfResult = await service.resolveForMusteri(
+          musteriId: musteriId,
+          ugramaAdi: selfName,
+          strategy: UgramaResolutionStrategy.createNew,
+        );
+      }
+
+      final selfResolvedId = selfResult.resolvedUgramaId;
+      if (selfResolvedId == null || selfResolvedId.isEmpty) {
+        return null;
+      }
+
+      _resolvedStopLabels[selfResolvedId] = selfName;
+      ref.invalidate(ugramaListByMusteriProvider(musteriId));
+      return selfResolvedId;
+    }
+
+    if (selectedId != null && selectedId.isNotEmpty) {
+      return selectedId;
+    }
+
+    final input = rawInput.trim();
+    if (input.isEmpty) return null;
+
+    final service = ref.read(ugramaResolutionServiceProvider);
+    var result = await service.resolveForMusteri(
+      musteriId: musteriId,
+      ugramaAdi: input,
+    );
+
+    if (result.resolutionType == UgramaResolutionType.notFound) {
+      final shouldCreate = await _showCreateConfirmDialog(
+        fieldLabel: fieldLabel,
+        input: input,
+      );
+      if (shouldCreate != true) return null;
+      result = await service.resolveForMusteri(
+        musteriId: musteriId,
+        ugramaAdi: input,
+        strategy: UgramaResolutionStrategy.createNew,
+      );
+    } else if (result.resolutionType == UgramaResolutionType.ambiguousName) {
+      final choice = await _showAmbiguousChoiceDialog(
+        fieldLabel: fieldLabel,
+        input: input,
+        candidates: result.candidates,
+      );
+      if (choice == null) return null;
+
+      if (choice == _createNewChoiceValue) {
+        result = await service.resolveForMusteri(
+          musteriId: musteriId,
+          ugramaAdi: input,
+          strategy: UgramaResolutionStrategy.createNew,
+        );
+      } else {
+        result = await service.resolveForMusteri(
+          musteriId: musteriId,
+          ugramaAdi: input,
+          strategy: UgramaResolutionStrategy.useExisting,
+          preferredUgramaId: choice,
+        );
+      }
+    }
+
+    final resolvedId = result.resolvedUgramaId;
+    if (resolvedId == null || resolvedId.isEmpty) {
+      return null;
+    }
+
+    _resolvedStopLabels[resolvedId] = input;
+    ref.invalidate(ugramaListByMusteriProvider(musteriId));
+    return resolvedId;
+  }
+
+  Future<bool?> _showCreateConfirmDialog({
+    required String fieldLabel,
+    required String input,
+  }) {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Yeni Uğrama'),
+          content: Text(
+            '$fieldLabel için "$input" kaydı bulunamadı. Yeni uğrama olarak eklemek istiyor musunuz?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Hayır'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Evet'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<String?> _showAmbiguousChoiceDialog({
+    required String fieldLabel,
+    required String input,
+    required List<UgramaResolutionCandidate> candidates,
+  }) {
+    return showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text('$fieldLabel için Eşleşen Uğramalar'),
+          content: SizedBox(
+            width: 420,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '"$input" adına uygun kayıtlar bulundu. Mevcut bir kaydı seçebilir ya da yeni kayıt oluşturabilirsiniz.',
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: candidates.length,
+                    itemBuilder: (context, index) {
+                      final candidate = candidates[index];
+                      final subtitle = (candidate.adres == null || candidate.adres!.trim().isEmpty)
+                          ? 'Adres yok'
+                          : candidate.adres!;
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(candidate.ugramaAdi),
+                        subtitle: Text(subtitle),
+                        onTap: () => Navigator.of(dialogContext).pop(candidate.id),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('İptal'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(_createNewChoiceValue),
+              child: const Text('Yeni Oluştur'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentUserProfileProvider);
@@ -131,6 +350,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
       headerSubtitle: 'Müşteri',
       onLogout: logoutCallback(ref),
       showMobileDrawer: !isMobile,
+      showAppBar: !isMobile,
       body: profileAsync.when(
         data: (profile) {
           if (profile == null || profile.musteriId == null) {
@@ -158,8 +378,9 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     required String displayName,
   }) {
     final ugramaListAsync = ref.watch(ugramaListByMusteriProvider(musteriId));
-    final activeOrdersAsync =
-        ref.watch(siparisStreamByMusteriProvider(musteriId));
+    final activeOrdersAsync = ref.watch(
+      siparisStreamByMusteriProvider(musteriId),
+    );
 
     final type = layoutTypeOf(context);
     if (type == LayoutType.mobile) {
@@ -280,9 +501,23 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     required String musteriId,
     required String userId,
   }) {
-    final dropdownItems = ugramalar
-        .map((u) => (value: u.id, label: u.ugramaAdi))
-        .toList();
+    final dropdownItems = <({String value, String label})>[];
+    final musteriLabel = _selectedMusteriLabel(musteriId);
+    if (musteriLabel != null && musteriLabel.isNotEmpty) {
+      final normalizedMusteri = musteriLabel.trim().toLowerCase();
+      final sameNameStop = ugramalar.where((item) {
+        return item.ugramaAdi.trim().toLowerCase() == normalizedMusteri;
+      });
+      if (sameNameStop.isNotEmpty) {
+        final existing = sameNameStop.first;
+        dropdownItems.add((value: existing.id, label: musteriLabel));
+      } else {
+        dropdownItems.add((value: _selfStopVirtualValue, label: musteriLabel));
+      }
+    }
+    dropdownItems.addAll(
+      ugramalar.map((u) => (value: u.id, label: u.ugramaAdi)),
+    );
 
     return AppSectionCard(
       title: 'Siparis Formu',
@@ -292,28 +527,34 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
         key: _formKey,
         child: Column(
           children: [
-            SearchableDropdown<String>(
-              key: const Key('cikis_dropdown'),
+            TypeaheadField<String>(
+              key: const Key('cikis_typeahead'),
               value: _selectedCikisId,
               label: 'Çıkış *',
               placeholder: 'Çıkış Seç',
-              searchPlaceholder: 'Uğrama ara...',
               items: dropdownItems,
               onChanged: (v) => setState(() => _selectedCikisId = v),
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'Zorunlu alan' : null,
+              onInputChanged: (value) => _cikisInput = value,
             ),
             const SizedBox(height: AppSpacing.xs),
-            SearchableDropdown<String>(
-              key: const Key('ugrama_dropdown'),
+            Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                key: const Key('swap_stops_button'),
+                tooltip: 'Çıkış ve uğramayı yer değiştir',
+                onPressed: _swapStops,
+                icon: const Icon(Icons.swap_vert),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            TypeaheadField<String>(
+              key: const Key('ugrama_typeahead'),
               value: _selectedUgramaId,
               label: 'Uğrama *',
               placeholder: 'Uğrama Seç',
-              searchPlaceholder: 'Uğrama ara...',
               items: dropdownItems,
               onChanged: (v) => setState(() => _selectedUgramaId = v),
-              validator: (v) =>
-                  v == null || v.isEmpty ? 'Zorunlu alan' : null,
+              onInputChanged: (value) => _ugramaInput = value,
             ),
             const SizedBox(height: AppSpacing.xs),
             SearchableDropdown<String>(
@@ -343,8 +584,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
             const SizedBox(height: AppSpacing.md),
             AppPrimaryButton(
               label: 'Sipariş Oluştur',
-              onPressed: () =>
-                  _onSubmit(musteriId: musteriId, userId: userId),
+              onPressed: () => _onSubmit(musteriId: musteriId, userId: userId),
               isLoading: _isSubmitting,
             ),
           ],
@@ -361,9 +601,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
       data: (orders) {
         final activeOrders = orders
             .where(
-              (s) =>
-                  s.durum == SiparisDurum.kuryeBekliyor ||
-                  s.durum == SiparisDurum.devamEdiyor,
+              (s) => s.durum == SiparisDurum.kuryeBekliyor || s.durum == SiparisDurum.devamEdiyor,
             )
             .toList();
 
@@ -380,9 +618,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
           child: activeOrders.isEmpty
               ? const Text('Aktif sipariş yok.')
               : Column(
-                  children: activeOrders
-                      .map((s) => _buildOrderCard(s, ugramaMap))
-                      .toList(),
+                  children: activeOrders.map((s) => _buildOrderCard(s, ugramaMap)).toList(),
                 ),
         );
       },
@@ -399,14 +635,14 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
 
   Widget _buildOrderCard(Siparis siparis, Map<String, String> ugramaMap) {
     final parts = [
-      ugramaMap[siparis.cikisId] ?? siparis.cikisId,
-      ugramaMap[siparis.ugramaId] ?? siparis.ugramaId,
+      _displayStopLabel(siparis.cikisId, ugramaMap),
+      _displayStopLabel(siparis.ugramaId, ugramaMap),
     ];
     if (siparis.ugrama1Id != null) {
-      parts.add(ugramaMap[siparis.ugrama1Id!] ?? siparis.ugrama1Id!);
+      parts.add(_displayStopLabel(siparis.ugrama1Id!, ugramaMap));
     }
     if (siparis.notId != null) {
-      parts.add(ugramaMap[siparis.notId!] ?? siparis.notId!);
+      parts.add(_displayStopLabel(siparis.notId!, ugramaMap));
     }
     final routeLabel = parts.join(' → ');
     final durumLabel = _durumLabel(siparis.durum);
@@ -415,9 +651,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     return Card(
       child: ListTile(
         title: Text(routeLabel),
-        subtitle: siparis.createdAt != null
-            ? Text(_formatDate(siparis.createdAt!))
-            : null,
+        subtitle: siparis.createdAt != null ? Text(_formatDate(siparis.createdAt!)) : null,
         trailing: Chip(
           label: Text(
             durumLabel,
@@ -428,6 +662,20 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
         ),
       ),
     );
+  }
+
+  String _displayStopLabel(String stopId, Map<String, String> ugramaMap) {
+    return ugramaMap[stopId] ?? _resolvedStopLabels[stopId] ?? stopId;
+  }
+
+  String? _selectedMusteriLabel(String musteriId) {
+    final musterilerAsync = ref.watch(musteriListProvider);
+    if (musterilerAsync case AsyncData(value: final musteriler)) {
+      for (final item in musteriler) {
+        if (item.id == musteriId) return item.firmaKisaAd;
+      }
+    }
+    return null;
   }
 
   String _durumLabel(SiparisDurum durum) {
@@ -441,7 +689,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
 
   Color _durumColor(SiparisDurum durum) {
     return switch (durum) {
-      SiparisDurum.kuryeBekliyor => AppColors.secondary,
+      SiparisDurum.kuryeBekliyor => AppColors.textPrimary,
       SiparisDurum.devamEdiyor => AppColors.primary,
       SiparisDurum.tamamlandi => AppColors.secondaryDark,
       SiparisDurum.iptal => AppColors.primaryDark,

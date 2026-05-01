@@ -1,13 +1,13 @@
 import 'package:backend_core/backend_core.dart';
 import 'package:backend_mock/backend_mock.dart';
-import 'package:bursamotokurye/core/environment/app_environment.dart';
-import 'package:bursamotokurye/core/environment/backend_provider.dart';
-import 'package:bursamotokurye/core/environment/credit_access_provider.dart';
-import 'package:bursamotokurye/product/analytics/analytics_provider.dart';
-import 'package:bursamotokurye/product/auth/auth_providers.dart';
-import 'package:bursamotokurye/product/environment/environment_provider.dart';
-import 'package:bursamotokurye/product/runtime/runtime_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kuryem/core/environment/app_environment.dart';
+import 'package:kuryem/core/environment/backend_provider.dart';
+import 'package:kuryem/core/environment/credit_access_provider.dart';
+import 'package:kuryem/product/analytics/analytics_provider.dart';
+import 'package:kuryem/product/auth/auth_providers.dart';
+import 'package:kuryem/product/environment/environment_provider.dart';
+import 'package:kuryem/product/runtime/runtime_providers.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 
 import '../fakes/fake_analytics_service.dart';

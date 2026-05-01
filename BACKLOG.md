@@ -11,6 +11,327 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-04-12
+- Scope: Pending hesap akışını app içine alma + bekleyen kullanıcı için hesap silme
+- Summary:
+  - Pending rol talebi olan fakat henüz profili oluşmamış kullanıcılar için guard ve auth yönlendirme akışı güncellendi; bu kullanıcılar artık ayrı bekleme sayfasında kalmak yerine uygulama içindeki `home` ekranına alınır.
+  - `HomePage` bekleyen hesap durumunu taşıyacak şekilde genişletildi; kullanıcı rol talebi özetini görebilir, durumu yenileyebilir, çıkış yapabilir ve hesap silme akışını başlatabilir.
+  - Rol talebi gönderildikten sonra kullanıcı doğrudan uygulama içindeki pending `home` durumuna yönlendirilir; operasyon tarafındaki bekleyen rol onayı görünümü değişmeden korunur.
+  - Home ve role-selection living doc'ları yeni davranışı yansıtacak şekilde güncellendi.
+  - Guard karar mantığı ve pending home davranışı için test kapsamı eklendi.
+- Files:
+  - `lib/app/router/guards/app_access_guard.dart`
+  - `lib/feature/auth/application/auth_controller.dart`
+  - `lib/feature/home/DOC.md`
+  - `lib/feature/home/presentation/SCREENS.md`
+  - `lib/feature/home/presentation/home_page.dart`
+  - `lib/feature/role_selection/DOC.md`
+  - `lib/feature/role_selection/presentation/role_selection_page.dart`
+  - `test/app/router/guard_role_routing_test.dart`
+  - `test/feature/home/home_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/app/router/guards/app_access_guard.dart lib/feature/auth/application/auth_controller.dart lib/feature/role_selection/presentation/role_selection_page.dart lib/feature/home/presentation/home_page.dart test/app/router/guard_role_routing_test.dart test/feature/home/home_page_test.dart` → passed.
+  - `flutter test test/app/router/guard_role_routing_test.dart test/feature/home/home_page_test.dart` → passed (`8/8`).
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; bu değişikliğe özgü analyze error yok.
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`, `60.76% pixel diff`).
+
+### 2026-04-17
+- Scope: Pending hesap redirect loop düzeltmesi + kurye self-servis seçim kaldırımı
+- Summary:
+  - `AppAccessGuard` aynı path'e tekrar redirect atmayacak şekilde güncellendi; `/home -> /home` döngüsü kesildi.
+  - `RoleSelectionPage` pending ve onaylı taleplerde bekleme ekranını render etmek yerine kullanıcıyı app içine yönlendirecek şekilde güncellendi.
+  - Rol seçim formundan `Kurye` self-servis seçeneği kaldırıldı; yeni talepler yalnızca `Müşteri Personeli` olarak açılabiliyor.
+  - Widget test kapsamı yeni davranış için genişletildi.
+- Files:
+  - `lib/app/router/guards/app_access_guard.dart`
+  - `lib/feature/role_selection/DOC.md`
+  - `lib/feature/role_selection/presentation/role_selection_page.dart`
+  - `test/feature/home/home_page_test.dart`
+  - `test/feature/role_selection/role_selection_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/app/router/guards/app_access_guard.dart lib/feature/role_selection/presentation/role_selection_page.dart test/feature/home/home_page_test.dart test/feature/role_selection/role_selection_page_test.dart` → passed.
+  - `flutter test test/app/router/guard_role_routing_test.dart test/feature/home/home_page_test.dart test/feature/role_selection/role_selection_page_test.dart` → passed (`9/9`).
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; bu düzeltmeye özgü analyze error yok.
+
+- Scope: Rol talebi formunda submit state yenilenmemesi düzeltmesi
+- Summary:
+  - `RoleSelectionPage` form controller'larına listener eklendi; kullanıcı ad/telefon/not alanlarını güncellediğinde widget yeniden çiziliyor.
+  - `Talep Gönder` butonu için merkezi `_canSubmit` kontrolü eklendi; isim ve rol seçimi sonrası buton artık doğru şekilde aktifleşiyor.
+  - Widget testi genişletildi; kullanıcı rol seçip ad girdikten sonra talep oluşturma akışının gerçekten repository'ye ulaştığı doğrulandı.
+- Files:
+  - `lib/feature/role_selection/presentation/role_selection_page.dart`
+  - `test/feature/role_selection/role_selection_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/feature/role_selection/presentation/role_selection_page.dart test/feature/role_selection/role_selection_page_test.dart` → passed.
+  - `flutter test test/feature/role_selection/role_selection_page_test.dart` → passed (`2/2`).
+
+- Scope: Pending kullanıcı için provisional profil + müşteri seçimli rol talebi
+- Summary:
+  - Rol talebi formuna müşteri seçimi eklendi; self-servis müşteri personeli başvuruları artık hangi müşteri adına açıldığını taşıyor.
+  - Supabase role request akışı, başvuru oluşturulurken kullanıcı için `is_active=false` provisional `app_users` profili oluşturacak şekilde genişletildi.
+  - Bu provisional profil sayesinde kullanıcı app içinde müşteri akışlarını kullanabilir; operasyon tarafında rol talebi yine `beklemede` olarak görünmeye devam eder.
+  - Rol onay ekranı başvurudan gelen müşteri seçimini default olarak kullanacak şekilde güncellendi.
+  - Supabase migration ile `role_requests.musteri_id` alanı ve authenticated kullanıcılar için müşteri listesi + kontrollü pending profile insert politikaları eklendi.
+- Files:
+  - `packages/backend_core/lib/src/domain/role_request.dart`
+  - `packages/backend_supabase/lib/src/supabase_role_request_repository.dart`
+  - `lib/feature/role_selection/presentation/role_selection_page.dart`
+  - `lib/feature/role_selection/DOC.md`
+  - `lib/feature/operasyon/presentation/rol_onay_page.dart`
+  - `supabase/migrations/20260417173000_pending_profile_role_request_musteri.sql`
+  - `test/feature/role_selection/role_selection_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format packages/backend_core/lib/src/domain/role_request.dart packages/backend_supabase/lib/src/supabase_role_request_repository.dart lib/feature/role_selection/presentation/role_selection_page.dart lib/feature/operasyon/presentation/rol_onay_page.dart test/feature/role_selection/role_selection_page_test.dart` → passed.
+  - `flutter test test/feature/role_selection/role_selection_page_test.dart test/app/router/guard_role_routing_test.dart test/feature/home/home_page_test.dart` → passed (`10/10`).
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; bu değişikliklere özgü analyze error yok.
+
+### 2026-04-08
+- Scope: Operasyon ekranı bugünkü kazanç yanında aktif kurye sayısı
+- Summary:
+  - `OperasyonEkranPage` desktop özet barında `Bugünkü Kazanç` metriğinin yanına online kurye sayısı eklendi.
+  - Operasyon ekran living doc'u özet bar metriğini yansıtacak şekilde güncellendi.
+  - Widget test eklendi/güncellendi; desktop özet barda aktif kurye sayısının render edildiği doğrulandı.
+- Files:
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/feature/operasyon/presentation/operasyon_ekran_page.dart test/feature/operasyon/operasyon_ekran_page_test.dart` → passed.
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; bu değişikliğe özgü yeni analyzer hatası görünmedi.
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` → passed (`20/20`).
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`, `%60.76 pixel diff`).
+
+- Scope: Operasyon desktop tablo başlık/satır kolon hizası düzeltmesi
+- Summary:
+  - Operasyon ekranında desktop bekleyen ve devam eden tablolar için başlık kolonları satırlarla aynı `flex` oranını kullanacak şekilde güncellendi.
+  - `SAAT` kolonunda başlık ve değerler merkez hizaya alındı; saat değerleri başlığın tam altında görünecek şekilde hizalama tutarlı hale getirildi.
+- Files:
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/feature/operasyon/presentation/operasyon_ekran_page.dart` → passed.
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` → passed (`19/19`).
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; hizalama değişikliğine özgü yeni analyzer hatası oluşmadı.
+
+- Scope: Operasyon ekranı uzun bekleyen/aktif listelerinde desktop overflow düzeltmesi
+- Summary:
+  - `OperasyonEkranPage` içinde `Kurye Bekleyenler` ve `Devam Eden İşler` kartları desktop'ta sabit kart yüksekliğini koruyup kendi içlerinde scroll edecek şekilde güncellendi.
+  - Kart gövdesi için genişleyebilir layout desteği eklendi; uzun sipariş listeleri artık aşağı doğru taşıp `RenderFlex overflowed` üretmiyor.
+  - Operasyon feature/screen living doc'ları masaüstü iç scroll davranışını yansıtacak şekilde güncellendi.
+  - Widget testi eklendi; yoğun veri altında iki dispatch panelinin scroll edebildiği ve overflow exception üretmediği doğrulandı.
+- Files:
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/feature/operasyon/presentation/operasyon_ekran_page.dart test/feature/operasyon/operasyon_ekran_page_test.dart` → passed.
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; bu overflow düzeltmesine özgü yeni analyzer hatası görünmedi.
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` → passed (`19/19`).
+
+- Scope: Geçmiş sipariş edit paneline kalıcı faturalandırıldı alanı
+- Summary:
+  - `Siparis` domain modeline varsayılanı `false` olan kalıcı `faturalandirildi` boolean alanı eklendi; JSON mapping, fake repository ve Supabase create/update akışı bu alanı taşıyacak şekilde güncellendi.
+  - `siparisler` tablosuna `faturalandirildi` kolonu ekleyen Supabase migration yazıldı.
+  - `OperasyonGecmisPage` düzenleme paneline `Faturalandırıldı` checkbox'ı eklendi; `Kaydet` ile kalıcı olarak siparişe yazılıyor.
+  - Geçmiş sipariş listesi son sütununa satır bazlı `Faturalandırıldı` checkbox'ı eklendi; tek tıkla kalıcı güncelleniyor.
+  - Geçmiş liste header'ına toplu `Faturalandırıldı` toggle aksiyonu eklendi; filtrelenmiş görünür listeye uygulanıyor.
+  - Seçili sipariş özet kartı `Faturalandırıldı: Evet/Hayır` satırıyla genişletildi.
+  - Operasyon living doc'ları ve test kapsamı yeni faturalandırma akışı için güncellendi.
+- Files:
+  - `packages/backend_core/lib/src/domain/siparis.dart`
+  - `packages/backend_supabase/lib/src/supabase_siparis_repository.dart`
+  - `supabase/migrations/20260408103000_add_faturalandirildi_to_siparisler.sql`
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_gecmis_page.dart`
+  - `test/helpers/fakes/fake_siparis_repository.dart`
+  - `test/domain/siparis_test.dart`
+  - `test/feature/operasyon/operasyon_gecmis_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `flutter test test/domain/siparis_test.dart test/feature/operasyon/operasyon_gecmis_page_test.dart` → passed.
+  - `flutter analyze` → failed (`15 issues`): repo genelindeki mevcut info/warning backlog; yeni faturalandırıldı akışına özgü analyze hatası oluşmadı.
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`, `%60.76 pixel diff`).
+
+- Scope: Operasyon ekranı bekleyen sipariş düzenleme + kompakt dropdown iyileştirmeleri
+- Summary:
+  - Operasyon ekranında kurye bekleyen siparişler için satır/kart bazlı düzenleme aksiyonu eklendi; bekleyen siparişler artık devam eden siparişlerle aynı dialog altyapısı üzerinden güncellenebiliyor.
+  - Bekleyen sipariş görünümünde personel adı müşteri kısa adının yanına taşındı; sipariş satırı tek bakışta okunur hale getirildi.
+  - Kurye atama dropdown'u için shared `SearchableDropdown` bileşeni genişlik ve kapalı durum metin stili destekleyecek şekilde genişletildi.
+  - Operasyon ekranındaki kurye seçimi dropdown'u kompakt genişliğe çekildi; koyu temada kapalı durumdaki seçili isim beyaz gösteriliyor.
+  - Geçmiş sipariş ekranında filtre dropdown'ları tam genişlik yerine kompakt genişlikte render ediliyor.
+  - Operasyon feature/screen ve shared widget living doc'ları güncellendi; operasyon widget test kapsamı bekleyen sipariş düzenleme ve kompakt filtre genişliği için genişletildi.
+- Files:
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_gecmis_page.dart`
+  - `lib/product/widgets/WIDGETS.md`
+  - `lib/product/widgets/searchable_dropdown.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `test/feature/operasyon/operasyon_gecmis_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/product/widgets/searchable_dropdown.dart lib/feature/operasyon/presentation/operasyon_ekran_page.dart lib/feature/operasyon/presentation/operasyon_gecmis_page.dart test/feature/operasyon/operasyon_ekran_page_test.dart test/feature/operasyon/operasyon_gecmis_page_test.dart` → passed.
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog; yeni değişikliklerden kaynaklanan ek analyze hatası görülmedi.
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart test/feature/operasyon/operasyon_gecmis_page_test.dart` → passed.
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`, `%60.76 pixel diff`).
+
+### 2026-04-01
+- Scope: 3 rol ekranı için hesap silme akışı (operasyon/kurye/müşteri)
+- Summary:
+  - Auth kontratına `deleteAccount` eklendi (`AuthGateway`, `AuthRepository`, `AuthRepositoryImpl`) ve analytics event kataloğuna `auth_account_deleted` olayı tanımlandı.
+  - `AuthController` içine merkezi `deleteAccount` aksiyonu eklendi; başarı durumunda profil invalidation + login gereksinimi akışı korundu.
+  - Backend adapter'lar güncellendi:
+    - `mock`: oturumu kapatıp local state'i temizler
+    - `custom`: `DELETE /auth/account` çağrısı sonrası oturum temizler
+    - `supabase`: `delete_current_user` RPC çağrısı sonrası sign-out
+    - `firebase`: mevcut kullanıcıyı silip sign-out
+  - Ortak `confirmAndDeleteAccount` helper eklendi; iki adımlı onay dialog'u ve hata snackbar davranışı merkezi hale getirildi.
+  - 3 rol ekranında hesap silme aksiyonu eklendi:
+    - `OperasyonAyarlarPage`: hesap kartına `Hesabı Sil` butonu
+    - `KuryeAnaPage`: app bar aksiyonuna hesap silme ikonu
+    - `MusteriShellPage`: app bar aksiyonuna hesap silme ikonu
+  - Feature/screen living docs güncellendi (`operasyon`, `kurye`, `musteri_siparis`, `auth`).
+  - Test kapsamı genişletildi:
+    - Auth repository unit testine `deleteAccount` senaryosu eklendi
+    - 3 rol ekranında hesap silme dialog etkileşimi için widget testleri eklendi
+    - Integration test auth fake implementasyonları yeni kontrata uyumlandı
+- Files:
+  - `lib/feature/auth/DOC.md`
+  - `lib/feature/auth/application/auth_controller.dart`
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/feature/operasyon/presentation/operasyon_ayarlar_page.dart`
+  - `lib/feature/kurye/DOC.md`
+  - `lib/feature/kurye/presentation/SCREENS.md`
+  - `lib/feature/kurye/presentation/kurye_ana_page.dart`
+  - `lib/feature/musteri_siparis/DOC.md`
+  - `lib/feature/musteri_siparis/presentation/SCREENS.md`
+  - `lib/feature/musteri_siparis/presentation/musteri_shell_page.dart`
+  - `lib/product/navigation/account_delete_helper.dart`
+  - `lib/product/DOC.md`
+  - `packages/backend_core/lib/src/auth_gateway.dart`
+  - `packages/backend_core/lib/src/auth_repository.dart`
+  - `packages/backend_core/lib/src/auth_repository_impl.dart`
+  - `packages/backend_core/lib/src/domain/app_events.dart`
+  - `packages/backend_custom/lib/src/custom_api_auth_gateway.dart`
+  - `packages/backend_firebase/lib/src/firebase_auth_gateway.dart`
+  - `packages/backend_mock/lib/src/mock_auth_gateway.dart`
+  - `packages/backend_supabase/lib/src/supabase_auth_gateway.dart`
+  - `test/product/auth/auth_repository_impl_test.dart`
+  - `test/feature/operasyon/operasyon_ayarlar_page_test.dart`
+  - `test/feature/kurye/kurye_ana_page_test.dart`
+  - `test/feature/musteri_siparis/musteri_shell_page_test.dart`
+  - `integration_test/app_smoke_test.dart`
+  - `integration_test/operasyon_navigation_smoke_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `flutter test test/product/auth/auth_repository_impl_test.dart test/feature/operasyon/operasyon_ayarlar_page_test.dart test/feature/kurye/kurye_ana_page_test.dart test/feature/musteri_siparis/musteri_shell_page_test.dart` → passed.
+  - `flutter analyze` → failed (`16 issues`): repo genelindeki mevcut info/warning backlog (yeni hesap silme değişiklikleri kaynaklı ek lint yok).
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`, `%60.76 pixel diff`).
+
+### 2026-03-31 (Devam)
+- Scope: Müşteri mobil shell çift app bar düzeltmesi
+- Summary:
+  - Müşteri mobil shell altında açılan sayfalarda görünen çift app bar problemi giderildi.
+  - `ResponsiveScaffold` içine `showAppBar` parametresi eklendi.
+  - Müşteri sipariş/geçmiş/uğrama talep sayfalarında mobilde app bar kapatıldı (`showAppBar: !isMobile`), shell app bar tek kaynak olarak bırakıldı.
+- Files:
+  - `lib/product/widgets/responsive_scaffold.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_gecmis_page.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_ugrama_talep_page.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `flutter test test/feature/musteri_siparis/musteri_shell_page_test.dart test/feature/musteri_siparis/musteri_siparis_page_test.dart` → passed.
+
+### 2026-03-31
+- Scope: Tema ve Görsel Kimlik Güncellemesi (Shadcn + Flutter Material)
+- Summary:
+  - Shadcn UI bileşenlerinin temel renk paleti (base color) `Slate`'ten `Blue`'ya güncellendi.
+  - Flutter standart (Material 3) teması marka rengi olan maviye (`AppColors.primary`) göre optimize edildi.
+  - `NavigationBarTheme` ve `BottomNavigationBarTheme` güncellendi:
+    - Eski (Material 2) görünümlü navigation bar ayarları kaldırıldı.
+    - `NavigationBar` için modern indicator ve mavi odaklı ikon/etiket stilleri eklendi.
+    - `ColorScheme` üzerinden yüzey renkleri (surfaceVariant) blue-slate tonlarına çekilerek gri/beyaz tekdüzeliği kırıldı.
+- Files:
+  - `lib/app/app.dart`
+  - `lib/core/theme/app_theme.dart`
+- Validation:
+  - `flutter analyze` ve `flutter test` çalıştırıldı.
+  - `MusteriShellPage` ve `OperasyonShellPage` üzerindeki modern alt bar görünümü doğrulandı.
+
+### 2026-03-31 (Devam)
+- Scope: Müşteri + Operasyon çıkış/uğrama müşteri-kendisi seçimi ve swap
+- Summary:
+  - `MusteriSiparisPage` üzerinde operasyonla aynı kurallarla müşteri-kendisi çıkış/uğrama seçimi eklendi.
+  - Müşteri kısa adı uğrama listesinde görünür hale getirildi; kayıt yoksa güvenli çözümleme ile oluşturulup siparişte kullanılabiliyor.
+  - Hem müşteri hem operasyon sipariş formuna `Çıkış ↔ Uğrama` tek tık swap aksiyonu eklendi.
+  - Müşteri ve operasyon ekran testleri yeni davranışları kapsayacak şekilde genişletildi (self-stop ve swap senaryoları).
+  - Living docs müşteri/operasyon feature + screen seviyesinde güncellendi.
+- Files:
+  - `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `test/feature/musteri_siparis/musteri_siparis_page_test.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `lib/feature/musteri_siparis/DOC.md`
+  - `lib/feature/musteri_siparis/presentation/SCREENS.md`
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `BACKLOG.md`
+- Validation:
+  - `flutter test test/feature/musteri_siparis/musteri_siparis_page_test.dart test/feature/operasyon/operasyon_ekran_page_test.dart` → passed.
+  - `flutter analyze` → failed (`18 issues`): repo genelindeki mevcut info/warning backlog (mevcut `supabase_ugrama_talebi_repository.dart` warning dahil).
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`).
+
+### 2026-03-31
+- Scope: Müşteri + Operasyon birleşik uğrama çözümleme ve siparişte "yoksa ekle" akışı
+- Summary:
+  - Müşteri ve operasyon sipariş formlarında çıkış/uğrama alanları için listede olmayan metin girişleri desteklendi.
+  - Ortak `UgramaResolutionService` eklendi; exact eşleşme, isim çakışması (ambiguous) ve yeni kayıt oluşturma akışları merkezi hale getirildi.
+  - `TypeaheadField` ham metin değişimini üst katmana aktaracak `onInputChanged` callback'i ile genişletildi.
+  - Müşteri sipariş ekranında bilinmeyen uğrama için onay popup'ı, isim çakışması için mevcut seç/yeni oluştur popup'ı eklendi.
+  - Operasyon sipariş formunda da aynı popup tabanlı çözümleme akışı etkinleştirildi.
+  - `backend_core` içinde yeni uğrama çözümleme kontratı/domain tipleri eklendi; Supabase adaptöründe yeni repository implementasyonu yapıldı.
+  - Supabase migration ile `resolve_or_create_ugrama_for_musteri` güvenli RPC fonksiyonu eklendi.
+  - Widget ve unit test kapsamı yeni akışları doğrulayacak şekilde güncellendi/genişletildi.
+  - Feature/layer dokümanları güncellendi.
+- Files:
+  - `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/product/widgets/typeahead_field.dart`
+  - `lib/product/ugrama/ugrama_resolution_service.dart`
+  - `packages/backend_core/lib/src/domain/ugrama_resolution.dart`
+  - `packages/backend_core/lib/src/ugrama_resolution_repository.dart`
+  - `packages/backend_core/lib/src/backend_module.dart`
+  - `packages/backend_core/lib/backend_core.dart`
+  - `packages/backend_supabase/lib/src/supabase_ugrama_resolution_repository.dart`
+  - `packages/backend_supabase/lib/src/supabase_backend_module.dart`
+  - `supabase/migrations/20260331110000_resolve_or_create_ugrama_for_musteri_rpc.sql`
+  - `test/product/ugrama/ugrama_resolution_service_test.dart`
+  - `test/feature/musteri_siparis/musteri_siparis_page_test.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+  - `lib/feature/musteri_siparis/DOC.md`
+  - `lib/feature/musteri_siparis/presentation/SCREENS.md`
+  - `lib/feature/operasyon/DOC.md`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `lib/product/DOC.md`
+  - `BACKLOG.md`
+- Validation:
+  - `flutter test test/product/ugrama/ugrama_resolution_service_test.dart test/product/widgets/typeahead_field_test.dart` → passed.
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart test/feature/musteri_siparis/musteri_siparis_page_test.dart` → passed.
+  - `flutter analyze` → failed (`44 issues`): repo genelindeki mevcut info backlog + pre-existing warning (`packages/backend_supabase/lib/src/supabase_ugrama_talebi_repository.dart`).
+  - `flutter test` → failed: pre-existing golden mismatch (`test/feature/example_feed/example_feed_page_golden_test.dart`, `goldens/example_feed_page.png`).
+
 ### 2026-03-31
 - Scope: Operasyon typeahead tıklama seçimi düzeltmesi
 - Summary:
@@ -453,6 +774,47 @@ Project audit log for major changes.
 - Validation:
   - `dart analyze lib/feature/operasyon/presentation/operasyon_gecmis_page.dart` passed.
   - `flutter test test/feature/operasyon/operasyon_gecmis_page_test.dart` passed.
+
+---
+
+### 2026-04-17 — Signup split for new-customer vs existing-customer employee
+- Scope: `feature/role_selection`, `feature/home`, `app/router`, `backend_supabase`, `supabase`
+- Summary: Split post-signup customer onboarding into two paths: users can now either create a new customer company or join an existing customer as staff. New-customer requests create a provisional `musteriler` record plus linked provisional `app_users` profile; existing-customer staff requests bind to the selected customer immediately. Pending customer users now land on `home` first, where new-customer signups can complete company details and all linked customer users can enter the customer panel before final ops approval.
+- Files:
+  - `lib/feature/role_selection/DOC.md`
+  - `lib/feature/role_selection/presentation/role_selection_page.dart`
+  - `lib/feature/home/DOC.md`
+  - `lib/feature/home/presentation/SCREENS.md`
+  - `lib/feature/home/presentation/home_page.dart`
+  - `lib/app/router/guards/app_access_guard.dart`
+  - `lib/product/musteri/musteri_providers.dart`
+  - `lib/feature/operasyon/presentation/rol_onay_page.dart`
+  - `packages/backend_core/lib/src/domain/role_request.dart`
+  - `packages/backend_supabase/lib/src/supabase_role_request_repository.dart`
+  - `supabase/migrations/20260417173000_pending_profile_role_request_musteri.sql`
+  - `test/app/router/guard_role_routing_test.dart`
+  - `test/feature/role_selection/role_selection_page_test.dart`
+  - `test/feature/home/home_page_test.dart`
+- Validation:
+  - `flutter test test/app/router/guard_role_routing_test.dart test/feature/role_selection/role_selection_page_test.dart test/feature/home/home_page_test.dart` passed.
+  - `flutter analyze` completed with the repo's existing 13 issues; no new analyze error introduced by this change set.
+
+---
+
+### 2026-05-01 — Operasyon masaüstü kullanım düzeltmeleri
+- Scope: `feature/operasyon`, `product/widgets`
+- Summary: Masaüstü sidebar varsayılanını kompakt ikon moduna aldı, navigasyon sonrası otomatik daralttı, devam eden iş satırlarını dar alanda taşmayacak şekilde yeniden hizaladı, kurye ataması sonrası seçili kurye dropdown'unu temizledi, müşteri listesini Excel benzeri tabloya çevirdi ve uğrama yönetimine müşteri filtresi ekledi.
+- Files:
+  - `lib/product/widgets/responsive_scaffold.dart`
+  - `lib/product/widgets/WIDGETS.md`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/feature/operasyon/presentation/musteri_kayit_page.dart`
+  - `lib/feature/operasyon/presentation/ugrama_yonetim_page.dart`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+- Validation:
+  - `flutter analyze` completed with existing repo issues only: deprecated theme/auth/dashboard_stats info items and two Supabase `rpc` inference warnings; no new issue in touched files.
+  - `flutter test test/product/widgets/responsive_scaffold_test.dart test/feature/operasyon/operasyon_ekran_page_test.dart` passed.
+  - `flutter test` ran 177 tests; failed only on existing `test/feature/example_feed/example_feed_page_golden_test.dart` golden pixel mismatch unrelated to this change.
 
 ---
 

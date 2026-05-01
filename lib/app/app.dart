@@ -9,8 +9,8 @@ import '../product/navigation/navigation_providers.dart';
 import 'router/app_router.dart';
 import 'router/observers/route_observer_providers.dart';
 
-class BursamotoKuryeApp extends ConsumerWidget {
-  const BursamotoKuryeApp({super.key});
+class KuryemApp extends ConsumerWidget {
+  const KuryemApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,17 +25,17 @@ class BursamotoKuryeApp extends ConsumerWidget {
     return ShadApp.custom(
       themeMode: ThemeMode.light,
       theme: ShadThemeData(
-        colorScheme: const ShadSlateColorScheme.light(),
+        colorScheme: const ShadBlueColorScheme.light(),
         brightness: Brightness.light,
       ),
       darkTheme: ShadThemeData(
-        colorScheme: const ShadSlateColorScheme.dark(),
+        colorScheme: const ShadBlueColorScheme.dark(),
         brightness: Brightness.dark,
       ),
       appBuilder: (context) {
         return KeyboardDismissWrapper(
           child: MaterialApp.router(
-            title: 'bursamotokurye',
+            title: 'kuryem',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,

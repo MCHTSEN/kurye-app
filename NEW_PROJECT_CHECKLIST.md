@@ -11,7 +11,7 @@ Use this checklist when starting a new project from this skeleton.
 - First arg: Dart package name (lowercase, no spaces)
 - Second arg: bundle ID (optional, defaults to `com.example.<name>`)
 
-This updates: package name, bundle ID, app class name (`EipatApp` → `MyappApp`), Dart imports across `lib/`, `test/`, and `integration_test/`, and all platform configs.
+This updates: package name, bundle ID, app class name (`KuryemApp` → `MyappApp`), Dart imports across `lib/`, `test/`, and `integration_test/`, and all platform configs.
 
 ## 2. Choose your backend
 

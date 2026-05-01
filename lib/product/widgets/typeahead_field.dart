@@ -27,6 +27,7 @@ class TypeaheadField<T> extends StatefulWidget {
     this.textColor,
     this.borderColor,
     this.errorColor,
+    this.onInputChanged,
   });
 
   final List<({T value, String label})> items;
@@ -41,6 +42,7 @@ class TypeaheadField<T> extends StatefulWidget {
   final Color? textColor;
   final Color? borderColor;
   final Color? errorColor;
+  final ValueChanged<String>? onInputChanged;
 
   /// Optional external focus node. If null, an internal one is created.
   final FocusNode? focusNode;
@@ -64,8 +66,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
   bool _pointerSelectionInProgress = false;
   Timer? _blurCloseTimer;
 
-  FocusNode get _focusNode =>
-      widget.focusNode ?? (_internalFocusNode ??= FocusNode());
+  FocusNode get _focusNode => widget.focusNode ?? (_internalFocusNode ??= FocusNode());
 
   @override
   void initState() {
@@ -110,6 +111,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
     if (_controller.text != text) {
       _ignoreNextChange = true;
       _controller.text = text;
+      widget.onInputChanged?.call(text);
     }
   }
 
@@ -141,9 +143,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
       _filtered = List.of(widget.items);
     } else {
       final q = query.toLowerCase();
-      _filtered = widget.items
-          .where((item) => item.label.toLowerCase().contains(q))
-          .toList();
+      _filtered = widget.items.where((item) => item.label.toLowerCase().contains(q)).toList();
     }
     _highlightIndex = 0;
   }
@@ -198,6 +198,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
       offset: item.label.length,
     );
     widget.onChanged(item.value);
+    widget.onInputChanged?.call(item.label);
     _removeOverlay();
     if (moveFocus && widget.nextFocus != null) {
       widget.nextFocus!.requestFocus();
@@ -209,6 +210,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
       _ignoreNextChange = false;
       return;
     }
+    widget.onInputChanged?.call(text);
     setState(() {
       _filter(text);
     });
@@ -276,8 +278,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
   }
 
   double _fieldWidth() {
-    final renderBox =
-        _fieldKey.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox = _fieldKey.currentContext?.findRenderObject() as RenderBox?;
     return renderBox?.size.width ?? 200;
   }
 
@@ -368,6 +369,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
                         onTap: () {
                           _controller.clear();
                           widget.onChanged(null);
+                          widget.onInputChanged?.call('');
                           _focusNode.requestFocus();
                         },
                         child: Icon(
@@ -379,9 +381,7 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
                     : Icon(
                         Icons.keyboard_arrow_down_rounded,
                         size: 18,
-                        color:
-                            widget.textColor?.withValues(alpha: 0.7) ??
-                            AppColors.textMuted,
+                        color: widget.textColor?.withValues(alpha: 0.7) ?? AppColors.textMuted,
                       ),
               ),
             ),
@@ -441,16 +441,12 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
                       horizontal: 12,
                       vertical: 10,
                     ),
-                    color: isHighlighted
-                        ? AppColors.primary.withValues(alpha: 0.08)
-                        : null,
+                    color: isHighlighted ? AppColors.primary.withValues(alpha: 0.08) : null,
                     child: Text(
                       item.label,
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight: isHighlighted
-                            ? FontWeight.w700
-                            : FontWeight.w500,
+                        fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w500,
                         color: isHighlighted
                             ? (widget.textColor ?? AppColors.primary)
                             : (widget.textColor ?? AppColors.textPrimary),

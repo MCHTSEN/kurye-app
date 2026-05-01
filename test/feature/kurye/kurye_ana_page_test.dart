@@ -1,11 +1,11 @@
 import 'package:backend_core/backend_core.dart';
-import 'package:bursamotokurye/feature/kurye/presentation/kurye_ana_page.dart';
-import 'package:bursamotokurye/product/kurye/kurye_providers.dart';
-import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
-import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/feature/kurye/presentation/kurye_ana_page.dart';
+import 'package:kuryem/product/kurye/kurye_providers.dart';
+import 'package:kuryem/product/siparis/siparis_providers.dart';
+import 'package:kuryem/product/ugrama/ugrama_providers.dart';
 
 import '../../helpers/fakes/fake_kurye_repository.dart';
 import '../../helpers/fakes/fake_siparis_repository.dart';
@@ -232,5 +232,19 @@ void main() {
         expect(find.text('unknown-x → unknown-y'), findsOneWidget);
       },
     );
+
+    testWidgets('(h) opens delete-account confirmation dialog', (tester) async {
+      await pumpPage(tester);
+
+      await tester.tap(find.byKey(const Key('kurye_delete_account_btn')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Hesabı Sil'), findsWidgets);
+      expect(find.textContaining('Bu işlem geri alınamaz'), findsOneWidget);
+
+      await tester.tap(find.text('Vazgeç'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Bu işlem geri alınamaz'), findsNothing);
+    });
   });
 }

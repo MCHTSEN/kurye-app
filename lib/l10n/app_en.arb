@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "eipat",
+  "appTitle": "Kuryem",
   "onboardingTitle": "Onboarding",
   "onboardingBody": "This screen is the onboarding module skeleton to be reused in future projects.",
   "onboardingContinue": "Continue",
@@ -23,6 +23,10 @@
   "authOrDivider": "or",
   "authRegister": "Register",
   "authName": "Full Name",
+  "authAlreadyHaveAccount": "Already have an account?",
+  "authDontHaveAccount": "Don't have an account?",
+  "authSignInLink": "Sign in",
+  "authRegisterLink": "Register",
   "homeTitle": "Home",
   "homeSkeletonReady": "Skeleton Ready",
   "homeSkeletonDescription": "Auth, onboarding, profile, and backend adapter structure is set up with Riverpod 3.",

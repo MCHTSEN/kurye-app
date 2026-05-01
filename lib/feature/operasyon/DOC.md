@@ -25,16 +25,29 @@ aksiyonlar için optimize edilir.
   varsayılan açılış sekmesi `Operasyon Ekranı`
 - **Raporlar**: Ciro toplamları, kurye performans, aktif kuryeler;
   sayfaya erişim operasyon rapor şifresi ile açılır
-- **OperasyonEkran**: 3 panel realtime yönetim; devam eden siparişler satır bazlı dialog ile düzenlenebilir, desktop'ta bağımsız scroll alanlı kontrol merkezi
+- **OperasyonEkran**: 3 panel realtime yönetim; bekleyen ve devam eden siparişler satır bazlı dialog ile düzenlenebilir, desktop'ta bağımsız scroll alanlı kontrol merkezi
+  - Sipariş formunda çıkış/uğrama alanları serbest metin kabul eder.
+  - Bilinmeyen uğrama için popup tabanlı çözümleme çalışır (mevcut seç / yeni oluştur).
+  - Seçili müşteri adı çıkış/uğrama seçeneklerinde doğrudan gösterilir ve
+    müşteri-adı uğraması güvenli çözümleme ile oluşturulabilir.
+  - Çıkış ve uğrama alanları tek tık swap aksiyonu ile yer değiştirebilir.
+  - Kurye atama dropdown'u kompakt genişlikte tutulur; seçili kurye adı koyu temada beyaz görünür.
+  - Bekleyen sipariş satırında personel adı müşteri adının yanında birlikte gösterilir.
+  - Desktop'ta bekleyen ve devam eden sipariş listeleri kart gövdesi içinde kendi iç scroll alanında akar; uzun listelerde sayfa altına taşmaz.
 - **UgramaYonetim**: Lokasyon/uğrama yönetimi
-- **OperasyonAyarlar**: Yönetim sayfalarına giriş, hesap özeti ve çıkış aksiyonu
+- **OperasyonAyarlar**: Yönetim sayfalarına giriş, hesap özeti, çıkış ve hesap silme aksiyonu
 - **MusteriKayit**: Desktop'ta split-view CRUD formu + filtrelenebilir liste
 - **MusteriPersonelKayit**: Desktop'ta split-view CRUD formu + filtrelenebilir liste
 - **KuryeYonetim**: Desktop'ta split-view CRUD formu + filtrelenebilir liste
 - **GecmisSiparis**: Hızlı filtre, arama ve sağ detay paneli ile geçmiş yönetimi
+  - Filtre dropdown'ları tam genişliğe yayılmadan kompakt kontrol olarak görünür.
+  - Düzenleme panelindeki `faturalandırıldı` alanı siparişe kalıcı yazılır.
+  - Geçmiş listesi son sütunda satır bazlı `faturalandırıldı` checkbox'ı sunar.
+  - Header'daki toplu `faturalandırıldı` toggle aksiyonu, o anki filtrelenmiş görünür listeye uygulanır.
 
 ## Dependencies
 - Tüm repository'ler
+- `UgramaResolutionService` (müşteri bağlamında uğrama çözümleme)
 - Supabase Realtime
 - Sesli uyarı servisi
 - `auto_route` nested router / tabs
@@ -49,4 +62,4 @@ aksiyonlar için optimize edilir.
 - Devam eden sipariş düzenleme dialog'una kurala bağlı alan/rol kısıtları eklenebilir.
 
 ## Last Updated
-- 2026-03-16
+- 2026-04-08

@@ -11,6 +11,7 @@ import 'siparis_log_repository.dart';
 import 'siparis_repository.dart';
 import 'token_refresh_service.dart';
 import 'ugrama_repository.dart';
+import 'ugrama_resolution_repository.dart';
 import 'ugrama_talebi_repository.dart';
 import 'user_profile_repository.dart';
 
@@ -40,4 +41,5 @@ abstract class BackendModule {
   SiparisLogRepository? createSiparisLogRepository() => null;
   MusteriUgramaRepository? createMusteriUgramaRepository() => null;
   UgramaTalebiRepository? createUgramaTalebiRepository() => null;
+  UgramaResolutionRepository? createUgramaResolutionRepository() => null;
 }

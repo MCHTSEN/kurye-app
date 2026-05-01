@@ -1,7 +1,7 @@
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -89,18 +89,10 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
         firmaTamAd: _firmaTamAdController.text.trim().isNotEmpty
             ? _firmaTamAdController.text.trim()
             : null,
-        telefon: _telefonController.text.trim().isNotEmpty
-            ? _telefonController.text.trim()
-            : null,
-        adres: _adresController.text.trim().isNotEmpty
-            ? _adresController.text.trim()
-            : null,
-        email: _emailController.text.trim().isNotEmpty
-            ? _emailController.text.trim()
-            : null,
-        vergiNo: _vergiNoController.text.trim().isNotEmpty
-            ? _vergiNoController.text.trim()
-            : null,
+        telefon: _telefonController.text.trim().isNotEmpty ? _telefonController.text.trim() : null,
+        adres: _adresController.text.trim().isNotEmpty ? _adresController.text.trim() : null,
+        email: _emailController.text.trim().isNotEmpty ? _emailController.text.trim() : null,
+        vergiNo: _vergiNoController.text.trim().isNotEmpty ? _vergiNoController.text.trim() : null,
       );
 
       if (_editingId != null) {
@@ -116,9 +108,7 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              _editingId != null
-                  ? 'Müşteri güncellendi'
-                  : 'Müşteri oluşturuldu',
+              _editingId != null ? 'Müşteri güncellendi' : 'Müşteri oluşturuldu',
             ),
           ),
         );
@@ -150,8 +140,7 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
         shortcuts: isDesktop
             ? const {
                 SingleActivator(LogicalKeyboardKey.slash): _FocusSearchIntent(),
-                SingleActivator(LogicalKeyboardKey.escape):
-                    _ClearSelectionIntent(),
+                SingleActivator(LogicalKeyboardKey.escape): _ClearSelectionIntent(),
               }
             : const {},
         child: Actions(
@@ -171,7 +160,7 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
           },
           child: WorkbenchSplitView(
             header: listAsync.maybeWhen(
-              data: (list) => _buildHeader(list),
+              data: _buildHeader,
               orElse: () => null,
             ),
             editorPane: _buildEditorPane(),
@@ -241,8 +230,7 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
   Widget _buildEditorPane() {
     return AppSectionCard(
       title: _editingId != null ? 'Müşteri Düzenle' : 'Yeni Müşteri',
-      description:
-          'Desktop akışında form solda sabit kalır, liste sağda filtrelenir.',
+      description: 'Desktop akışında form solda sabit kalır, liste sağda filtrelenir.',
       child: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -253,8 +241,7 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
                 decoration: const InputDecoration(
                   labelText: 'Firma Kısa Ad *',
                 ),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Zorunlu alan' : null,
+                validator: (v) => (v == null || v.trim().isEmpty) ? 'Zorunlu alan' : null,
               ),
               const SizedBox(height: AppSpacing.xs),
               TextFormField(
@@ -328,7 +315,8 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
 
     final listView = filtered.isEmpty
         ? const Text('Henüz müşteri yok.')
-        : ListView.separated(
+        : isMobile
+        ? ListView.separated(
             shrinkWrap: isMobile,
             physics: isMobile ? const NeverScrollableScrollPhysics() : null,
             itemCount: filtered.length,
@@ -337,9 +325,7 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
               final isSelected = musteri.id == _editingId;
 
               return Material(
-                color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.08)
-                    : Colors.transparent,
+                color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : Colors.transparent,
                 borderRadius: BorderRadius.circular(14),
                 child: ListTile(
                   shape: RoundedRectangleBorder(
@@ -355,15 +341,68 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
                   trailing: Icon(
                     Icons.circle,
                     size: 12,
-                    color: musteri.isActive
-                        ? AppColors.secondary
-                        : AppColors.textMuted,
+                    color: musteri.isActive ? AppColors.secondary : AppColors.textMuted,
                   ),
                   onTap: () => _populateForm(musteri),
                 ),
               );
             },
-            separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.xs),
+            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.xs),
+          )
+        : Scrollbar(
+            thumbVisibility: true,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 980),
+                child: SingleChildScrollView(
+                  child: DataTable(
+                    showCheckboxColumn: false,
+                    headingRowHeight: 44,
+                    dataRowMinHeight: 52,
+                    dataRowMaxHeight: 64,
+                    columns: const [
+                      DataColumn(label: Text('Kısa Ad')),
+                      DataColumn(label: Text('Firma Tam Ad')),
+                      DataColumn(label: Text('Telefon')),
+                      DataColumn(label: Text('Email')),
+                      DataColumn(label: Text('Vergi No')),
+                      DataColumn(label: Text('Durum')),
+                    ],
+                    rows: filtered.map((musteri) {
+                      final isSelected = musteri.id == _editingId;
+                      return DataRow(
+                        selected: isSelected,
+                        onSelectChanged: (_) => _populateForm(musteri),
+                        cells: [
+                          DataCell(Text(musteri.firmaKisaAd)),
+                          DataCell(Text(_valueOrDash(musteri.firmaTamAd))),
+                          DataCell(Text(_valueOrDash(musteri.telefon))),
+                          DataCell(Text(_valueOrDash(musteri.email))),
+                          DataCell(Text(_valueOrDash(musteri.vergiNo))),
+                          DataCell(
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.circle,
+                                  size: 10,
+                                  color: musteri.isActive
+                                      ? AppColors.secondary
+                                      : AppColors.textMuted,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(musteri.isActive ? 'Aktif' : 'Pasif'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ),
           );
 
     final card = AppSectionCard(
@@ -385,6 +424,11 @@ class _MusteriKayitPageState extends ConsumerState<MusteriKayitPage> {
     );
 
     return isMobile ? card : SizedBox.expand(child: card);
+  }
+
+  String _valueOrDash(String? value) {
+    final trimmed = value?.trim();
+    return trimmed == null || trimmed.isEmpty ? '-' : trimmed;
   }
 }
 

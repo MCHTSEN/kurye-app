@@ -1,5 +1,5 @@
-import 'package:bursamotokurye/core/network/dio_api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/core/network/dio_api_client.dart';
 
 void main() {
   group('DioApiClient', () {

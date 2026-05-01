@@ -10,9 +10,11 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/analytics/analytics_provider.dart';
 import '../../../product/auth/auth_providers.dart';
+import '../../../product/navigation/account_delete_helper.dart';
 import '../../../product/navigation/logout_helper.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
+import '../../auth/application/auth_controller.dart';
 import 'operasyon_shell_page.dart';
 
 class OperasyonAyarlarPage extends ConsumerWidget {
@@ -22,6 +24,9 @@ class OperasyonAyarlarPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(currentUserProfileProvider);
     final authState = ref.watch(authStateProvider);
+    final authActionLoading = ref.watch(
+      authControllerProvider.select((state) => state.isLoading),
+    );
 
     return OperasyonSettingsScaffold(
       title: 'Ayarlar',
@@ -48,9 +53,26 @@ class OperasyonAyarlarPage extends ConsumerWidget {
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        onPressed: logoutCallback(ref),
+                        onPressed: authActionLoading
+                            ? null
+                            : logoutCallback(ref),
                         icon: const Icon(Icons.logout_rounded),
                         label: const Text('Çıkış Yap'),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        key: const Key('operasyon_delete_account_btn'),
+                        onPressed: authActionLoading
+                            ? null
+                            : () => confirmAndDeleteAccount(context, ref),
+                        icon: const Icon(Icons.delete_forever_rounded),
+                        label: const Text('Hesabı Sil'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                        ),
                       ),
                     ),
                   ],
@@ -69,7 +91,7 @@ class OperasyonAyarlarPage extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
           const _SettingsSection(
             title: 'Yönetim',
-            items: const [
+            items: [
               _SettingsItem(
                 title: 'Müşteri Kayıt',
                 subtitle: 'Müşteri firmalarını oluştur ve düzenle',
@@ -99,7 +121,7 @@ class OperasyonAyarlarPage extends ConsumerWidget {
           const SizedBox(height: AppSpacing.md),
           const _SettingsSection(
             title: 'Kayıt ve Talepler',
-            items: const [
+            items: [
               _SettingsItem(
                 title: 'Geçmiş Siparişler',
                 subtitle: 'Tamamlanan ve iptal edilen siparişleri filtrele',

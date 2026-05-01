@@ -22,7 +22,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
-  final bool _isRegisterMode = false;
+  bool _isRegisterMode = false;
   bool _showPassword = false;
 
   VideoPlayerController? _videoController;
@@ -104,12 +104,25 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Auth Card
-                    ClipRRect(
-                      borderRadius: const BorderRadius.all(Radius.circular(24)),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                        child: ShadCard(
-                          backgroundColor: theme.colorScheme.background.withValues(alpha: 0.3),
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        inputDecorationTheme: const InputDecorationTheme(
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                          hoverColor: Colors.transparent,
+                          fillColor: Colors.transparent,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.all(Radius.circular(24)),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                          child: ShadCard(
+                            backgroundColor: theme.colorScheme.background.withValues(alpha: 0.95),
                           title: Text(
                             _isRegisterMode ? l10n.authRegister : l10n.authTitle,
                             style: theme.textTheme.h3.copyWith(fontWeight: FontWeight.w600),
@@ -142,8 +155,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                   keyboardType: TextInputType.emailAddress,
                                   enabled: !isLoading,
                                   leading: const Padding(
-                                    padding: EdgeInsets.all(4),
-                                    child: Icon(Icons.email_outlined, size: 16),
+                                    padding: EdgeInsets.only(right: 8),
+                                    child: Icon(LucideIcons.mail, size: 16),
                                   ),
                                 ),
                                 const SizedBox(height: AppSpacing.md),
@@ -157,8 +170,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                   obscureText: !_showPassword,
                                   enabled: !isLoading,
                                   leading: const Padding(
-                                    padding: EdgeInsets.all(4),
-                                    child: Icon(Icons.lock_outline, size: 16),
+                                    padding: EdgeInsets.only(right: 8),
+                                    child: Icon(LucideIcons.lock, size: 16),
                                   ),
                                   trailing: ShadButton.ghost(
                                     width: 24,
@@ -170,7 +183,7 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                       );
                                     },
                                     leading: Icon(
-                                      _showPassword ? Icons.visibility_off : Icons.visibility,
+                                      _showPassword ? LucideIcons.eyeOff : LucideIcons.eye,
                                       size: 16,
                                     ),
                                   ),
@@ -204,12 +217,39 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                                     _isRegisterMode ? l10n.authRegister : l10n.authSignInWithEmail,
                                   ),
                                 ),
+
+                                const SizedBox(height: AppSpacing.md),
+
+                                // Login/Register toggle
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      _isRegisterMode
+                                          ? l10n.authAlreadyHaveAccount
+                                          : l10n.authDontHaveAccount,
+                                      style: theme.textTheme.small.copyWith(
+                                        color: theme.colorScheme.mutedForeground,
+                                      ),
+                                    ),
+                                    ShadButton.link(
+                                      onPressed: isLoading
+                                          ? null
+                                          : () => setState(() => _isRegisterMode = !_isRegisterMode),
+                                      size: ShadButtonSize.sm,
+                                      child: Text(
+                                        _isRegisterMode ? l10n.authSignInLink : l10n.authRegisterLink,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
                         ),
                       ),
                     ),
+                  ),
 
                     if (kDebugMode) ...[
                       const SizedBox(height: AppSpacing.xl),
@@ -249,9 +289,19 @@ class _AuthPageState extends ConsumerState<AuthPage> {
 
   Widget _buildErrorBanner(Object error, ShadThemeData theme) {
     final isConfirmation = error is EmailConfirmationRequiredException;
+    if (isConfirmation) {
+      return ShadAlert(
+        icon: const Icon(LucideIcons.mailCheck),
+        title: const Text('Kayıt Başarılı!'),
+        description: const Text(
+          'E-posta adresinize onay bağlantısı gönderildi. '
+          'Lütfen gelen kutunuzu kontrol edip hesabınızı onaylayın.',
+        ),
+      );
+    }
     return ShadAlert(
       icon: const Icon(LucideIcons.circleAlert),
-      title: Text(isConfirmation ? 'E-posta Onayı' : 'Hata'),
+      title: const Text('Hata'),
       description: Text(_friendlyError(error)),
     );
   }
@@ -270,6 +320,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         password: password,
         name: name,
       );
+      // Kayıt sonrası login moduna dön (e-posta onayı sonrası giriş yapabilsin)
+      if (mounted) setState(() => _isRegisterMode = false);
     } else {
       await controller.signInWithEmail(email: email, password: password);
     }

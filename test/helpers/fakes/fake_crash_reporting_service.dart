@@ -1,4 +1,4 @@
-import 'package:bursamotokurye/core/runtime/crash_reporting_service.dart';
+import 'package:kuryem/core/runtime/crash_reporting_service.dart';
 
 class FakeCrashReportingService implements CrashReportingService {
   final List<Object> recordedErrors = <Object>[];

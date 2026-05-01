@@ -9,7 +9,7 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get appTitle => 'eipat';
+  String get appTitle => 'Kuryem';
 
   @override
   String get onboardingTitle => 'Onboarding';
@@ -59,6 +59,18 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get authName => 'Ad Soyad';
+
+  @override
+  String get authAlreadyHaveAccount => 'Zaten hesabınız var mı?';
+
+  @override
+  String get authDontHaveAccount => 'Hesabınız yok mu?';
+
+  @override
+  String get authSignInLink => 'Giriş yap';
+
+  @override
+  String get authRegisterLink => 'Kayıt ol';
 
   @override
   String get homeTitle => 'Ana Sayfa';

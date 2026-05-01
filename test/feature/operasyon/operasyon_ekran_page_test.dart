@@ -1,16 +1,18 @@
 import 'package:backend_core/backend_core.dart';
-import 'package:bursamotokurye/feature/operasyon/presentation/operasyon_ekran_page.dart';
-import 'package:bursamotokurye/product/kurye/kurye_providers.dart';
-import 'package:bursamotokurye/product/musteri/musteri_providers.dart';
-import 'package:bursamotokurye/product/services/order_alert_service.dart';
-import 'package:bursamotokurye/product/siparis/siparis_log_providers.dart';
-import 'package:bursamotokurye/product/siparis/siparis_providers.dart';
-import 'package:bursamotokurye/product/ugrama/ugrama_providers.dart';
-import 'package:bursamotokurye/product/user_profile/user_profile_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/feature/operasyon/presentation/operasyon_ekran_page.dart';
+import 'package:kuryem/product/kurye/kurye_providers.dart';
+import 'package:kuryem/product/musteri/musteri_providers.dart';
+import 'package:kuryem/product/musteri_personel/musteri_personel_providers.dart';
+import 'package:kuryem/product/services/order_alert_service.dart';
+import 'package:kuryem/product/siparis/siparis_log_providers.dart';
+import 'package:kuryem/product/siparis/siparis_providers.dart';
+import 'package:kuryem/product/ugrama/ugrama_providers.dart';
+import 'package:kuryem/product/user_profile/user_profile_providers.dart';
 
 import '../../helpers/fakes/fake_kurye_repository.dart';
+import '../../helpers/fakes/fake_musteri_personel_repository.dart';
 import '../../helpers/fakes/fake_musteri_repository.dart';
 import '../../helpers/fakes/fake_order_alert_service.dart';
 import '../../helpers/fakes/fake_siparis_log_repository.dart';
@@ -47,8 +49,17 @@ final _testUgramalar = [
 ];
 
 final _testKuryeler = [
-  const Kurye(id: 'kurye-1', ad: 'Ali Kurye'),
+  const Kurye(id: 'kurye-1', ad: 'Ali Kurye', isOnline: true),
   const Kurye(id: 'kurye-2', ad: 'Veli Kurye', isActive: false),
+];
+
+final _testPersoneller = [
+  const MusteriPersonel(
+    id: 'personel-1',
+    musteriId: 'musteri-1',
+    ad: 'Personel A',
+    userId: 'personel-a-user',
+  ),
 ];
 
 void main() {
@@ -57,13 +68,21 @@ void main() {
     late FakeSiparisLogRepository fakeLogRepo;
     late FakeMusteriRepository fakeMusteriRepo;
     late FakeUgramaRepository fakeUgramaRepo;
+    late FakeMusteriUgramaRepository fakeMusteriUgramaRepo;
+    late FakeMusteriPersonelRepository fakePersonelRepo;
     late FakeKuryeRepository fakeKuryeRepo;
 
-    setUp(() {
+    setUp(() async {
       fakeSiparisRepo = FakeSiparisRepository();
       fakeLogRepo = FakeSiparisLogRepository();
       fakeMusteriRepo = FakeMusteriRepository(seed: _testMusteriler);
       fakeUgramaRepo = FakeUgramaRepository(seed: _testUgramalar);
+      fakeMusteriUgramaRepo = FakeMusteriUgramaRepository()
+        ..ugramaRepo = fakeUgramaRepo;
+      fakePersonelRepo = FakeMusteriPersonelRepository(seed: _testPersoneller);
+      for (final u in _testUgramalar) {
+        await fakeMusteriUgramaRepo.assign('musteri-1', u.id);
+      }
       fakeKuryeRepo = FakeKuryeRepository(seed: _testKuryeler);
     });
 
@@ -86,6 +105,10 @@ void main() {
           siparisLogRepositoryProvider.overrideWithValue(fakeLogRepo),
           musteriRepositoryProvider.overrideWithValue(fakeMusteriRepo),
           ugramaRepositoryProvider.overrideWithValue(fakeUgramaRepo),
+          musteriUgramaRepositoryProvider.overrideWithValue(
+            fakeMusteriUgramaRepo,
+          ),
+          musteriPersonelRepositoryProvider.overrideWithValue(fakePersonelRepo),
           kuryeRepositoryProvider.overrideWithValue(fakeKuryeRepo),
         ],
       );
@@ -125,6 +148,21 @@ void main() {
       expect(find.textContaining('DEVAM EDEN İŞLER'), findsOneWidget);
     });
 
+    testWidgets(
+      '(a0) desktop summary shows active courier count next to revenue',
+      (tester) async {
+        await pumpPage(
+          tester,
+          size: const Size(1440, 1200),
+        );
+
+        final textWidget = tester.widget<Text>(
+          find.byKey(const Key('desktop_active_kurye_count')),
+        );
+        expect(textWidget.data, '1');
+      },
+    );
+
     testWidgets('(b) kurye bekleyenler shows waiting orders', (tester) async {
       // Seed a waiting order.
       fakeSiparisRepo.store['s1'] = const Siparis(
@@ -142,6 +180,224 @@ void main() {
       expect(find.textContaining('KURYE BEKLEYENLER (1)'), findsOneWidget);
       // Name resolution: ugrama-1 → 'Merkez Ofis', ugrama-2 → 'Şube A'
       expect(find.text('Merkez Ofis → Şube A'), findsOneWidget);
+    });
+
+    testWidgets(
+      '(b1) waiting order shows customer and personnel on the same line',
+      (tester) async {
+        fakeSiparisRepo.store['s1'] = const Siparis(
+          id: 's1',
+          musteriId: 'musteri-1',
+          personelId: 'personel-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+        );
+
+        await pumpPage(tester);
+
+        await reveal(tester, find.textContaining('KURYE BEKLEYENLER'));
+
+        expect(find.text('Firma A • Personel A'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '(b2) order form supports unknown stop with confirmation popup',
+      (tester) async {
+        await pumpPage(tester);
+
+        await tester.enterText(
+          find.byKey(const Key('musteri_typeahead')).first,
+          'Firma A',
+        );
+        await tester.pump();
+        await tester.tap(find.text('Firma A').last);
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.byKey(const Key('personel_typeahead')).first,
+          'Personel A',
+        );
+        await tester.pump();
+        await tester.tap(find.text('Personel A').last);
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.byKey(const Key('ugrama_typeahead')).first,
+          'Şube A',
+        );
+        await tester.pump();
+        await tester.tap(find.textContaining('Şube A').last);
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.byKey(const Key('cikis_typeahead')),
+          'Yeni Operasyon Çıkış',
+        );
+        await tester.pump();
+
+        await reveal(tester, find.text('SİPARİŞ OLUŞTUR'));
+        await tester.tap(find.text('SİPARİŞ OLUŞTUR'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 250));
+
+        expect(find.text('Yeni Uğrama'), findsOneWidget);
+        await tester.tap(find.widgetWithText(FilledButton, 'Evet'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 250));
+
+        expect(fakeSiparisRepo.store.length, 1);
+        expect(
+          fakeUgramaRepo.store.values.any(
+            (u) => u.ugramaAdi == 'Yeni Operasyon Çıkış',
+          ),
+          isTrue,
+        );
+      },
+    );
+
+    testWidgets('(b3) allows same stop for cikis and ugrama', (tester) async {
+      await pumpPage(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('musteri_typeahead')).first,
+        'Firma A',
+      );
+      await tester.pump();
+      await tester.tap(find.text('Firma A').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('personel_typeahead')).first,
+        'Personel A',
+      );
+      await tester.pump();
+      await tester.tap(find.text('Personel A').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('cikis_typeahead')).first,
+        'Merkez Ofis',
+      );
+      await tester.pump();
+      await tester.tap(find.textContaining('Merkez Ofis').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('ugrama_typeahead')).first,
+        'Merkez Ofis',
+      );
+      await tester.pump();
+      await tester.tap(find.textContaining('Merkez Ofis').last);
+      await tester.pumpAndSettle();
+
+      await reveal(tester, find.text('SİPARİŞ OLUŞTUR'));
+      await tester.tap(find.text('SİPARİŞ OLUŞTUR'));
+      await tester.pumpAndSettle();
+
+      final created = fakeSiparisRepo.store.values.last;
+      expect(created.cikisId, created.ugramaId);
+      expect(created.cikisId, 'ugrama-1');
+    });
+
+    testWidgets(
+      '(b4) selected customer name appears in stop options and can be selected',
+      (tester) async {
+        await pumpPage(tester);
+
+        await tester.enterText(
+          find.byKey(const Key('musteri_typeahead')).first,
+          'Firma A',
+        );
+        await tester.pump();
+        await tester.tap(find.text('Firma A').last);
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.byKey(const Key('personel_typeahead')).first,
+          'Personel A',
+        );
+        await tester.pump();
+        await tester.tap(find.text('Personel A').last);
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.byKey(const Key('cikis_typeahead')).first,
+          'Firma A',
+        );
+        await tester.pump();
+        expect(find.text('Firma A'), findsWidgets);
+        await tester.tap(find.text('Firma A').last);
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.byKey(const Key('ugrama_typeahead')).first,
+          'Şube A',
+        );
+        await tester.pump();
+        await tester.tap(find.textContaining('Şube A').last);
+        await tester.pumpAndSettle();
+
+        await reveal(tester, find.text('SİPARİŞ OLUŞTUR'));
+        await tester.tap(find.text('SİPARİŞ OLUŞTUR'));
+        await tester.pumpAndSettle();
+
+        expect(fakeSiparisRepo.store, isNotEmpty);
+        expect(
+          fakeUgramaRepo.store.values.any((u) => u.ugramaAdi == 'Firma A'),
+          isTrue,
+        );
+      },
+    );
+
+    testWidgets('(b5) swap button switches cikis and ugrama before submit', (
+      tester,
+    ) async {
+      await pumpPage(tester);
+
+      await tester.enterText(
+        find.byKey(const Key('musteri_typeahead')).first,
+        'Firma A',
+      );
+      await tester.pump();
+      await tester.tap(find.text('Firma A').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('personel_typeahead')).first,
+        'Personel A',
+      );
+      await tester.pump();
+      await tester.tap(find.text('Personel A').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('cikis_typeahead')).first,
+        'Merkez Ofis',
+      );
+      await tester.pump();
+      await tester.tap(find.textContaining('Merkez Ofis').last);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.byKey(const Key('ugrama_typeahead')).first,
+        'Şube A',
+      );
+      await tester.pump();
+      await tester.tap(find.textContaining('Şube A').last);
+      await tester.pumpAndSettle();
+
+      await reveal(tester, find.byKey(const Key('swap_stops_button')));
+      await tester.tap(find.byKey(const Key('swap_stops_button')).first);
+      await tester.pumpAndSettle();
+
+      await reveal(tester, find.text('SİPARİŞ OLUŞTUR'));
+      await tester.tap(find.text('SİPARİŞ OLUŞTUR'));
+      await tester.pumpAndSettle();
+
+      final created = fakeSiparisRepo.store.values.last;
+      expect(created.cikisId, 'ugrama-2');
+      expect(created.ugramaId, 'ugrama-1');
     });
 
     testWidgets('(c) courier assignment flow — select, pick courier, tap Ata', (
@@ -194,6 +450,8 @@ void main() {
       expect(log.eskiDurum, SiparisDurum.kuryeBekliyor);
       expect(log.yeniDurum, SiparisDurum.devamEdiyor);
       expect(log.degistirenId, _testUserId);
+      expect(find.text('Kurye Seç'), findsOneWidget);
+      expect(find.text('Ali Kurye'), findsNothing);
     });
 
     testWidgets('(d) finish with auto-pricing — historical match found', (
@@ -341,6 +599,85 @@ void main() {
       expect(updated.durum, SiparisDurum.devamEdiyor);
     });
 
+    testWidgets('(f1) waiting order can be edited and saved from row action', (
+      tester,
+    ) async {
+      fakeSiparisRepo.store['s-wait-edit'] = const Siparis(
+        id: 's-wait-edit',
+        musteriId: 'musteri-1',
+        personelId: 'personel-1',
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+      );
+
+      await pumpPage(tester);
+
+      await reveal(tester, find.byKey(const Key('edit_waiting_s-wait-edit')));
+      await tester.tap(find.byKey(const Key('edit_waiting_s-wait-edit')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bekleyen Siparişi Düzenle'), findsOneWidget);
+
+      await tester.enterText(
+        find.byKey(const Key('active_edit_note_field')),
+        'Bekleyen sipariş notu güncellendi',
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('active_edit_save_button')));
+      await tester.pumpAndSettle();
+
+      final updated = fakeSiparisRepo.store['s-wait-edit']!;
+      expect(updated.not1, 'Bekleyen sipariş notu güncellendi');
+      expect(updated.durum, SiparisDurum.kuryeBekliyor);
+    });
+
+    testWidgets(
+      '(f2) desktop dispatch lists stay scrollable without overflow on long data',
+      (tester) async {
+        for (var i = 0; i < 18; i++) {
+          fakeSiparisRepo.store['wait-$i'] = Siparis(
+            id: 'wait-$i',
+            musteriId: 'musteri-1',
+            personelId: 'personel-1',
+            cikisId: 'ugrama-1',
+            ugramaId: 'ugrama-2',
+            createdAt: DateTime(2026, 4, 8, 10, i),
+          );
+          fakeSiparisRepo.store['active-$i'] = Siparis(
+            id: 'active-$i',
+            musteriId: 'musteri-1',
+            personelId: 'personel-1',
+            cikisId: 'ugrama-2',
+            ugramaId: 'ugrama-3',
+            kuryeId: 'kurye-1',
+            durum: SiparisDurum.devamEdiyor,
+            createdAt: DateTime(2026, 4, 8, 11, i),
+          );
+        }
+
+        await pumpPage(tester, size: const Size(1440, 900));
+
+        expect(find.byKey(const Key('waiting_panel_scroll')), findsOneWidget);
+        expect(find.byKey(const Key('active_panel_scroll')), findsOneWidget);
+        expect(tester.takeException(), isNull);
+
+        await tester.drag(
+          find.byKey(const Key('waiting_panel_scroll')),
+          const Offset(0, -300),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.drag(
+          find.byKey(const Key('active_panel_scroll')),
+          const Offset(0, -300),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets(
       '(g) sound alert fires only on genuinely new kurye_bekliyor orders',
       (tester) async {
@@ -451,62 +788,68 @@ void main() {
       expect(find.text('ATANMADI'), findsOneWidget);
     });
 
-    testWidgets('(j) desktop active row is resilient to missing customer/personnel data', (
-      tester,
-    ) async {
-      fakeSiparisRepo.store['s-desktop'] = const Siparis(
-        id: 's-desktop',
-        musteriId: 'missing-musteri',
-        personelId: 'missing-personel',
-        cikisId: 'ugrama-1',
-        ugramaId: 'ugrama-2',
-        kuryeId: 'kurye-1',
-        durum: SiparisDurum.devamEdiyor,
-      );
-
-      await pumpPage(
+    testWidgets(
+      '(j) desktop active row is resilient to missing customer/personnel data',
+      (
         tester,
-        size: const Size(1440, 1200),
-      );
+      ) async {
+        fakeSiparisRepo.store['s-desktop'] = const Siparis(
+          id: 's-desktop',
+          musteriId: 'missing-musteri',
+          personelId: 'missing-personel',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+          kuryeId: 'kurye-1',
+          durum: SiparisDurum.devamEdiyor,
+        );
 
-      await reveal(tester, find.textContaining('DEVAM EDEN İŞLER'));
+        await pumpPage(
+          tester,
+          size: const Size(1440, 1200),
+        );
 
-      expect(find.text('missing-musteri'), findsOneWidget);
-      expect(find.text('missing-personel'), findsOneWidget);
-      expect(find.byKey(const Key('finish_s-desktop')), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
+        await reveal(tester, find.textContaining('DEVAM EDEN İŞLER'));
 
-    testWidgets('(k) desktop summary shows today revenue from completed orders', (
-      tester,
-    ) async {
-      final now = DateTime.now();
-      fakeSiparisRepo.store['s-today-completed'] = Siparis(
-        id: 's-today-completed',
-        musteriId: 'musteri-1',
-        cikisId: 'ugrama-1',
-        ugramaId: 'ugrama-2',
-        durum: SiparisDurum.tamamlandi,
-        ucret: 150,
-        createdAt: now,
-      );
-      fakeSiparisRepo.store['s-yesterday-completed'] = Siparis(
-        id: 's-yesterday-completed',
-        musteriId: 'musteri-1',
-        cikisId: 'ugrama-1',
-        ugramaId: 'ugrama-2',
-        durum: SiparisDurum.tamamlandi,
-        ucret: 250,
-        createdAt: now.subtract(const Duration(days: 1)),
-      );
+        expect(find.text('missing-musteri'), findsOneWidget);
+        expect(find.text('missing-personel'), findsOneWidget);
+        expect(find.byKey(const Key('finish_s-desktop')), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
 
-      await pumpPage(
+    testWidgets(
+      '(k) desktop summary shows today revenue from completed orders',
+      (
         tester,
-        size: const Size(1440, 1200),
-      );
+      ) async {
+        final now = DateTime.now();
+        fakeSiparisRepo.store['s-today-completed'] = Siparis(
+          id: 's-today-completed',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+          durum: SiparisDurum.tamamlandi,
+          ucret: 150,
+          createdAt: now,
+        );
+        fakeSiparisRepo.store['s-yesterday-completed'] = Siparis(
+          id: 's-yesterday-completed',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+          durum: SiparisDurum.tamamlandi,
+          ucret: 250,
+          createdAt: now.subtract(const Duration(days: 1)),
+        );
 
-      expect(find.text('150 TL'), findsOneWidget);
-    });
+        await pumpPage(
+          tester,
+          size: const Size(1440, 1200),
+        );
+
+        expect(find.text('150 TL'), findsOneWidget);
+      },
+    );
 
     testWidgets(
       '(l) finishing order updates today revenue without manual refresh',

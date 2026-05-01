@@ -10,12 +10,14 @@
 - `credit`: central credit access strategy for route guard decisions.
 - `environment`: runtime environment provider.
 - `initialization`: startup SDK initialization by backend selection.
-- `navigation`: mutable app access signals and route reevaluation.
+- `navigation`: mutable app access signals, route reevaluation, and shared
+  auth action helpers (logout / account deletion confirmation).
 - `network`: `ApiClient` provider and interceptor wiring.
 - `onboarding`: onboarding persistence adapter and providers.
 - `runtime`: providers and adapters for secure storage, connectivity,
   feature flags, crash reporting, permissions, cache policy, and retry
   policy.
+- `ugrama`: müşteri bağlamında uğrama çözümleme/atama/oluşturma orchestrator'ı.
 - `riverpod`: provider observer and Riverpod runtime utilities.
 - `widgets`: reusable UI components with doc contract.
 
@@ -41,4 +43,4 @@
   contracts used by production providers.
 
 ## Last Updated
-- 2026-03-08
+- 2026-04-01

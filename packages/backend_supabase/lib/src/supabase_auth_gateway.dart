@@ -101,12 +101,20 @@ class SupabaseAuthGateway implements AuthGateway {
   }
 
   @override
-  Set<SocialLoginMethod> get supportedSocialLogins =>
-      const {SocialLoginMethod.google};
+  Set<SocialLoginMethod> get supportedSocialLogins => const {
+    SocialLoginMethod.google,
+  };
 
   @override
   Future<void> signOut() async {
     _log.i('signOut called');
+    await _client.auth.signOut();
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    _log.i('deleteAccount called');
+    await _client.rpc<void>('delete_current_user');
     await _client.auth.signOut();
   }
 

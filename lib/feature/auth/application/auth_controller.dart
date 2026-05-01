@@ -5,6 +5,7 @@ import '../../../app/router/app_router.dart';
 import '../../../app/router/guards/app_access_guard.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/navigation/navigation_providers.dart';
+import '../../../product/role_request/role_request_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 
 part 'auth_controller.g.dart';
@@ -36,11 +37,13 @@ class AuthController extends _$AuthController {
   }) async {
     state = const AsyncLoading();
     final nextState = await AsyncValue.guard(
-      () => ref.read(authRepositoryProvider).register(
-        email: email,
-        password: password,
-        name: name,
-      ),
+      () => ref
+          .read(authRepositoryProvider)
+          .register(
+            email: email,
+            password: password,
+            name: name,
+          ),
     );
     if (!ref.mounted) return;
     state = nextState;
@@ -78,6 +81,18 @@ class AuthController extends _$AuthController {
     ref.read(appNavigationStateProvider).requireLogin();
   }
 
+  Future<void> deleteAccount() async {
+    state = const AsyncLoading();
+    final nextState = await AsyncValue.guard(
+      () => ref.read(authRepositoryProvider).deleteAccount(),
+    );
+    if (!ref.mounted) return;
+    state = nextState;
+    if (nextState.hasError) return;
+    ref.invalidate(currentUserProfileProvider);
+    ref.read(appNavigationStateProvider).requireLogin();
+  }
+
   Future<void> _navigateAfterAuth() async {
     ref.invalidate(currentUserProfileProvider);
     ref.read(appNavigationStateProvider).clearAll();
@@ -96,8 +111,21 @@ class AuthController extends _$AuthController {
 
     if (!ref.mounted) return;
 
-    final targetPath = AppAccessGuard.homePathForRole(profile?.role);
-    final router = ref.read(appRouterProvider);
-    router.replacePath(targetPath);
+    var hasPendingRoleRequest = false;
+    if (profile == null) {
+      try {
+        final roleRequestRepo = ref.read(roleRequestRepositoryProvider);
+        hasPendingRoleRequest =
+            await roleRequestRepo.getMyPendingRequest(session.user.id) != null;
+      } on Object {
+        hasPendingRoleRequest = false;
+      }
+    }
+
+    final targetPath = AppAccessGuard.landingPathForUserState(
+      profile: profile,
+      hasPendingRoleRequest: hasPendingRoleRequest,
+    );
+    await ref.read(appRouterProvider).replacePath(targetPath);
   }
 }

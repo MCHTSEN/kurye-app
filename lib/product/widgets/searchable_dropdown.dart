@@ -7,13 +7,19 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 /// type-to-search dropdown experience.
 class SearchableDropdown<T> extends StatefulWidget {
   const SearchableDropdown({
-    required this.items, required this.onChanged, super.key,
+    required this.items,
+    required this.onChanged,
+    super.key,
     this.value,
     this.label,
     this.placeholder,
     this.validator,
     this.enabled = true,
     this.searchPlaceholder,
+    this.minWidth,
+    this.maxWidth,
+    this.selectedTextStyle,
+    this.placeholderTextStyle,
   });
 
   /// Items available for selection. Each entry is a (value, label) pair.
@@ -40,6 +46,18 @@ class SearchableDropdown<T> extends StatefulWidget {
   /// Placeholder text inside the search input.
   final String? searchPlaceholder;
 
+  /// Minimum width passed to the underlying select trigger.
+  final double? minWidth;
+
+  /// Maximum width passed to the underlying select trigger.
+  final double? maxWidth;
+
+  /// Style used for the selected value when the dropdown is closed.
+  final TextStyle? selectedTextStyle;
+
+  /// Style used for the placeholder text.
+  final TextStyle? placeholderTextStyle;
+
   @override
   State<SearchableDropdown<T>> createState() => _SearchableDropdownState<T>();
 }
@@ -61,8 +79,6 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
     final errorText = widget.validator?.call(widget.value);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
       children: [
         if (widget.label != null)
           Padding(
@@ -75,11 +91,16 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
             ),
           ),
         ShadSelect<T>.withSearch(
+          key: ValueKey<T?>(widget.value),
           enabled: widget.enabled,
-          minWidth: double.infinity,
+          minWidth: widget.minWidth ?? double.infinity,
+          maxWidth: widget.maxWidth,
           maxHeight: 300,
           initialValue: widget.value,
-          placeholder: Text(widget.placeholder ?? 'Seç...'),
+          placeholder: Text(
+            widget.placeholder ?? 'Seç...',
+            style: widget.placeholderTextStyle,
+          ),
           onSearchChanged: (value) {
             setState(() => _search = value);
           },
@@ -92,9 +113,12 @@ class _SearchableDropdownState<T> extends State<SearchableDropdown<T>> {
           selectedOptionBuilder: (context, value) {
             final match = widget.items.where((i) => i.value == value);
             if (match.isEmpty) {
-              return Text(widget.placeholder ?? 'Seç...');
+              return Text(
+                widget.placeholder ?? 'Seç...',
+                style: widget.placeholderTextStyle,
+              );
             }
-            return Text(match.first.label);
+            return Text(match.first.label, style: widget.selectedTextStyle);
           },
           options: [
             if (_filtered.isEmpty)

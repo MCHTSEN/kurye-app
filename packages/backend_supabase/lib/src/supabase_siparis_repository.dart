@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseSiparisRepository implements SiparisRepository {
   SupabaseSiparisRepository({required SupabaseClient client})
-      : _client = client;
+    : _client = client;
 
   final SupabaseClient _client;
   static final _log = AppLogger('SupabaseSiparisRepo', tag: LogTag.data);
@@ -12,8 +12,10 @@ class SupabaseSiparisRepository implements SiparisRepository {
 
   @override
   Future<Siparis> create(Siparis siparis) async {
-    _log.i('create: musteri=${siparis.musteriId}, '
-        'cikis=${siparis.cikisId}, ugrama=${siparis.ugramaId}');
+    _log.i(
+      'create: musteri=${siparis.musteriId}, '
+      'cikis=${siparis.cikisId}, ugrama=${siparis.ugramaId}',
+    );
     final data = await _client
         .from(_table)
         .insert({
@@ -26,6 +28,7 @@ class SupabaseSiparisRepository implements SiparisRepository {
           'not_id': siparis.notId,
           'not1': siparis.not1,
           'durum': siparis.durum.value,
+          'faturalandirildi': siparis.faturalandirildi,
           'ucret': siparis.ucret,
           'olusturan_id': siparis.olusturanId,
         })
@@ -109,12 +112,11 @@ class SupabaseSiparisRepository implements SiparisRepository {
     String? cikisId,
     String? ugramaId,
   }) async {
-    _log.i('getHistory: startDate=$startDate, endDate=$endDate, '
-        'musteri=$musteriId, kurye=$kuryeId, cikis=$cikisId, ugrama=$ugramaId');
-    var query = _client
-        .from(_table)
-        .select()
-        .inFilter('durum', [
+    _log.i(
+      'getHistory: startDate=$startDate, endDate=$endDate, '
+      'musteri=$musteriId, kurye=$kuryeId, cikis=$cikisId, ugrama=$ugramaId',
+    );
+    var query = _client.from(_table).select().inFilter('durum', [
       SiparisDurum.tamamlandi.value,
       SiparisDurum.iptal.value,
     ]);
@@ -136,8 +138,7 @@ class SupabaseSiparisRepository implements SiparisRepository {
     if (ugramaId != null) {
       query = query.eq('ugrama_id', ugramaId);
     }
-    final data =
-        await query.order('created_at', ascending: false);
+    final data = await query.order('created_at', ascending: false);
     _log.i('getHistory: ${data.length} rows returned');
     return data.map(Siparis.fromJson).toList();
   }
@@ -148,8 +149,10 @@ class SupabaseSiparisRepository implements SiparisRepository {
     required String cikisId,
     required String ugramaId,
   }) async {
-    _log.d('getRecentPricing: musteri=$musteriId, '
-        'cikis=$cikisId, ugrama=$ugramaId');
+    _log.d(
+      'getRecentPricing: musteri=$musteriId, '
+      'cikis=$cikisId, ugrama=$ugramaId',
+    );
     final data = await _client
         .from(_table)
         .select()
@@ -160,8 +163,10 @@ class SupabaseSiparisRepository implements SiparisRepository {
         .order('created_at', ascending: false)
         .limit(1);
     if (data.isEmpty) {
-      _log.w('getRecentPricing: no match — '
-          'musteri=$musteriId, cikis=$cikisId, ugrama=$ugramaId');
+      _log.w(
+        'getRecentPricing: no match — '
+        'musteri=$musteriId, cikis=$cikisId, ugrama=$ugramaId',
+      );
       return null;
     }
     return Siparis.fromJson(data.first);

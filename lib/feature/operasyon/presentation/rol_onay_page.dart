@@ -63,7 +63,9 @@ class _RolOnayPageState extends ConsumerState<RolOnayPage> {
             itemCount: requests.length,
             itemBuilder: (context, index) => _RequestCard(
               request: requests[index],
-              musteriSelection: _musteriSelections[requests[index].id],
+              musteriSelection:
+                  _musteriSelections[requests[index].id] ??
+                  requests[index].musteriId,
               onMusteriChanged: (value) {
                 setState(() {
                   _musteriSelections[requests[index].id] = value;
@@ -88,7 +90,7 @@ class _RolOnayPageState extends ConsumerState<RolOnayPage> {
 
   Future<void> _approve(RoleRequest request) async {
     final isMusteriPersonel = request.requestedRole == UserRole.musteriPersonel;
-    final musteriId = _musteriSelections[request.id];
+    final musteriId = _musteriSelections[request.id] ?? request.musteriId;
 
     if (isMusteriPersonel && (musteriId == null || musteriId.isEmpty)) {
       ShadToaster.of(context).show(
@@ -252,8 +254,24 @@ class _RequestCard extends ConsumerWidget {
             children: [
               if (request.phone != null)
                 _InfoRow(icon: Icons.phone, text: request.phone!),
+              if (request.accountType != null)
+                _InfoRow(
+                  icon: Icons.badge_outlined,
+                  text:
+                      request.accountType == RoleRequestAccountType.newCustomer
+                      ? 'Başvuru tipi: Yeni müşteri'
+                      : 'Başvuru tipi: Var olan müşteri personeli',
+                ),
+              if (request.companyName != null &&
+                  request.companyName!.isNotEmpty)
+                _InfoRow(icon: Icons.business, text: request.companyName!),
               if (request.note != null && request.note!.isNotEmpty)
                 _InfoRow(icon: Icons.note, text: request.note!),
+              if (request.musteriId != null)
+                _InfoRow(
+                  icon: Icons.business,
+                  text: 'Müşteri ID: ${request.musteriId}',
+                ),
               if (request.createdAt != null)
                 _InfoRow(
                   icon: Icons.calendar_today,

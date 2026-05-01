@@ -7,9 +7,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/router/custom_route.dart';
 import '../../../product/analytics/analytics_provider.dart';
+import '../../../product/navigation/account_delete_helper.dart';
 import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/widgets/responsive_layout.dart';
+import '../../auth/application/auth_controller.dart';
 
 class MusteriShellPage extends ConsumerWidget {
   const MusteriShellPage({super.key});
@@ -26,6 +28,9 @@ class MusteriShellPage extends ConsumerWidget {
     if (layoutType != LayoutType.mobile) {
       return const AutoRouter();
     }
+    final authActionLoading = ref.watch(
+      authControllerProvider.select((state) => state.isLoading),
+    );
 
     final logout = logoutCallback(ref);
 
@@ -38,7 +43,15 @@ class MusteriShellPage extends ConsumerWidget {
             key: const Key('musteri_logout_btn'),
             icon: const Icon(Icons.logout),
             tooltip: 'Çıkış Yap',
-            onPressed: logout,
+            onPressed: authActionLoading ? null : logout,
+          ),
+          IconButton(
+            key: const Key('musteri_delete_account_btn'),
+            icon: const Icon(Icons.delete_forever_rounded),
+            tooltip: 'Hesabı Sil',
+            onPressed: authActionLoading
+                ? null
+                : () => confirmAndDeleteAccount(context, ref),
           ),
         ],
       ),

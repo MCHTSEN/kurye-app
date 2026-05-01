@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In tr, this message translates to:
-  /// **'eipat'**
+  /// **'Kuryem'**
   String get appTitle;
 
   /// No description provided for @onboardingTitle.
@@ -193,6 +193,30 @@ abstract class AppLocalizations {
   /// In tr, this message translates to:
   /// **'Ad Soyad'**
   String get authName;
+
+  /// No description provided for @authAlreadyHaveAccount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Zaten hesabınız var mı?'**
+  String get authAlreadyHaveAccount;
+
+  /// No description provided for @authDontHaveAccount.
+  ///
+  /// In tr, this message translates to:
+  /// **'Hesabınız yok mu?'**
+  String get authDontHaveAccount;
+
+  /// No description provided for @authSignInLink.
+  ///
+  /// In tr, this message translates to:
+  /// **'Giriş yap'**
+  String get authSignInLink;
+
+  /// No description provided for @authRegisterLink.
+  ///
+  /// In tr, this message translates to:
+  /// **'Kayıt ol'**
+  String get authRegisterLink;
 
   /// No description provided for @homeTitle.
   ///

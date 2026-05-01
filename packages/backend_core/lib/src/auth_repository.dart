@@ -23,5 +23,7 @@ abstract class AuthRepository {
 
   Future<void> signOut();
 
+  Future<void> deleteAccount();
+
   Set<SocialLoginMethod> get supportedSocialLogins;
 }

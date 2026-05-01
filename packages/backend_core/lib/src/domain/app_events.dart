@@ -12,6 +12,9 @@ abstract final class AppEvents {
   );
 
   static const authSignOut = AnalyticsEvent(name: 'auth_sign_out');
+  static const authAccountDeleted = AnalyticsEvent(
+    name: 'auth_account_deleted',
+  );
 
   static AnalyticsEvent authSignInFailed(String authType, String error) =>
       AnalyticsEvent(

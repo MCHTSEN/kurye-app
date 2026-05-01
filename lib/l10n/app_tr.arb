@@ -1,6 +1,6 @@
 {
   "@@locale": "tr",
-  "appTitle": "eipat",
+  "appTitle": "Kuryem",
   "onboardingTitle": "Onboarding",
   "onboardingBody": "Bu ekran gelecekteki projelerde tekrar kullanılacak onboarding modülü iskeletidir.",
   "onboardingContinue": "Devam et",
@@ -23,6 +23,10 @@
   "authOrDivider": "veya",
   "authRegister": "Kayıt ol",
   "authName": "Ad Soyad",
+  "authAlreadyHaveAccount": "Zaten hesabınız var mı?",
+  "authDontHaveAccount": "Hesabınız yok mu?",
+  "authSignInLink": "Giriş yap",
+  "authRegisterLink": "Kayıt ol",
   "homeTitle": "Ana Sayfa",
   "homeSkeletonReady": "İskelet Hazır",
   "homeSkeletonDescription": "Auth, onboarding, profile ve backend adapter yapısı Riverpod 3 ile kuruludur.",

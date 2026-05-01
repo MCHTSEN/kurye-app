@@ -1,6 +1,6 @@
 import 'package:backend_core/backend_core.dart';
-import 'package:bursamotokurye/feature/operasyon/domain/dashboard_stats.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/feature/operasyon/domain/dashboard_stats.dart';
 
 void main() {
   /// Fixed reference time: 2026-03-15 12:00:00

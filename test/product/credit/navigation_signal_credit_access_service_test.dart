@@ -1,6 +1,6 @@
-import 'package:bursamotokurye/product/credit/data/navigation_signal_credit_access_service.dart';
-import 'package:bursamotokurye/product/navigation/app_navigation_state.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuryem/product/credit/data/navigation_signal_credit_access_service.dart';
+import 'package:kuryem/product/navigation/app_navigation_state.dart';
 
 void main() {
   group('NavigationSignalCreditAccessService', () {

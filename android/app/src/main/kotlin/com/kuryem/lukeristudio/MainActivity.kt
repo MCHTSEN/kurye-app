@@ -1,4 +1,4 @@
-package com.lukeristudio.bursamotokurye
+package com.kuryem.lukeristudio
 
 import io.flutter.embedding.android.FlutterActivity
 

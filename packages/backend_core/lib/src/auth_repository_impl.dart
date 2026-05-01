@@ -149,4 +149,17 @@ class AuthRepositoryImpl implements AuthRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<void> deleteAccount() async {
+    _log.i('deleteAccount called');
+    try {
+      await _gateway.deleteAccount();
+      await _analytics.track(AppEvents.authAccountDeleted);
+      _log.i('deleteAccount success');
+    } catch (e, st) {
+      _log.e('deleteAccount failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
 }

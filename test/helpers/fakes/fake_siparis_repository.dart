@@ -13,6 +13,8 @@ class FakeSiparisRepository implements SiparisRepository {
   }
 
   final store = <String, Siparis>{};
+  Map<String, dynamic>? lastUpdatedFields;
+  int updateCallCount = 0;
   int _nextId = 1;
 
   /// Controllers for active stream subscriptions — keyed by musteriId or
@@ -33,6 +35,7 @@ class FakeSiparisRepository implements SiparisRepository {
       notId: siparis.notId,
       not1: siparis.not1,
       durum: siparis.durum,
+      faturalandirildi: siparis.faturalandirildi,
       ucret: siparis.ucret,
       olusturanId: siparis.olusturanId,
       createdAt: DateTime.now(),
@@ -44,9 +47,7 @@ class FakeSiparisRepository implements SiparisRepository {
 
   @override
   Future<List<Siparis>> getByMusteriId(String musteriId) async {
-    return store.values
-        .where((s) => s.musteriId == musteriId)
-        .toList();
+    return store.values.where((s) => s.musteriId == musteriId).toList();
   }
 
   @override
@@ -71,6 +72,7 @@ class FakeSiparisRepository implements SiparisRepository {
       notId: existing.notId,
       not1: existing.not1,
       durum: durum,
+      faturalandirildi: existing.faturalandirildi,
       ucret: existing.ucret,
       olusturanId: existing.olusturanId,
       createdAt: existing.createdAt,
@@ -88,13 +90,15 @@ class FakeSiparisRepository implements SiparisRepository {
     final controller = _controllers[key]!;
 
     // Emit current state immediately, then stream updates.
-    return controller.stream.transform(
-      StreamTransformer<List<Siparis>, List<Siparis>>.fromHandlers(
-        handleData: (data, sink) => sink.add(data),
-      ),
-    ).startWithValue(
-      store.values.where((s) => s.musteriId == musteriId).toList(),
-    );
+    return controller.stream
+        .transform(
+          StreamTransformer<List<Siparis>, List<Siparis>>.fromHandlers(
+            handleData: (data, sink) => sink.add(data),
+          ),
+        )
+        .startWithValue(
+          store.values.where((s) => s.musteriId == musteriId).toList(),
+        );
   }
 
   @override
@@ -103,13 +107,15 @@ class FakeSiparisRepository implements SiparisRepository {
     _controllers[key] ??= StreamController<List<Siparis>>.broadcast();
     final controller = _controllers[key]!;
 
-    return controller.stream.transform(
-      StreamTransformer<List<Siparis>, List<Siparis>>.fromHandlers(
-        handleData: (data, sink) => sink.add(data),
-      ),
-    ).startWithValue(
-      store.values.where((s) => s.kuryeId == kuryeId).toList(),
-    );
+    return controller.stream
+        .transform(
+          StreamTransformer<List<Siparis>, List<Siparis>>.fromHandlers(
+            handleData: (data, sink) => sink.add(data),
+          ),
+        )
+        .startWithValue(
+          store.values.where((s) => s.kuryeId == kuryeId).toList(),
+        );
   }
 
   @override
@@ -118,13 +124,15 @@ class FakeSiparisRepository implements SiparisRepository {
     _controllers[key] ??= StreamController<List<Siparis>>.broadcast();
     final controller = _controllers[key]!;
 
-    return controller.stream.transform(
-      StreamTransformer<List<Siparis>, List<Siparis>>.fromHandlers(
-        handleData: (data, sink) => sink.add(data),
-      ),
-    ).startWithValue(
-      _activeOrders(),
-    );
+    return controller.stream
+        .transform(
+          StreamTransformer<List<Siparis>, List<Siparis>>.fromHandlers(
+            handleData: (data, sink) => sink.add(data),
+          ),
+        )
+        .startWithValue(
+          _activeOrders(),
+        );
   }
 
   List<Siparis> _activeOrders() {
@@ -163,11 +171,12 @@ class FakeSiparisRepository implements SiparisRepository {
     if (existing == null) {
       throw StateError('Siparis not found: $id');
     }
+    updateCallCount++;
+    lastUpdatedFields = Map<String, dynamic>.from(fields);
     // Apply partial fields on top of existing JSON, then reconstruct.
-    final json = existing.toJson();
-    json.addAll(fields);
-    // Simulate server setting updated_at.
-    json['updated_at'] = DateTime.now().toIso8601String();
+    final json = existing.toJson()
+      ..addAll(fields)
+      ..['updated_at'] = DateTime.now().toIso8601String();
     final updated = Siparis.fromJson(json);
     store[id] = updated;
     _notifyStreams();
@@ -185,8 +194,7 @@ class FakeSiparisRepository implements SiparisRepository {
   }) async {
     var results = store.values.where(
       (s) =>
-          s.durum == SiparisDurum.tamamlandi ||
-          s.durum == SiparisDurum.iptal,
+          s.durum == SiparisDurum.tamamlandi || s.durum == SiparisDurum.iptal,
     );
     if (startDate != null) {
       results = results.where(
@@ -225,20 +233,21 @@ class FakeSiparisRepository implements SiparisRepository {
     required String cikisId,
     required String ugramaId,
   }) async {
-    final matches = store.values
-        .where(
-          (s) =>
-              s.musteriId == musteriId &&
-              s.cikisId == cikisId &&
-              s.ugramaId == ugramaId &&
-              s.durum == SiparisDurum.tamamlandi,
-        )
-        .toList()
-      ..sort((a, b) {
-        final aTime = a.createdAt ?? DateTime(1970);
-        final bTime = b.createdAt ?? DateTime(1970);
-        return bTime.compareTo(aTime);
-      });
+    final matches =
+        store.values
+            .where(
+              (s) =>
+                  s.musteriId == musteriId &&
+                  s.cikisId == cikisId &&
+                  s.ugramaId == ugramaId &&
+                  s.durum == SiparisDurum.tamamlandi,
+            )
+            .toList()
+          ..sort((a, b) {
+            final aTime = a.createdAt ?? DateTime(1970);
+            final bTime = b.createdAt ?? DateTime(1970);
+            return bTime.compareTo(aTime);
+          });
     return matches.isEmpty ? null : matches.first;
   }
 

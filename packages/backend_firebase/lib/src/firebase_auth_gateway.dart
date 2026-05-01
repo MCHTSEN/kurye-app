@@ -97,13 +97,25 @@ class FirebaseAuthGateway implements AuthGateway {
   }
 
   @override
-  Set<SocialLoginMethod> get supportedSocialLogins =>
-      const {SocialLoginMethod.google};
+  Set<SocialLoginMethod> get supportedSocialLogins => const {
+    SocialLoginMethod.google,
+  };
 
   @override
   Future<void> signOut() {
     _log.i('signOut called');
     return _firebaseAuth.signOut();
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    _log.i('deleteAccount called');
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw StateError('No authenticated Firebase user to delete.');
+    }
+    await user.delete();
+    await _firebaseAuth.signOut();
   }
 
   AuthSession? _mapUserToSession(User? user) {

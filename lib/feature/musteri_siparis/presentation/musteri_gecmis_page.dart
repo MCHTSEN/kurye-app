@@ -31,7 +31,8 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
       context: context,
       firstDate: DateTime(2024),
       lastDate: now,
-      initialDateRange: _selectedRange ??
+      initialDateRange:
+          _selectedRange ??
           DateTimeRange(
             start: now.subtract(const Duration(days: 30)),
             end: now,
@@ -54,6 +55,7 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
       headerSubtitle: 'Müşteri',
       onLogout: logoutCallback(ref),
       showMobileDrawer: !isMobile,
+      showAppBar: !isMobile,
       body: profileAsync.when(
         data: (profile) {
           if (profile == null || profile.musteriId == null) {
@@ -95,7 +97,7 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
                 child: Text(
                   _selectedRange != null
                       ? '${_formatDate(_selectedRange!.start)} — '
-                          '${_formatDate(_selectedRange!.end)}'
+                            '${_formatDate(_selectedRange!.end)}'
                       : 'Tüm tarihler',
                 ),
               ),
@@ -125,8 +127,9 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
             // Apply date range filter.
             if (_selectedRange != null) {
               final start = _selectedRange!.start;
-              final end = _selectedRange!.end
-                  .add(const Duration(days: 1)); // inclusive end
+              final end = _selectedRange!.end.add(
+                const Duration(days: 1),
+              ); // inclusive end
               completed = completed.where((s) {
                 final dt = s.createdAt;
                 if (dt == null) return false;
@@ -177,7 +180,11 @@ class _MusteriGecmisPageState extends ConsumerState<MusteriGecmisPage> {
           if (siparis.createdAt != null) _formatDate(siparis.createdAt!),
         ].join(' • '),
       ),
-      trailing: const Icon(Icons.check_circle, color: AppColors.secondary, size: 20),
+      trailing: const Icon(
+        Icons.check_circle,
+        color: AppColors.secondary,
+        size: 20,
+      ),
     );
   }
 

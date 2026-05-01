@@ -1,14 +1,18 @@
+import 'package:auto_route/auto_route.dart' hide CustomRoute, RouteType;
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../product/auth/auth_providers.dart';
+import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/role_request/role_request_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
+import '../../../product/widgets/searchable_dropdown.dart';
 import '../../auth/application/auth_controller.dart';
 
 class RoleSelectionPage extends ConsumerStatefulWidget {
@@ -19,15 +23,53 @@ class RoleSelectionPage extends ConsumerStatefulWidget {
 }
 
 class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
-  UserRole? _selectedRole;
+  RoleRequestAccountType? _selectedAccountType;
+  String? _selectedMusteriId;
+  String? _selectedMusteriLabel;
   final _nameController = TextEditingController();
+  final _companyNameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _noteController = TextEditingController();
   bool _isSubmitting = false;
+  bool _isRedirecting = false;
+
+  bool get _canSubmit =>
+      !_isSubmitting &&
+      _selectedAccountType != null &&
+      _nameController.text.trim().isNotEmpty &&
+      switch (_selectedAccountType) {
+        RoleRequestAccountType.newCustomer =>
+          _companyNameController.text.trim().isNotEmpty,
+        RoleRequestAccountType.existingCustomerEmployee =>
+          _selectedMusteriId != null,
+        null => false,
+      };
+
+  void _handleFormChanged() {
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(_handleFormChanged);
+    _companyNameController.addListener(_handleFormChanged);
+    _phoneController.addListener(_handleFormChanged);
+    _noteController.addListener(_handleFormChanged);
+  }
 
   @override
   void dispose() {
+    _nameController.removeListener(_handleFormChanged);
+    _companyNameController.removeListener(_handleFormChanged);
+    _phoneController.removeListener(_handleFormChanged);
+    _noteController.removeListener(_handleFormChanged);
     _nameController.dispose();
+    _companyNameController.dispose();
     _phoneController.dispose();
     _noteController.dispose();
     super.dispose();
@@ -44,15 +86,27 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+            onPressed: () =>
+                ref.read(authControllerProvider.notifier).signOut(),
           ),
         ],
       ),
       body: requestAsync.when(
         data: (request) {
+          if (request?.status == RoleRequestStatus.beklemede) {
+            _redirectToHomeIfNeeded();
+            return const Center(child: CircularProgressIndicator());
+          }
+
           if (request == null) {
             return _buildRoleSelectionForm(theme);
           }
+
+          if (request.status == RoleRequestStatus.onaylandi) {
+            _redirectToHomeIfNeeded();
+            return const Center(child: CircularProgressIndicator());
+          }
+
           return _buildRequestStatus(theme, request);
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -99,8 +153,7 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
           ],
           const SizedBox(height: AppSpacing.xl),
           OutlinedButton.icon(
-            onPressed: () =>
-                ref.read(myRoleRequestProvider.notifier).refresh(),
+            onPressed: () => ref.read(myRoleRequestProvider.notifier).refresh(),
             icon: const Icon(Icons.refresh),
             label: const Text('Durumu Kontrol Et'),
           ),
@@ -123,9 +176,9 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
           const SizedBox(height: AppSpacing.lg),
           AppPrimaryButton(
             label: 'Devam Et',
-            onPressed: () {
+            onPressed: () async {
               ref.invalidate(currentUserProfileProvider);
-              ref.read(myRoleRequestProvider.notifier).refresh();
+              await ref.read(myRoleRequestProvider.notifier).refresh();
             },
           ),
         ] else if (request.status == RoleRequestStatus.reddedildi) ...[
@@ -161,6 +214,8 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
   }
 
   Widget _buildRoleSelectionForm(ThemeData theme) {
+    final musteriListAsync = ref.watch(musteriListProvider);
+
     return ListView(
       padding: ProjectPadding.all.normal,
       children: [
@@ -174,33 +229,40 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          'Sistemi kullanmak için rolünüzü seçin.\n'
-          'Talebiniz operasyon ekibi tarafından incelenecektir.',
+          'Başvurunuzu nasıl açacağınızı seçin.\n'
+          'Onay beklerken de uygulama içinde ilerleyebileceksiniz.',
           style: theme.textTheme.bodyLarge,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: AppSpacing.xl),
-
-        // Rol seçimi
         _RoleOptionCard(
-          icon: Icons.business,
-          title: 'Müşteri Personeli',
-          description: 'Firma adına sipariş oluşturma ve takip',
-          isSelected: _selectedRole == UserRole.musteriPersonel,
-          onTap: () => setState(() => _selectedRole = UserRole.musteriPersonel),
+          icon: Icons.add_business,
+          title: 'Yeni Müşteri Oluştur',
+          description: 'Firmanızı kaydedip hemen işlem yapmaya başlayın',
+          isSelected:
+              _selectedAccountType == RoleRequestAccountType.newCustomer,
+          onTap: () => setState(() {
+            _selectedAccountType = RoleRequestAccountType.newCustomer;
+            _selectedMusteriId = null;
+            _selectedMusteriLabel = null;
+          }),
         ),
         const SizedBox(height: AppSpacing.md),
         _RoleOptionCard(
-          icon: Icons.delivery_dining,
-          title: 'Kurye',
-          description: 'Sipariş teslim ve konum paylaşımı',
-          isSelected: _selectedRole == UserRole.kurye,
-          onTap: () => setState(() => _selectedRole = UserRole.kurye),
+          icon: Icons.groups_2,
+          title: 'Var Olan Müşteriye Katıl',
+          description: 'Mevcut firmanızın personeli olarak giriş yapın',
+          isSelected:
+              _selectedAccountType ==
+              RoleRequestAccountType.existingCustomerEmployee,
+          onTap: () => setState(() {
+            _selectedAccountType =
+                RoleRequestAccountType.existingCustomerEmployee;
+            _companyNameController.clear();
+          }),
         ),
 
         const SizedBox(height: AppSpacing.xl),
-
-        // Form alanları
         TextField(
           controller: _nameController,
           decoration: const InputDecoration(
@@ -208,6 +270,43 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
             prefixIcon: Icon(Icons.person),
           ),
         ),
+        if (_selectedAccountType == RoleRequestAccountType.newCustomer) ...[
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: _companyNameController,
+            decoration: const InputDecoration(
+              labelText: 'Firma Adı *',
+              prefixIcon: Icon(Icons.business),
+            ),
+          ),
+        ],
+        if (_selectedAccountType ==
+            RoleRequestAccountType.existingCustomerEmployee) ...[
+          const SizedBox(height: AppSpacing.md),
+          musteriListAsync.when(
+            data: (musteriler) => SearchableDropdown<String>(
+              key: const Key('existing_customer_dropdown'),
+              value: _selectedMusteriId,
+              label: 'Firma *',
+              placeholder: 'Firmanızı seçin',
+              searchPlaceholder: 'Firma ara...',
+              items: musteriler
+                  .map((m) => (value: m.id, label: m.firmaKisaAd))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedMusteriId = value;
+                  _selectedMusteriLabel = musteriler
+                      .where((m) => m.id == value)
+                      .map((m) => m.firmaKisaAd)
+                      .firstOrNull;
+                });
+              },
+            ),
+            loading: () => const LinearProgressIndicator(),
+            error: (e, _) => Text('Firma listesi yüklenemedi: $e'),
+          ),
+        ],
         const SizedBox(height: AppSpacing.md),
         TextField(
           controller: _phoneController,
@@ -220,10 +319,12 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
         const SizedBox(height: AppSpacing.md),
         TextField(
           controller: _noteController,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Not (opsiyonel)',
-            prefixIcon: Icon(Icons.note),
-            hintText: 'Ör: X firmasında çalışıyorum',
+            prefixIcon: const Icon(Icons.note),
+            hintText: _selectedAccountType == RoleRequestAccountType.newCustomer
+                ? 'Ör: Vergi bilgisi, özel talep, operasyon notu'
+                : 'Ör: Hangi ekipte çalıştığınız veya operasyon notu',
           ),
           maxLines: 2,
         ),
@@ -233,10 +334,7 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
         AppPrimaryButton(
           label: 'Talep Gönder',
           isLoading: _isSubmitting,
-          onPressed: _selectedRole == null ||
-                  _nameController.text.trim().isEmpty
-              ? null
-              : _submitRequest,
+          onPressed: _canSubmit ? _submitRequest : null,
         ),
       ],
     );
@@ -254,9 +352,19 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
         RoleRequest(
           id: '',
           userId: session.user.id,
-          requestedRole: _selectedRole!,
+          requestedRole: UserRole.musteriPersonel,
           status: RoleRequestStatus.beklemede,
           displayName: _nameController.text.trim(),
+          accountType: _selectedAccountType,
+          companyName:
+              _selectedAccountType == RoleRequestAccountType.newCustomer
+              ? _companyNameController.text.trim()
+              : _selectedMusteriLabel,
+          musteriId:
+              _selectedAccountType ==
+                  RoleRequestAccountType.existingCustomerEmployee
+              ? _selectedMusteriId
+              : null,
           phone: _phoneController.text.trim().isEmpty
               ? null
               : _phoneController.text.trim(),
@@ -267,9 +375,12 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
       );
 
       if (mounted) {
-        ref.read(myRoleRequestProvider.notifier).refresh();
+        ref
+          ..invalidate(currentUserProfileProvider)
+          ..invalidate(myRoleRequestProvider);
+        await context.router.replacePath(CustomRoute.home.path);
       }
-    } catch (e) {
+    } on Object catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Hata: $e')),
@@ -278,6 +389,25 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  void _redirectToHomeIfNeeded() {
+    if (_isRedirecting) {
+      return;
+    }
+
+    _isRedirecting = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
+        _isRedirecting = false;
+        return;
+      }
+
+      await context.router.replacePath(CustomRoute.home.path);
+      if (mounted) {
+        _isRedirecting = false;
+      }
+    });
   }
 
   String _roleDisplayName(UserRole role) {
@@ -298,6 +428,10 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
         '${date.hour.toString().padLeft(2, '0')}:'
         '${date.minute.toString().padLeft(2, '0')}';
   }
+}
+
+extension on Iterable<String> {
+  String? get firstOrNull => isEmpty ? null : first;
 }
 
 class _RoleOptionCard extends StatelessWidget {

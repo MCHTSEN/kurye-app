@@ -1,6 +1,6 @@
 # backend_firebase
 
-Firebase SDK integration for eipat.
+Firebase SDK integration for Kuryem.
 
 ## Purpose
 
@@ -44,4 +44,4 @@ Mock `FirebaseAuth` for unit tests. Use `firebase_auth_mocks` or manual fakes.
 ## Dependency Rules
 
 - Only `firebase_*` packages and `backend_core`
-- Never import from the main `eipat` package
+- Never import from the main `Kuryem` package
