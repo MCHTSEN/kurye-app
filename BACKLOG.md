@@ -11,6 +11,22 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-05-08
+- Scope: Operasyon ekranı kompakt yükseklik düzeni
+- Summary:
+  - Operasyon ekranında app bar ve desktop özet barı kaldırıldı.
+  - Yeni sipariş panelinin başlığı gizlenip iç boşluk/yükseklikleri küçültüldü.
+  - Kurye Bekleyenler header yüksekliği kompakt hale getirildi.
+- Files:
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/feature/operasyon/presentation/SCREENS.md`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart`
+- Validation:
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` passed.
+  - `flutter analyze` completed with the repo's existing 14 issues; no new touched-file issue reported.
+
+---
+
 ### 2026-04-12
 - Scope: Pending hesap akışını app içine alma + bekleyen kullanıcı için hesap silme
 - Summary:

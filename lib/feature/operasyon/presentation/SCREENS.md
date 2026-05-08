@@ -35,7 +35,8 @@
 - Panel A: Sipariş oluşturma formu
 - Panel B: Kurye Bekleyenler (checkbox + kurye atama + satır bazlı düzenleme)
 - Panel C: Devam Edenler (checkbox + bitir + satır bazlı düzenleme)
-- Desktop özet barı: `Bugünkü Kazanç` yanında `Aktif Kurye` (online) sayısını gösterir.
+- Desktop'ta app bar ve özet bar kullanılmaz; dar ekranlarda dikey alan
+  sipariş formu ve operasyon listelerine ayrılır.
 - Kurye bekleyen siparişte düzenlenebilir alanlar:
   - Kurye
   - Personel
@@ -56,8 +57,8 @@
   - 3 kolon bağımsız scroll alanı olarak çalışır, panel oranları genişlikte dinamik ayarlanır
   - `Kurye Bekleyenler` ve `Devam Eden İşler` kartları uzun listelerde iç scroll kullanır; kart yüksekliği korunur ve alt overflow oluşmaz
   - Bekleyen/devam eden tablo başlıkları satır kolonları ile aynı `flex` oranını kullanır; özellikle `SAAT` başlığı ve saat değerleri aynı sütunda hizalanır
-  - Üstte güncel operasyon özeti ve kısayol ipuçları yer alır
-  - `Bugünkü Kazanç` kartı bugün tamamlanan siparişlerin toplam ücretiyle canlı hesaplanır
+  - Yeni sipariş panelinde başlık gizlidir ve kompakt iç boşluk kullanılır
+  - Kurye bekleyenler başlığı kompakt yükseklikte kalır
   - `Esc` seçimleri temizler
   - Kurye ataması tamamlanınca bekleyen seçimleri ve kurye dropdown seçimi
     temizlenir.

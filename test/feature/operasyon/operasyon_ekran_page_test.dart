@@ -138,7 +138,8 @@ void main() {
     testWidgets('(a) renders 3 panels with correct titles', (tester) async {
       await pumpPage(tester);
 
-      expect(find.text('YENİ SİPARİŞ'), findsOneWidget);
+      expect(find.text('YENİ SİPARİŞ'), findsNothing);
+      expect(find.byKey(const Key('musteri_typeahead')), findsWidgets);
 
       // Scroll down to see bottom panels.
       await reveal(tester, find.textContaining('KURYE BEKLEYENLER'));
@@ -147,21 +148,6 @@ void main() {
       await reveal(tester, find.textContaining('DEVAM EDEN İŞLER'));
       expect(find.textContaining('DEVAM EDEN İŞLER'), findsOneWidget);
     });
-
-    testWidgets(
-      '(a0) desktop summary shows active courier count next to revenue',
-      (tester) async {
-        await pumpPage(
-          tester,
-          size: const Size(1440, 1200),
-        );
-
-        final textWidget = tester.widget<Text>(
-          find.byKey(const Key('desktop_active_kurye_count')),
-        );
-        expect(textWidget.data, '1');
-      },
-    );
 
     testWidgets('(b) kurye bekleyenler shows waiting orders', (tester) async {
       // Seed a waiting order.
@@ -814,78 +800,6 @@ void main() {
         expect(find.text('missing-personel'), findsOneWidget);
         expect(find.byKey(const Key('finish_s-desktop')), findsOneWidget);
         expect(tester.takeException(), isNull);
-      },
-    );
-
-    testWidgets(
-      '(k) desktop summary shows today revenue from completed orders',
-      (
-        tester,
-      ) async {
-        final now = DateTime.now();
-        fakeSiparisRepo.store['s-today-completed'] = Siparis(
-          id: 's-today-completed',
-          musteriId: 'musteri-1',
-          cikisId: 'ugrama-1',
-          ugramaId: 'ugrama-2',
-          durum: SiparisDurum.tamamlandi,
-          ucret: 150,
-          createdAt: now,
-        );
-        fakeSiparisRepo.store['s-yesterday-completed'] = Siparis(
-          id: 's-yesterday-completed',
-          musteriId: 'musteri-1',
-          cikisId: 'ugrama-1',
-          ugramaId: 'ugrama-2',
-          durum: SiparisDurum.tamamlandi,
-          ucret: 250,
-          createdAt: now.subtract(const Duration(days: 1)),
-        );
-
-        await pumpPage(
-          tester,
-          size: const Size(1440, 1200),
-        );
-
-        expect(find.text('150 TL'), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      '(l) finishing order updates today revenue without manual refresh',
-      (tester) async {
-        final now = DateTime.now();
-        fakeSiparisRepo.store['s-live'] = Siparis(
-          id: 's-live',
-          musteriId: 'musteri-1',
-          cikisId: 'ugrama-1',
-          ugramaId: 'ugrama-2',
-          kuryeId: 'kurye-1',
-          durum: SiparisDurum.devamEdiyor,
-          createdAt: now,
-        );
-        fakeSiparisRepo.store['s-hist-price'] = Siparis(
-          id: 's-hist-price',
-          musteriId: 'musteri-1',
-          cikisId: 'ugrama-1',
-          ugramaId: 'ugrama-2',
-          durum: SiparisDurum.tamamlandi,
-          ucret: 75,
-          createdAt: now.subtract(const Duration(days: 1)),
-        );
-
-        await pumpPage(
-          tester,
-          size: const Size(1440, 1200),
-        );
-
-        expect(find.text('0 TL'), findsOneWidget);
-
-        await reveal(tester, find.byKey(const Key('finish_s-live')));
-        await tester.tap(find.byKey(const Key('finish_s-live')));
-        await tester.pumpAndSettle();
-
-        expect(find.text('75 TL'), findsOneWidget);
       },
     );
   });

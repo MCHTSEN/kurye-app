@@ -921,6 +921,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       headerSubtitle: 'Operasyon',
       onLogout: logoutCallback(ref),
       showMobileDrawer: false,
+      showAppBar: false,
       body: Shortcuts(
         shortcuts: isDesktop
             ? const {
@@ -1029,192 +1030,14 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       padding: ProjectPadding.all.large,
       child: ContentConstraint(
         maxWidth: 1680,
-        child: Column(
-          children: [
-            _buildDesktopSummaryBar(streamAsync),
-            const SizedBox(height: AppSpacing.lg),
-            Expanded(
-              child: streamAsync.when(
-                data: (orders) => _buildDesktopWorkbench(orders, userId),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => _PremiumCard(
-                  title: 'Siparişler',
-                  child: Text('Hata: $e'),
-                ),
-              ),
-            ),
-          ],
+        child: streamAsync.when(
+          data: (orders) => _buildDesktopWorkbench(orders, userId),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => _PremiumCard(
+            title: 'Siparişler',
+            child: Text('Hata: $e'),
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildDesktopSummaryBar(AsyncValue<List<Siparis>> streamAsync) {
-    final theme = _OperasyonTheme.of(context);
-    final now = DateTime.now();
-    final startOfDay = DateTime(now.year, now.month, now.day);
-    final endOfDay = startOfDay.add(const Duration(days: 1));
-    final todayRevenueAsync = ref.watch(
-      siparisHistoryProvider(startDate: startOfDay, endDate: endOfDay),
-    );
-    final kuryeListAsync = ref.watch(kuryeListProvider);
-
-    final todayRevenue = todayRevenueAsync.maybeWhen(
-      data: (orders) => orders
-          .where((order) => order.durum == SiparisDurum.tamamlandi)
-          .fold<double>(0, (sum, order) => sum + (order.ucret ?? 0)),
-      orElse: () => 0,
-    );
-
-    final todayRevenueLabel = todayRevenueAsync.maybeWhen(
-      loading: () => '...',
-      orElse: () => '${todayRevenue.toStringAsFixed(0)} TL',
-    );
-
-    final activeCourierCountLabel = kuryeListAsync.maybeWhen(
-      data: (list) => '${list.where((k) => k.isOnline).length}',
-      loading: () => '...',
-      orElse: () => '?',
-    );
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(
-        color: theme.cardSurface.withValues(alpha: 0.96),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F3A2E),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: const Color(0xFF2F5E49)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF22C55E),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  'SİSTEM AKTİF',
-                  style: TextStyle(
-                    color: Color(0xFFBBF7D0),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Spacer(),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1F3A2E),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF22C55E),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(
-                    Icons.trending_up,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'BUGÜNKÜ KAZANÇ',
-                      style: TextStyle(
-                        color: Color(0xFFBBF7D0),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    Text(
-                      todayRevenueLabel,
-                      style: const TextStyle(
-                        color: Color(0xFFBBF7D0),
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                Container(
-                  width: 1,
-                  height: 36,
-                  color: const Color(0xFF2F5E49),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'AKTİF KURYE',
-                      style: TextStyle(
-                        color: Color(0xFFBBF7D0),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    Text(
-                      activeCourierCountLabel,
-                      key: const Key('desktop_active_kurye_count'),
-                      style: const TextStyle(
-                        color: Color(0xFFBBF7D0),
-                        fontSize: 18,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 16),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          IconButton(
-            onPressed: logoutCallback(ref),
-            style: IconButton.styleFrom(
-              backgroundColor: theme.cardHeaderDark,
-              foregroundColor: theme.textPrimary,
-              padding: const EdgeInsets.all(12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: theme.divider),
-              ),
-            ),
-            icon: const Icon(Icons.logout_rounded),
-          ),
-        ],
       ),
     );
   }
@@ -1360,9 +1183,10 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
     return _PremiumCard(
       title: 'YENİ SİPARİŞ',
-      icon: Icons.add_rounded,
       isDarkHeader: true,
       accentColor: Colors.white,
+      showHeader: false,
+      bodyPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: musteriListAsync.when(
         data: (musteriler) =>
             _buildOrderForm(musteriler: musteriler, userId: userId),
@@ -1428,7 +1252,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     final isMobile = layoutTypeOf(context) == LayoutType.mobile;
     final submitButton = SizedBox(
       width: double.infinity,
-      height: 44,
+      height: isMobile ? 42 : 38,
       child: ElevatedButton(
         focusNode: _fnSubmit,
         onPressed: () => _onCreateOrder(userId),
@@ -1926,6 +1750,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       icon: Icons.access_time_filled_rounded,
       accentColor: const Color(0xFFF59E0B),
       action: assignControls,
+      headerPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      titleFontSize: 13,
+      iconSize: 18,
       expandBody: !isMobile,
       child: isMobile
           ? listBody
@@ -2844,6 +2671,11 @@ class _PremiumCard extends StatelessWidget {
     this.accentColor,
     this.isDarkHeader = false,
     this.expandBody = false,
+    this.showHeader = true,
+    this.headerPadding,
+    this.bodyPadding,
+    this.titleFontSize = 15,
+    this.iconSize = 20,
     this.action,
   });
 
@@ -2853,6 +2685,11 @@ class _PremiumCard extends StatelessWidget {
   final Color? accentColor;
   final bool isDarkHeader;
   final bool expandBody;
+  final bool showHeader;
+  final EdgeInsetsGeometry? headerPadding;
+  final EdgeInsetsGeometry? bodyPadding;
+  final double titleFontSize;
+  final double iconSize;
   final Widget? action;
 
   @override
@@ -2877,51 +2714,51 @@ class _PremiumCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            color: headerColor,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (icon != null) ...[
-                  Icon(
-                    icon,
-                    color: accentColor ?? theme.textMuted,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                ],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          color: theme.textPrimary,
-                          letterSpacing: 0.5,
-                        ),
+          if (showHeader)
+            Container(
+              padding:
+                  headerPadding ??
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+              color: headerColor,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (icon != null) ...[
+                    Icon(
+                      icon,
+                      color: accentColor ?? theme.textMuted,
+                      size: iconSize,
+                    ),
+                    const SizedBox(width: 10),
+                  ],
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: titleFontSize,
+                        fontWeight: FontWeight.w900,
+                        color: theme.textPrimary,
+                        letterSpacing: 0.5,
                       ),
-                    ],
+                    ),
                   ),
-                ),
-                ?action,
-              ],
+                  ?action,
+                ],
+              ),
             ),
-          ),
           if (expandBody)
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(24),
+                padding: bodyPadding ?? const EdgeInsets.all(24),
                 child: child,
               ),
             )
           else
             Padding(
-              padding: const EdgeInsets.all(24),
+              padding: bodyPadding ?? const EdgeInsets.all(24),
               child: child,
             ),
         ],
