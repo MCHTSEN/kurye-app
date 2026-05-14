@@ -25,5 +25,7 @@ abstract class AuthRepository {
 
   Future<void> deleteAccount();
 
+  Future<void> updatePassword({required String newPassword});
+
   Set<SocialLoginMethod> get supportedSocialLogins;
 }

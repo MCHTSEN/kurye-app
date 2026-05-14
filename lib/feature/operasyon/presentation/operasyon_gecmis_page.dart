@@ -22,7 +22,6 @@ import '../../../product/widgets/app_section_card.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../../product/widgets/responsive_scaffold.dart';
 import '../../../product/widgets/searchable_dropdown.dart';
-import '../../../product/widgets/workbench_split_view.dart';
 
 final _log = Logger();
 
@@ -498,32 +497,28 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             ),
           },
           child: isDesktop
-              ? WorkbenchSplitView(
-                  header: switch (filteredHistoryAsync) {
-                    AsyncData(value: final orders) => _buildDesktopHeader(
-                      orders,
-                    ),
-                    _ => null,
-                  },
-                  editorPane: _buildDesktopEditorPane(
-                    musteriListAsync,
-                    ugramaListAsync,
-                  ),
-                  contentPane: ListView(
-                    padding: const EdgeInsets.only(bottom: 32),
-                    children: [
-                      _buildSearchAndStatusCard(historyAsync),
+              ? ListView(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+                  children: [
+                    if (filteredHistoryAsync case AsyncData(value: final orders)) ...[
+                      _buildDesktopHeader(orders),
                       const SizedBox(height: AppSpacing.md),
-                      _buildFilterBar(musteriListAsync, ugramaListAsync),
-                      const SizedBox(height: AppSpacing.md),
-                      _buildDataTableCard(
-                        filteredHistoryAsync,
-                        musteriMap: musteriMap,
-                        ugramaMap: ugramaMap,
-                        kuryeMap: kuryeMap,
-                      ),
                     ],
-                  ),
+                    if (_selectedOrder != null) ...[
+                      _buildEditPanel(musteriListAsync, ugramaListAsync),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
+                    _buildSearchAndStatusCard(historyAsync),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildFilterBar(musteriListAsync, ugramaListAsync),
+                    const SizedBox(height: AppSpacing.md),
+                    _buildDataTableCard(
+                      filteredHistoryAsync,
+                      musteriMap: musteriMap,
+                      ugramaMap: ugramaMap,
+                      kuryeMap: kuryeMap,
+                    ),
+                  ],
                 )
               : ListView(
                   padding: ProjectPadding.all.normal,
@@ -666,76 +661,6 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
           color: AppColors.primary,
         ),
       ),
-    );
-  }
-
-  Widget _buildDesktopEditorPane(
-    AsyncValue<List<Musteri>> musteriListAsync,
-    AsyncValue<List<Ugrama>> ugramaListAsync,
-  ) {
-    return ListView(
-      padding: const EdgeInsets.only(bottom: 32),
-      children: [
-        _buildSelectionSummaryCard(),
-        const SizedBox(height: AppSpacing.md),
-        if (_selectedOrder == null)
-          const AppSectionCard(
-            title: 'Sipariş Detayı',
-            description: 'Tablodan bir sipariş seçildiğinde düzenleme paneli burada açılır.',
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Sağ panel yerine burada sabit detay alanı kullanılır.'),
-                SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: [
-                    Chip(label: Text('Esc kapatır')),
-                    Chip(label: Text('/ arama')),
-                  ],
-                ),
-              ],
-            ),
-          )
-        else
-          _buildEditPanel(musteriListAsync, ugramaListAsync),
-      ],
-    );
-  }
-
-  Widget _buildSelectionSummaryCard() {
-    final selected = _selectedOrder;
-
-    return AppSectionCard(
-      title: 'Seçili Sipariş',
-      icon: Icons.receipt_long_rounded,
-      accentColor: AppColors.secondary,
-      child: selected == null
-          ? const Text(
-              'Henüz sipariş seçilmedi. Tablo üzerinden bir kayıt seçin.',
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Sipariş ID: ${selected.id}',
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text('Durum: ${selected.durum.value}'),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  selected.ucret != null
-                      ? 'Ücret: ₺${selected.ucret!.toStringAsFixed(2)}'
-                      : 'Ücret henüz girilmedi',
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Faturalandırıldı: ${selected.faturalandirildi ? 'Evet' : 'Hayır'}',
-                ),
-              ],
-            ),
     );
   }
 

@@ -211,6 +211,31 @@ void main() {
       expect(created.durum, SiparisDurum.kuryeBekliyor);
     });
 
+    testWidgets('active orders list deduplicates repeated stream rows', (
+      tester,
+    ) async {
+      await pumpPage(tester);
+
+      const order = Siparis(
+        id: 'siparis-duplicate',
+        musteriId: _testMusteriId,
+        cikisId: 'ugrama-1',
+        ugramaId: 'ugrama-2',
+      );
+
+      fakeSiparisRepo.emitForMusteri(_testMusteriId, [order, order]);
+      await tester.pumpAndSettle();
+
+      await tester.dragUntilVisible(
+        find.textContaining('Aktif Siparişler'),
+        find.byType(ListView).first,
+        const Offset(0, -200),
+      );
+
+      expect(find.text('Aktif Siparişler (1)'), findsOneWidget);
+      expect(find.text('Merkez Ofis → Şube A'), findsOneWidget);
+    });
+
     testWidgets(
       'unknown stop shows confirmation, creates new stop, and submits order',
       (tester) async {

@@ -9,6 +9,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/navigation/account_delete_helper.dart';
 import '../../../product/navigation/logout_helper.dart';
+import '../../../product/navigation/password_change_helper.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
@@ -38,6 +39,14 @@ class KuryeAnaPage extends ConsumerWidget {
           error: (_, _) => const Text('Kurye Paneli'),
         ),
         actions: [
+          IconButton(
+            key: const Key('kurye_change_password_btn'),
+            icon: const Icon(Icons.lock_reset_rounded),
+            tooltip: 'Şifre Değiştir',
+            onPressed: authActionLoading
+                ? null
+                : () => showChangePasswordDialog(context, ref),
+          ),
           IconButton(
             key: const Key('kurye_logout_btn'),
             icon: const Icon(Icons.logout),

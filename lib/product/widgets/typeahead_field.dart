@@ -28,6 +28,7 @@ class TypeaheadField<T> extends StatefulWidget {
     this.borderColor,
     this.errorColor,
     this.onInputChanged,
+    this.controller,
   });
 
   final List<({T value, String label})> items;
@@ -44,6 +45,9 @@ class TypeaheadField<T> extends StatefulWidget {
   final Color? errorColor;
   final ValueChanged<String>? onInputChanged;
 
+  /// Optional external text controller. When provided, the parent owns clearing/disposal.
+  final TextEditingController? controller;
+
   /// Optional external focus node. If null, an internal one is created.
   final FocusNode? focusNode;
 
@@ -55,7 +59,9 @@ class TypeaheadField<T> extends StatefulWidget {
 }
 
 class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
-  final _controller = TextEditingController();
+  TextEditingController? _internalController;
+  TextEditingController get _controller =>
+      widget.controller ?? (_internalController ??= TextEditingController());
   final _layerLink = LayerLink();
   final GlobalKey _fieldKey = GlobalKey();
   FocusNode? _internalFocusNode;
@@ -73,11 +79,23 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
     super.initState();
     _syncText();
     _focusNode.addListener(_onFocusChange);
+    _controller.addListener(_onExternalControllerChange);
+  }
+
+  void _onExternalControllerChange() {
+    // External clear (e.g. parent reset) — refilter and refresh suggestions.
+    if (_filtered.isEmpty && _controller.text.isEmpty) return;
+    if (!mounted) return;
+    setState(() => _filter(_controller.text));
   }
 
   @override
   void didUpdateWidget(covariant TypeaheadField<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller?.removeListener(_onExternalControllerChange);
+      widget.controller?.addListener(_onExternalControllerChange);
+    }
     if (widget.value != oldWidget.value) {
       _syncText();
     }
@@ -288,7 +306,8 @@ class _TypeaheadFieldState<T> extends State<TypeaheadField<T>> {
     _removeOverlay();
     _focusNode.removeListener(_onFocusChange);
     _internalFocusNode?.dispose();
-    _controller.dispose();
+    _controller.removeListener(_onExternalControllerChange);
+    _internalController?.dispose();
     super.dispose();
   }
 

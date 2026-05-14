@@ -118,6 +118,16 @@ class FirebaseAuthGateway implements AuthGateway {
     await _firebaseAuth.signOut();
   }
 
+  @override
+  Future<void> updatePassword({required String newPassword}) async {
+    _log.i('updatePassword called');
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      throw StateError('No authenticated Firebase user.');
+    }
+    await user.updatePassword(newPassword);
+  }
+
   AuthSession? _mapUserToSession(User? user) {
     if (user == null) {
       return null;

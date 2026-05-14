@@ -12,6 +12,7 @@ import '../../../product/analytics/analytics_provider.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/navigation/account_delete_helper.dart';
 import '../../../product/navigation/logout_helper.dart';
+import '../../../product/navigation/password_change_helper.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
 import '../../auth/application/auth_controller.dart';
@@ -50,6 +51,18 @@ class OperasyonAyarlarPage extends ConsumerWidget {
                     const SizedBox(height: AppSpacing.xs),
                     Text('Email: $email'),
                     const SizedBox(height: AppSpacing.md),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        key: const Key('operasyon_change_password_btn'),
+                        onPressed: authActionLoading
+                            ? null
+                            : () => showChangePasswordDialog(context, ref),
+                        icon: const Icon(Icons.lock_reset_rounded),
+                        label: const Text('Şifre Değiştir'),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(

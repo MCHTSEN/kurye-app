@@ -84,3 +84,7 @@ fastlane/.env
 
 # Local MCP/secrets — asla commit'leme
 .gsd/mcp.json
+
+# Local artifacts (customer dumps, credentials, browser caches)
+.artifacts/
+.asc-profile

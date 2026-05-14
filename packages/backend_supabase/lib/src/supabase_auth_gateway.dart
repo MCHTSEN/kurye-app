@@ -118,6 +118,14 @@ class SupabaseAuthGateway implements AuthGateway {
     await _client.auth.signOut();
   }
 
+  @override
+  Future<void> updatePassword({required String newPassword}) async {
+    _log.i('updatePassword called');
+    await _client.auth.updateUser(
+      UserAttributes(password: newPassword),
+    );
+  }
+
   AuthSession? _mapSession(Session? session) {
     if (session == null) {
       return null;

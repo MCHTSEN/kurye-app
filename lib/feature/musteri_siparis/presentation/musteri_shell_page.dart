@@ -9,6 +9,7 @@ import '../../../app/router/custom_route.dart';
 import '../../../product/analytics/analytics_provider.dart';
 import '../../../product/navigation/account_delete_helper.dart';
 import '../../../product/navigation/logout_helper.dart';
+import '../../../product/navigation/password_change_helper.dart';
 import '../../../product/navigation/role_nav_items.dart';
 import '../../../product/widgets/responsive_layout.dart';
 import '../../auth/application/auth_controller.dart';
@@ -39,6 +40,14 @@ class MusteriShellPage extends ConsumerWidget {
       appBarBuilder: (context, tabsRouter) => AppBar(
         title: const Text('Müşteri Paneli'),
         actions: [
+          IconButton(
+            key: const Key('musteri_change_password_btn'),
+            icon: const Icon(Icons.lock_reset_rounded),
+            tooltip: 'Şifre Değiştir',
+            onPressed: authActionLoading
+                ? null
+                : () => showChangePasswordDialog(context, ref),
+          ),
           IconButton(
             key: const Key('musteri_logout_btn'),
             icon: const Icon(Icons.logout),

@@ -12,6 +12,12 @@ const operasyonDesktopNavItems = <NavItem>[
     section: 'Ana',
   ),
   NavItem(
+    icon: Icons.history,
+    label: 'Geçmiş Siparişler',
+    route: CustomRoute.operasyonGecmis,
+    section: 'Ana',
+  ),
+  NavItem(
     icon: Icons.bar_chart_rounded,
     label: 'Raporlar',
     route: CustomRoute.operasyonDashboard,
@@ -52,12 +58,6 @@ const operasyonDesktopNavItems = <NavItem>[
     label: 'Rol Onayları',
     route: CustomRoute.rolOnay,
     section: 'Yönetim',
-  ),
-  NavItem(
-    icon: Icons.history,
-    label: 'Geçmiş Siparişler',
-    route: CustomRoute.operasyonGecmis,
-    section: 'Operasyon',
   ),
 ];
 

@@ -30,6 +30,7 @@ void main() {
       expect(find.text('Hesap'), findsOneWidget);
       expect(find.text('Operasyon Test'), findsOneWidget);
       expect(find.text('Rol: operasyon'), findsOneWidget);
+      expect(find.text('Şifre Değiştir'), findsOneWidget);
       expect(find.textContaining('Çıkış'), findsOneWidget);
       expect(find.text('Hesabı Sil'), findsOneWidget);
       expect(find.text('Yönetim'), findsOneWidget);

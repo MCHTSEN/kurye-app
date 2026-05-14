@@ -162,4 +162,16 @@ class AuthRepositoryImpl implements AuthRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<void> updatePassword({required String newPassword}) async {
+    _log.i('updatePassword called');
+    try {
+      await _gateway.updatePassword(newPassword: newPassword);
+      _log.i('updatePassword success');
+    } catch (e, st) {
+      _log.e('updatePassword failed', error: e, stackTrace: st);
+      rethrow;
+    }
+  }
 }

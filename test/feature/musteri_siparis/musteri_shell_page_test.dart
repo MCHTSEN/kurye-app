@@ -63,6 +63,10 @@ void main() {
 
     expect(find.text('Sipariş body'), findsOneWidget);
     expect(find.byType(NavigationBar), findsOneWidget);
+    expect(
+      find.byKey(const Key('musteri_change_password_btn')),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text(musteriPrimaryMobileNavItems[1].label));
     await tester.pumpAndSettle();

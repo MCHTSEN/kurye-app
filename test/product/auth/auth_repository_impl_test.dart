@@ -10,6 +10,7 @@ class _FakeGateway implements AuthGateway {
   bool signInWithEmailCalled = false;
   bool signOutCalled = false;
   bool deleteAccountCalled = false;
+  String? updatedPassword;
 
   @override
   Stream<AuthSession?> authStateChanges() => _controller.stream;
@@ -88,6 +89,11 @@ class _FakeGateway implements AuthGateway {
     _session = null;
     _controller.add(null);
   }
+
+  @override
+  Future<void> updatePassword({required String newPassword}) async {
+    updatedPassword = newPassword;
+  }
 }
 
 class _FakeAnalytics implements AnalyticsService {
@@ -163,6 +169,12 @@ void main() {
 
       expect(gateway.deleteAccountCalled, isTrue);
       expect(analytics.trackedEvents, contains('auth_account_deleted'));
+    });
+
+    test('updatePassword delegates to gateway', () async {
+      await repository.updatePassword(newPassword: 'NewPass123!');
+
+      expect(gateway.updatedPassword, 'NewPass123!');
     });
 
     test('currentSession delegates to gateway', () async {

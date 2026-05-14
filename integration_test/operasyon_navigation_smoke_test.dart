@@ -139,6 +139,9 @@ class _SignedInOperasyonAuthRepo implements AuthRepository {
 
   @override
   Future<void> deleteAccount() async {}
+
+  @override
+  Future<void> updatePassword({required String newPassword}) async {}
 }
 
 class _OperasyonUserProfileRepository implements UserProfileRepository {

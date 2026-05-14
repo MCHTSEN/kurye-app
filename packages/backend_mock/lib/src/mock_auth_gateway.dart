@@ -7,6 +7,7 @@ class MockAuthGateway implements AuthGateway {
       StreamController<AuthSession?>.broadcast();
 
   AuthSession? _session;
+  String? lastUpdatedPassword;
 
   @override
   Stream<AuthSession?> authStateChanges() async* {
@@ -83,5 +84,10 @@ class MockAuthGateway implements AuthGateway {
   Future<void> deleteAccount() async {
     _session = null;
     _controller.add(null);
+  }
+
+  @override
+  Future<void> updatePassword({required String newPassword}) async {
+    lastUpdatedPassword = newPassword;
   }
 }

@@ -168,4 +168,13 @@ class CustomApiAuthGateway implements AuthGateway {
     _session = null;
     _controller.add(null);
   }
+
+  @override
+  Future<void> updatePassword({required String newPassword}) async {
+    _log.i('updatePassword called');
+    await _dio.patch<void>(
+      '/auth/password',
+      data: <String, dynamic>{'password': newPassword},
+    );
+  }
 }

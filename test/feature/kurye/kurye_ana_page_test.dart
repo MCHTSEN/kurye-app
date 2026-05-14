@@ -236,6 +236,11 @@ void main() {
     testWidgets('(h) opens delete-account confirmation dialog', (tester) async {
       await pumpPage(tester);
 
+      expect(
+        find.byKey(const Key('kurye_change_password_btn')),
+        findsOneWidget,
+      );
+
       await tester.tap(find.byKey(const Key('kurye_delete_account_btn')));
       await tester.pumpAndSettle();
 

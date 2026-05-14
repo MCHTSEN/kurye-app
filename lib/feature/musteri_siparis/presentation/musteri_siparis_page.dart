@@ -38,16 +38,22 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
   String? _selectedUgramaId;
   String? _selectedUgrama1Id;
   String? _selectedNotId;
+  String? _selectedPersonelId;
   final _not1Controller = TextEditingController();
+  final _cikisController = TextEditingController();
+  final _ugramaController = TextEditingController();
   String _cikisInput = '';
   String _ugramaInput = '';
   final _resolvedStopLabels = <String, String>{};
 
   bool _isSubmitting = false;
+  bool _personelDefaultApplied = false;
 
   @override
   void dispose() {
     _not1Controller.dispose();
+    _cikisController.dispose();
+    _ugramaController.dispose();
     super.dispose();
   }
 
@@ -60,6 +66,8 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
       _cikisInput = '';
       _ugramaInput = '';
       _not1Controller.clear();
+      _cikisController.clear();
+      _ugramaController.clear();
     });
     _formKey.currentState?.reset();
   }
@@ -73,6 +81,10 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
       final cikisInput = _cikisInput;
       _cikisInput = _ugramaInput;
       _ugramaInput = cikisInput;
+
+      final cikisText = _cikisController.text;
+      _cikisController.text = _ugramaController.text;
+      _ugramaController.text = cikisText;
     });
   }
 
@@ -120,9 +132,13 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
         return;
       }
 
-      // Resolve personel_id — allowed to be null.
-      final personelRepo = ref.read(musteriPersonelRepositoryProvider);
-      final personel = await personelRepo.getByUserId(userId);
+      // Personel: önce form seçimi, yoksa current user'a bağlı kayıt.
+      var personelId = _selectedPersonelId;
+      if (personelId == null) {
+        final personelRepo = ref.read(musteriPersonelRepositoryProvider);
+        final personel = await personelRepo.getByUserId(userId);
+        personelId = personel?.id;
+      }
 
       final siparis = Siparis(
         id: '',
@@ -131,16 +147,15 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
         ugramaId: resolvedUgramaId,
         ugrama1Id: _selectedUgrama1Id,
         notId: _selectedNotId,
-        not1: _not1Controller.text.trim().isNotEmpty ? _not1Controller.text.trim() : null,
-        personelId: personel?.id,
+        not1: _not1Controller.text.trim().isNotEmpty
+            ? _not1Controller.text.trim()
+            : null,
+        personelId: personelId,
         olusturanId: userId,
         // durum defaults to kuryeBekliyor in constructor
       );
 
       await ref.read(siparisRepositoryProvider).create(siparis);
-
-      // Invalidate stream so active orders list refreshes.
-      ref.invalidate(siparisStreamByMusteriProvider(musteriId));
 
       _clearForm();
 
@@ -307,14 +322,17 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
                     itemCount: candidates.length,
                     itemBuilder: (context, index) {
                       final candidate = candidates[index];
-                      final subtitle = (candidate.adres == null || candidate.adres!.trim().isEmpty)
+                      final subtitle =
+                          (candidate.adres == null ||
+                              candidate.adres!.trim().isEmpty)
                           ? 'Adres yok'
                           : candidate.adres!;
                       return ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(candidate.ugramaAdi),
                         subtitle: Text(subtitle),
-                        onTap: () => Navigator.of(dialogContext).pop(candidate.id),
+                        onTap: () =>
+                            Navigator.of(dialogContext).pop(candidate.id),
                       );
                     },
                   ),
@@ -328,7 +346,8 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
               child: const Text('İptal'),
             ),
             FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(_createNewChoiceValue),
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(_createNewChoiceValue),
               child: const Text('Yeni Oluştur'),
             ),
           ],
@@ -501,6 +520,27 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     required String musteriId,
     required String userId,
   }) {
+    final personelListAsync = ref.watch(
+      musteriPersonelListByMusteriProvider(musteriId),
+    );
+    final personelItems = <({String value, String label})>[];
+    if (personelListAsync case AsyncData(value: final personeller)) {
+      final activePersoneller = personeller.where((p) => p.isActive).toList();
+      personelItems.addAll(
+        activePersoneller.map((p) => (value: p.id, label: p.ad)),
+      );
+      // Default: current user's bound personel.
+      if (!_personelDefaultApplied && _selectedPersonelId == null) {
+        for (final p in activePersoneller) {
+          if (p.userId == userId) {
+            _selectedPersonelId = p.id;
+            break;
+          }
+        }
+        _personelDefaultApplied = true;
+      }
+    }
+
     final dropdownItems = <({String value, String label})>[];
     final musteriLabel = _selectedMusteriLabel(musteriId);
     if (musteriLabel != null && musteriLabel.isNotEmpty) {
@@ -527,9 +567,22 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
         key: _formKey,
         child: Column(
           children: [
+            SearchableDropdown<String>(
+              key: const Key('personel_dropdown'),
+              value: _selectedPersonelId,
+              label: 'Personel',
+              placeholder: personelItems.isEmpty
+                  ? 'Personel kaydı yok'
+                  : 'Personel Seç',
+              searchPlaceholder: 'Personel ara...',
+              items: personelItems,
+              onChanged: (v) => setState(() => _selectedPersonelId = v),
+            ),
+            const SizedBox(height: AppSpacing.xs),
             TypeaheadField<String>(
               key: const Key('cikis_typeahead'),
               value: _selectedCikisId,
+              controller: _cikisController,
               label: 'Çıkış *',
               placeholder: 'Çıkış Seç',
               items: dropdownItems,
@@ -550,6 +603,7 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
             TypeaheadField<String>(
               key: const Key('ugrama_typeahead'),
               value: _selectedUgramaId,
+              controller: _ugramaController,
               label: 'Uğrama *',
               placeholder: 'Uğrama Seç',
               items: dropdownItems,
@@ -599,11 +653,16 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
   ) {
     return ordersAsync.when(
       data: (orders) {
-        final activeOrders = orders
-            .where(
-              (s) => s.durum == SiparisDurum.kuryeBekliyor || s.durum == SiparisDurum.devamEdiyor,
-            )
-            .toList();
+        final activeOrdersById = <String, Siparis>{};
+        for (final order in orders) {
+          final isActive =
+              order.durum == SiparisDurum.kuryeBekliyor ||
+              order.durum == SiparisDurum.devamEdiyor;
+          if (isActive) {
+            activeOrdersById[order.id] = order;
+          }
+        }
+        final activeOrders = activeOrdersById.values.toList();
 
         // Build ugrama name map for display.
         final ugramaMap = <String, String>{};
@@ -618,7 +677,9 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
           child: activeOrders.isEmpty
               ? const Text('Aktif sipariş yok.')
               : Column(
-                  children: activeOrders.map((s) => _buildOrderCard(s, ugramaMap)).toList(),
+                  children: activeOrders
+                      .map((s) => _buildOrderCard(s, ugramaMap))
+                      .toList(),
                 ),
         );
       },
@@ -651,7 +712,9 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     return Card(
       child: ListTile(
         title: Text(routeLabel),
-        subtitle: siparis.createdAt != null ? Text(_formatDate(siparis.createdAt!)) : null,
+        subtitle: siparis.createdAt != null
+            ? Text(_formatDate(siparis.createdAt!))
+            : null,
         trailing: Chip(
           label: Text(
             durumLabel,

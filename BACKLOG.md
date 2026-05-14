@@ -11,6 +11,72 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-05-13
+- Scope: Üç rol için manuel şifre değiştirme
+- Summary:
+  - `must_change_password` alanı korunarak müşteri, kurye ve operasyon kullanıcılarının uygulama içinden manuel şifre değiştirebilmesi sağlandı.
+  - Auth repository/gateway kontratına `updatePassword` eklendi; Supabase, Firebase, custom API ve mock backend adaptörleri güncellendi.
+  - Ortak şifre değiştirme diyaloğu eklendi; müşteri ve kurye app bar aksiyonlarına, operasyon ayarlarına bağlandı.
+- Files:
+  - `packages/backend_core/lib/src/auth_gateway.dart`
+  - `packages/backend_core/lib/src/auth_repository.dart`
+  - `packages/backend_core/lib/src/auth_repository_impl.dart`
+  - `packages/backend_supabase/lib/src/supabase_auth_gateway.dart`
+  - `packages/backend_firebase/lib/src/firebase_auth_gateway.dart`
+  - `packages/backend_custom/lib/src/custom_api_auth_gateway.dart`
+  - `packages/backend_mock/lib/src/mock_auth_gateway.dart`
+  - `lib/feature/auth/application/auth_controller.dart`
+  - `lib/product/navigation/password_change_helper.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_shell_page.dart`
+  - `lib/feature/kurye/presentation/kurye_ana_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_ayarlar_page.dart`
+  - `test/product/auth/auth_repository_impl_test.dart`
+  - `test/feature/musteri_siparis/musteri_shell_page_test.dart`
+  - `test/feature/kurye/kurye_ana_page_test.dart`
+  - `test/feature/operasyon/operasyon_ayarlar_page_test.dart`
+  - `test/feature/role_selection/role_selection_page_test.dart`
+  - `integration_test/app_smoke_test.dart`
+  - `integration_test/operasyon_navigation_smoke_test.dart`
+- Validation:
+  - `dart format` passed for touched Dart files.
+  - `flutter test test/product/auth/auth_repository_impl_test.dart test/feature/operasyon/operasyon_ayarlar_page_test.dart test/feature/musteri_siparis/musteri_shell_page_test.dart test/feature/kurye/kurye_ana_page_test.dart test/feature/role_selection/role_selection_page_test.dart` passed (`21/21`).
+  - `flutter analyze` failed with existing repo-wide 14 info/warning issues; no new error remains from this change.
+
+---
+
+### 2026-05-13
+- Scope: Müşteri aktif sipariş geçici çift görünme düzeltmesi
+- Summary:
+  - Müşteri sipariş oluşturduktan sonra realtime stream'i elle invalidate eden yenileme kaldırıldı; Supabase realtime akışı tek kaynak olarak bırakıldı.
+  - Aktif sipariş listesi `siparis.id` bazında tekilleştirildi; stream aynı satırı kısa süre iki kez yayınlarsa ekranda tek kart gösterilir.
+  - Tekrarlı stream satırlarını yakalayan widget testi eklendi.
+- Files:
+  - `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart`
+  - `test/feature/musteri_siparis/musteri_siparis_page_test.dart`
+  - `BACKLOG.md`
+- Validation:
+  - `dart format lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart test/feature/musteri_siparis/musteri_siparis_page_test.dart` passed.
+  - `flutter test test/feature/musteri_siparis/musteri_siparis_page_test.dart` passed (`9/9`).
+  - `flutter analyze` failed with existing repo-wide 14 info/warning issues; no new issue reported for touched files.
+
+---
+
+### 2026-05-11
+- Scope: Dental müşteri/personel hesapları ve uğrama ilişkilendirmeleri
+- Summary:
+  - Excel kaynaklı dental müşteri seti Supabase master data'ya taşındı; `MICROLAB`, `DİZEYNDENT`, `DİŞÇİ ERKAN`, `DİŞÇİ LATİF`, `DİŞÇİ NAZİFE`, `DİŞÇİ SADIK`, `DİŞÇİ TASARIM` müşteri kayıtları aktif hale getirildi.
+  - Her müşteri için bir müşteri personeli auth hesabı oluşturuldu/güncellendi ve `app_users` ile `musteri_personelleri.user_id` bağlantıları kuruldu.
+  - Excel'deki `Cıkıs` ve `U1` uğrama noktaları müşteri bazında `musteri_ugrama` köprüsüne bağlandı; `ART DENT/ARTDENT` ve `ELİTA 2/ELİTA2` normalleştirmeleri uygulandı.
+- Files:
+  - `BACKLOG.md`
+  - Supabase data: `musteriler`, `app_users`, `musteri_personelleri`, `ugramalar`, `musteri_ugrama`
+- Validation:
+  - 7 oluşturulan/güncellenen auth hesabı password grant ile doğrulandı.
+  - 7 müşteri ve 7 personel bağlantısı doğrulandı.
+  - Müşteri-uğrama köprü sayıları doğrulandı: MICROLAB 32, DİZEYNDENT 13, DİŞÇİ ERKAN 27, DİŞÇİ LATİF 15, DİŞÇİ NAZİFE 10, DİŞÇİ SADIK 6, DİŞÇİ TASARIM 5.
+
+---
+
 ### 2026-05-08
 - Scope: Operasyon ekranı kompakt yükseklik düzeni
 - Summary:

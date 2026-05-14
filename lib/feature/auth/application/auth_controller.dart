@@ -93,6 +93,17 @@ class AuthController extends _$AuthController {
     ref.read(appNavigationStateProvider).requireLogin();
   }
 
+  Future<void> updatePassword({required String newPassword}) async {
+    state = const AsyncLoading();
+    final nextState = await AsyncValue.guard(
+      () => ref
+          .read(authRepositoryProvider)
+          .updatePassword(newPassword: newPassword),
+    );
+    if (!ref.mounted) return;
+    state = nextState;
+  }
+
   Future<void> _navigateAfterAuth() async {
     ref.invalidate(currentUserProfileProvider);
     ref.read(appNavigationStateProvider).clearAll();
