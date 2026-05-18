@@ -1,7 +1,8 @@
 default_platform(:ios)
 
 # ─── Shared config ────────────────────────────────────────────────────────────
-APP_IDENTIFIER  = "com.lukeristudio.kuryem"
+APP_IDENTIFIER       = "com.lukeristudio.kuryem"   # iOS bundle id
+ANDROID_PACKAGE_NAME = "com.kuryem.lukeristudio"   # Play Console package
 KEY_ID          = "T59225Z293"
 ISSUER_ID       = "0a244648-8b59-4018-814c-94e07db5f262"
 KEY_PATH        = File.expand_path("../keys/AuthKey_T59225Z293.p8", __dir__)
@@ -81,7 +82,7 @@ platform :android do
   desc "Upload screenshots to Google Play Store"
   lane :upload_screenshots do
     supply(
-      package_name:             APP_IDENTIFIER,
+      package_name:             ANDROID_PACKAGE_NAME,
       json_key:                 PLAY_JSON_KEY,
       metadata_path:            METADATA_DIR,
       skip_upload_apk:          true,
@@ -97,7 +98,7 @@ platform :android do
   desc "Upload AAB to Google Play Production"
   lane :deploy do
     supply(
-      package_name:            APP_IDENTIFIER,
+      package_name:            ANDROID_PACKAGE_NAME,
       json_key:                PLAY_JSON_KEY,
       aab:                     File.expand_path("../build/app/outputs/bundle/release/app-release.aab", __dir__),
       track:                   "production",
