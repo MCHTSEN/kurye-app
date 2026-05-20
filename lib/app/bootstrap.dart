@@ -39,10 +39,15 @@ Future<void> bootstrap({
 
   await module.initialize();
 
-  // Local notifications — bootstrap'te kanal + handler kurulumu.
+  // Local notifications — bootstrap'te kanal + permission kurulumu.
+  // iOS init.requestAlertPermission=true zaten prompt'u tetikler;
+  // Android için ayrıca requestPermission çağrısı şart (manifest izni +
+  // 13+ runtime prompt).
   final notificationService = LocalNotificationService();
   try {
     await notificationService.init();
+    final granted = await notificationService.requestPermission();
+    log.i('Notification permission granted: $granted');
   } on Exception catch (e, st) {
     log.e('Notification init failed', error: e, stackTrace: st);
   }
