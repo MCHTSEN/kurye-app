@@ -35,7 +35,13 @@ class LocalNotificationService implements NotificationService {
       return;
     }
     const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const iosInit = DarwinInitializationSettings();
+    // iOS foreground'da banner + ses + badge otomatik göster.
+    // İzin requestPermission()'da istenir; init'i bloke etme.
+    const iosInit = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
     await _plugin.initialize(
       const InitializationSettings(android: androidInit, iOS: iosInit),
       onDidReceiveNotificationResponse: (response) {

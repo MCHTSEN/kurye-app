@@ -1868,6 +1868,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
             ],
           );
 
+    // expandBody/inner-ListView yalnız desktop'ta — tablet/mobile'ta
+    // dışarıdaki parent ListView içinde olduğundan Expanded patlar.
+    final isDesktop = layoutTypeOf(context) == LayoutType.desktop;
     return _PremiumCard(
       title: 'KURYE BEKLEYENLER (${waiting.length})',
       icon: Icons.access_time_filled_rounded,
@@ -1876,13 +1879,13 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       headerPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       titleFontSize: 13,
       iconSize: 18,
-      expandBody: !isMobile,
-      child: isMobile
-          ? listBody
-          : ListView(
+      expandBody: isDesktop,
+      child: isDesktop
+          ? ListView(
               key: const Key('waiting_panel_scroll'),
               children: [listBody],
-            ),
+            )
+          : listBody,
     );
   }
 
@@ -2107,17 +2110,18 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
             ],
           );
 
+    final isDesktop = layoutTypeOf(context) == LayoutType.desktop;
     return _PremiumCard(
       title: 'DEVAM EDEN İŞLER (${active.length})',
       icon: Icons.directions_bike_rounded,
       accentColor: const Color(0xFF6366F1),
-      expandBody: !isMobile,
-      child: isMobile
-          ? listBody
-          : ListView(
+      expandBody: isDesktop,
+      child: isDesktop
+          ? ListView(
               key: const Key('active_panel_scroll'),
               children: [listBody],
-            ),
+            )
+          : listBody,
     );
   }
 
