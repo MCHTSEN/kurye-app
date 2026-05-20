@@ -524,18 +524,18 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      // Manual pricing dialog should appear.
-      expect(find.text('Ücret Giriniz'), findsOneWidget);
+      // Bulk pricing dialog should appear (single-order is also shown there).
+      expect(find.byKey(const Key('bulk_pricing_dialog')), findsOneWidget);
 
-      // Enter a price.
+      // Enter a price for s3.
       await tester.enterText(
-        find.byKey(const Key('manual_price_field')),
+        find.byKey(const Key('bulk_price_s3')),
         '120',
       );
       await tester.pump();
 
       // Confirm.
-      await tester.tap(find.byKey(const Key('manual_price_confirm')));
+      await tester.tap(find.byKey(const Key('bulk_pricing_confirm')));
       await tester.pumpAndSettle();
 
       // Verify the order was completed with manual price.
@@ -550,6 +550,136 @@ void main() {
         1,
       );
     });
+
+    testWidgets(
+      '(e1) bulk finish — mix of auto-priced + manual in one dialog',
+      (tester) async {
+        // Auto-priced order — has matching historical pricing.
+        fakeSiparisRepo.store['bulk-1'] = const Siparis(
+          id: 'bulk-1',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+          kuryeId: 'kurye-1',
+          durum: SiparisDurum.devamEdiyor,
+        );
+        fakeSiparisRepo.store['hist-bulk'] = Siparis(
+          id: 'hist-bulk',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+          durum: SiparisDurum.tamamlandi,
+          ucret: 60.0,
+          createdAt: DateTime.now().subtract(const Duration(days: 1)),
+        );
+        // Manual-required order — no historical match.
+        fakeSiparisRepo.store['bulk-2'] = const Siparis(
+          id: 'bulk-2',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-3',
+          kuryeId: 'kurye-1',
+          durum: SiparisDurum.devamEdiyor,
+        );
+
+        await pumpPage(tester);
+
+        // Select both orders via their checkboxes.
+        await reveal(tester, find.byKey(const Key('active_bulk-1')));
+        await tester.tap(find.byKey(const Key('active_bulk-1')));
+        await tester.pumpAndSettle();
+        await reveal(tester, find.byKey(const Key('active_bulk-2')));
+        await tester.tap(find.byKey(const Key('active_bulk-2')));
+        await tester.pumpAndSettle();
+
+        // Tap Bitir on any selected order.
+        await reveal(tester, find.byKey(const Key('finish_bulk-1')));
+        await tester.tap(find.byKey(const Key('finish_bulk-1')));
+        // Let Future.wait + showDialog mount. pumpAndSettle hangs on
+        // the modal future, so step through frames manually.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        // Bulk dialog opens with ONLY the manual one (auto-priced bypasses).
+        expect(find.byKey(const Key('bulk_pricing_dialog')), findsOneWidget);
+        expect(find.byKey(const Key('bulk_price_bulk-2')), findsOneWidget);
+        // The auto-priced order is NOT in the dialog.
+        expect(find.byKey(const Key('bulk_price_bulk-1')), findsNothing);
+
+        // Enter manual price for bulk-2.
+        await tester.enterText(
+          find.byKey(const Key('bulk_price_bulk-2')),
+          '95',
+        );
+        await tester.pump();
+        await tester.tap(find.byKey(const Key('bulk_pricing_confirm')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        // Both completed.
+        expect(fakeSiparisRepo.store['bulk-1']!.ucret, 60.0);
+        expect(fakeSiparisRepo.store['bulk-1']!.durum, SiparisDurum.tamamlandi);
+        expect(fakeSiparisRepo.store['bulk-2']!.ucret, 95.0);
+        expect(fakeSiparisRepo.store['bulk-2']!.durum, SiparisDurum.tamamlandi);
+      },
+    );
+
+    testWidgets(
+      '(e2) bulk skip — auto-priced still completes, manual ones remain',
+      (tester) async {
+        fakeSiparisRepo.store['skip-1'] = const Siparis(
+          id: 'skip-1',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+          kuryeId: 'kurye-1',
+          durum: SiparisDurum.devamEdiyor,
+        );
+        fakeSiparisRepo.store['hist-skip'] = Siparis(
+          id: 'hist-skip',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-2',
+          durum: SiparisDurum.tamamlandi,
+          ucret: 40.0,
+          createdAt: DateTime.now().subtract(const Duration(days: 1)),
+        );
+        fakeSiparisRepo.store['skip-2'] = const Siparis(
+          id: 'skip-2',
+          musteriId: 'musteri-1',
+          cikisId: 'ugrama-1',
+          ugramaId: 'ugrama-3',
+          kuryeId: 'kurye-1',
+          durum: SiparisDurum.devamEdiyor,
+        );
+
+        await pumpPage(tester);
+
+        await reveal(tester, find.byKey(const Key('active_skip-1')));
+        await tester.tap(find.byKey(const Key('active_skip-1')));
+        await tester.pumpAndSettle();
+        await reveal(tester, find.byKey(const Key('active_skip-2')));
+        await tester.tap(find.byKey(const Key('active_skip-2')));
+        await tester.pumpAndSettle();
+
+        await reveal(tester, find.byKey(const Key('finish_skip-1')));
+        await tester.tap(find.byKey(const Key('finish_skip-1')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        // Skip the dialog — empty result.
+        expect(find.byKey(const Key('bulk_pricing_dialog')), findsOneWidget);
+        await tester.tap(find.byKey(const Key('bulk_pricing_skip')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
+
+        // Auto-priced was still completed.
+        expect(fakeSiparisRepo.store['skip-1']!.durum, SiparisDurum.tamamlandi);
+        expect(fakeSiparisRepo.store['skip-1']!.ucret, 40.0);
+        // Manual one stays in devamEdiyor.
+        expect(fakeSiparisRepo.store['skip-2']!.durum, SiparisDurum.devamEdiyor);
+      },
+    );
 
     testWidgets('(f) active order can be edited and saved from row action', (
       tester,

@@ -104,6 +104,15 @@ class SupabaseSiparisRepository implements SiparisRepository {
   }
 
   @override
+  Future<void> delete(String id) async {
+    _log.i('delete: $id');
+    // siparis_log FK CASCADE değil → önce log temizle, sonra siparişi sil.
+    await _client.from('siparis_log').delete().eq('siparis_id', id);
+    await _client.from(_table).delete().eq('id', id);
+    _log.i('deleted: $id');
+  }
+
+  @override
   Future<List<Siparis>> getHistory({
     DateTime? startDate,
     DateTime? endDate,

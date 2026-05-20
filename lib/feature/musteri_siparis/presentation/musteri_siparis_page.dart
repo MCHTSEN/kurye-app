@@ -6,6 +6,7 @@ import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_time.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/musteri_personel/musteri_personel_providers.dart';
 import '../../../product/navigation/logout_helper.dart';
@@ -759,11 +760,5 @@ class _MusteriSiparisPageState extends ConsumerState<MusteriSiparisPage> {
     };
   }
 
-  String _formatDate(DateTime dt) {
-    return '${dt.day.toString().padLeft(2, '0')}.'
-        '${dt.month.toString().padLeft(2, '0')}.'
-        '${dt.year} '
-        '${dt.hour.toString().padLeft(2, '0')}:'
-        '${dt.minute.toString().padLeft(2, '0')}';
-  }
+  String _formatDate(DateTime dt) => AppTime.dmyHm(dt);
 }

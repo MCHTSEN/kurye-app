@@ -193,6 +193,48 @@
 
 ---
 
+## O. 2026-05-20 İyileştirme Senaryoları
+
+- [ ] O1: Saatler TR (UTC+3) olarak gösteriliyor
+  - Operasyon dispatch + geçmiş + kurye + müşteri sayfalarında saat alanları, DB UTC değerinin +3 saatlik halini gösterir (sabah 08:00 UTC → 11:00 ekranda).
+  - Test: `flutter test test/core/utils/app_time_test.dart` → 6/6 PASS.
+
+- [ ] O2: Operasyon dispatch'te sipariş silme (3-nokta menü)
+  - Bekleyen veya devam eden sipariş kartında **mobile**: edit yanında çöp ikonu, **desktop**: 3-nokta menü → "Sil".
+  - Confirm dialog'ta "Sil" basıldıktan sonra sipariş DB'den uçar, sipariş_log kayıtları da temizlenir, snackbar görünür.
+
+- [ ] O3: Operasyon geçmiş'te kalıcı silme
+  - Geçmiş ekranında bir sipariş seçilince edit panelinde "Kalıcı Olarak Sil" butonu görünür.
+  - Confirm onaylanırsa kayıt uçar, panel kapanır, snackbar.
+
+- [ ] O4: Toplu bitirme — tek konsolide ücret popup
+  - Devam Eden Siparişlerde checkbox/tap ile 3+ sipariş seç → herhangi birinin Bitir'ine bas.
+  - Otomatik fiyatı olan siparişler popup'a gelmez; sadece manuel girilmesi gerekenler tek tabloda listelenir.
+  - "Tümünü Onayla" → hepsi tamamlanır; "Hepsini Atla" → otomatik fiyatlılar yine tamamlanır, manueller `devam_ediyor`'da kalır.
+
+- [ ] O5: Kurye ekranında uğrama adları doğrudan butonlarda
+  - Sipariş kartında "Çıkış"/"Uğrama" yazısı yok; butonlar gerçek uğrama adlarını gösterir (örn. "Fatih", "Dış Latife").
+  - Tıklanmış buton: `Ad HH:mm` formatlı disable buton; tıklanmamış: aktif elevated.
+
+- [ ] O6: Kurye "İşi Bitir" butonu
+  - Sipariş kartının altında yeşil "İşi Bitir" butonu. Confirm dialog → tamamlandı işaretler.
+  - Geçmişte aynı rotaya ait `tamamlandi` sipariş varsa ücret otomatik atanır; yoksa `ucret=null` kalır (operasyon geçmişten düzenler).
+  - Bitirilen sipariş kurye listesinden düşer, operasyon geçmişte görünür.
+
+- [ ] O7: Operasyon kartında ilerleme göstergesi
+  - Devam Eden Siparişlerde kurye atanmış kartın altında progress satırı: Çıkış / Uğrama / Uğrama1 noktaları yeşil ✓ veya gri ○ ile, set olanların yanında TR saati.
+
+- [ ] O8: Yeni sipariş geldiğinde kurye telefonunda bildirim
+  - Operasyon kuryeye atadığında, kurye uygulamasında `LocalNotificationService.show()` "Yeni iş" başlığıyla tetiklenir.
+  - İlk açılışta izin diyaloğu gösterilir (idempotent).
+  - Validate: kurye telefonu kilitli/arka planda iken atama → bildirim bar'ında görünmeli.
+
+- [ ] O9: Ücret popup geri uyumluluk
+  - Tek sipariş için Bitir basıldığında da yeni bulk dialog tek satırlı olarak açılır (eski `_ManualPricingDialog` kaldırıldı).
+  - Test: `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` → 19/19 PASS.
+
+---
+
 ## Ek doğrulama notları
 
 - Müşteri mobil navigasyon bug'ı çözüldü:

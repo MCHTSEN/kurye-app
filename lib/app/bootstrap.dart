@@ -6,8 +6,10 @@ import '../core/environment/app_environment.dart';
 import '../core/error/app_error_handler.dart';
 import '../core/error/app_error_widget.dart';
 import '../core/monitoring/sentry_service.dart';
+import '../core/notifications/local_notification_service.dart';
 import '../product/auth/auth_providers.dart';
 import '../product/environment/environment_provider.dart';
+import '../product/notifications/notification_providers.dart';
 import '../product/riverpod/app_provider_observer.dart';
 import 'app.dart';
 
@@ -37,6 +39,14 @@ Future<void> bootstrap({
 
   await module.initialize();
 
+  // Local notifications — bootstrap'te kanal + handler kurulumu.
+  final notificationService = LocalNotificationService();
+  try {
+    await notificationService.init();
+  } on Exception catch (e, st) {
+    log.e('Notification init failed', error: e, stackTrace: st);
+  }
+
   log.i('Backend initialized, starting app');
 
   runApp(
@@ -44,6 +54,7 @@ Future<void> bootstrap({
       overrides: [
         appEnvironmentProvider.overrideWithValue(resolvedEnvironment),
         backendModuleProvider.overrideWithValue(module),
+        notificationServiceProvider.overrideWithValue(notificationService),
       ],
       observers: const [AppProviderObserver()],
       child: const KuryemApp(),

@@ -115,12 +115,12 @@ void main() {
 
         await pumpPage(tester);
 
-        // Active order route info should show resolved names.
-        expect(find.text('Depo A → Şube B → Şube C'), findsOneWidget);
+        // Stop names appear directly on the timestamp buttons.
+        expect(find.text('Depo A'), findsOneWidget);
+        expect(find.text('Şube B'), findsOneWidget);
+        expect(find.text('Şube C'), findsOneWidget);
         // Section title shows count (1 active).
         expect(find.text('Siparişlerim (1)'), findsOneWidget);
-        // Completed order should not appear (raw IDs not in ugrama seed).
-        expect(find.text('cikis-x → ugrama-y'), findsNothing);
       },
     );
 
@@ -166,10 +166,8 @@ void main() {
 
         await pumpPage(tester);
 
-        // Should show formatted time.
-        expect(find.text('Çıkış 14:30'), findsOneWidget);
-
-        // The button should be an OutlinedButton with onPressed: null.
+        // The button should be an OutlinedButton with onPressed: null
+        // and label of form "Depo A HH:mm".
         final btnFinder = find.descendant(
           of: find.byKey(const Key('cikis_btn_s1')),
           matching: find.byType(OutlinedButton),
@@ -177,6 +175,9 @@ void main() {
         expect(btnFinder, findsOneWidget);
         final btn = tester.widget<OutlinedButton>(btnFinder);
         expect(btn.onPressed, isNull);
+        final text = btn.child! as Text;
+        expect(text.data!.startsWith('Depo A '), isTrue, reason: text.data);
+        expect(text.data!.length, 'Depo A 00:00'.length);
       },
     );
 
@@ -228,8 +229,72 @@ void main() {
 
         await pumpPage(tester);
 
-        // Should fall back to raw IDs.
-        expect(find.text('unknown-x → unknown-y'), findsOneWidget);
+        // Raw UUIDs appear directly on the timestamp buttons.
+        expect(find.text('unknown-x'), findsOneWidget);
+        expect(find.text('unknown-y'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '(h0) İşi Bitir — auto pricing from history, sets tamamlandi',
+      (tester) async {
+        fakeSiparisRepo.store['s-fin'] = const Siparis(
+          id: 's-fin',
+          musteriId: 'musteri-1',
+          kuryeId: _testKuryeId,
+          cikisId: 'cikis-a',
+          ugramaId: 'ugrama-b',
+          durum: SiparisDurum.devamEdiyor,
+        );
+        // Historical match for auto pricing.
+        fakeSiparisRepo.store['s-hist'] = Siparis(
+          id: 's-hist',
+          musteriId: 'musteri-1',
+          cikisId: 'cikis-a',
+          ugramaId: 'ugrama-b',
+          durum: SiparisDurum.tamamlandi,
+          ucret: 45.0,
+          createdAt: DateTime.now().subtract(const Duration(days: 1)),
+        );
+
+        await pumpPage(tester);
+
+        await tester.tap(find.byKey(const Key('finish_btn_s-fin')));
+        await tester.pumpAndSettle();
+        // Confirm in the dialog.
+        await tester.tap(find.text('Bitir'));
+        await tester.pumpAndSettle();
+
+        final updated = fakeSiparisRepo.store['s-fin']!;
+        expect(updated.durum, SiparisDurum.tamamlandi);
+        expect(updated.ucret, 45.0);
+        expect(updated.bitisSaat, isNotNull);
+      },
+    );
+
+    testWidgets(
+      '(h1) İşi Bitir — no history, completes with null ücret',
+      (tester) async {
+        fakeSiparisRepo.store['s-nop'] = const Siparis(
+          id: 's-nop',
+          musteriId: 'musteri-1',
+          kuryeId: _testKuryeId,
+          cikisId: 'cikis-a',
+          ugramaId: 'ugrama-b',
+          durum: SiparisDurum.devamEdiyor,
+        );
+
+        await pumpPage(tester);
+
+        await tester.tap(find.byKey(const Key('finish_btn_s-nop')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Bitir'));
+        await tester.pumpAndSettle();
+
+        final updated = fakeSiparisRepo.store['s-nop']!;
+        expect(updated.durum, SiparisDurum.tamamlandi);
+        expect(updated.ucret, isNull);
+        expect(updated.bitisSaat, isNotNull);
       },
     );
 

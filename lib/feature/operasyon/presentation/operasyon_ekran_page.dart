@@ -11,6 +11,7 @@ import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_time.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/musteri_personel/musteri_personel_providers.dart';
@@ -549,6 +550,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
   Future<void> _onFinish({
     required String userId,
     required List<Siparis> activeOrders,
+    required Map<String, String> musteriMap,
+    required Map<String, String> ugramaMap,
   }) async {
     if (_activeSelected.isEmpty) return;
 
@@ -559,54 +562,82 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
       final logRepo = ref.read(siparisLogRepositoryProvider);
       final selectedIds = Set<String>.of(_activeSelected);
 
-      for (final orderId in selectedIds) {
-        final matchingOrders = activeOrders.where((s) => s.id == orderId);
-        if (matchingOrders.isEmpty) {
-          _log.w('Finish skipped: active order not found for $orderId');
+      // 1. Match selected ids to their order objects.
+      final orders = <Siparis>[];
+      for (final id in selectedIds) {
+        final m = activeOrders.where((s) => s.id == id);
+        if (m.isEmpty) {
+          _log.w('Finish skipped: active order not found for $id');
           continue;
         }
-        final order = matchingOrders.first;
-
-        // Auto-pricing lookup.
-        final pricingMatch = await repo.getRecentPricing(
-          musteriId: order.musteriId,
-          cikisId: order.cikisId,
-          ugramaId: order.ugramaId,
-        );
-
-        var price = pricingMatch?.ucret;
-
-        if (price == null) {
-          _log.w(
-            'Auto-pricing miss: musteri=${order.musteriId} '
-            'cikis=${order.cikisId} ugrama=${order.ugramaId}',
-          );
-          // Show manual pricing dialog.
-          if (mounted) {
-            price = await _showManualPricingDialog();
-          }
-          // User cancelled the dialog — skip this order.
-          if (price == null) continue;
-        }
-
-        await repo.update(orderId, {
-          'ucret': price,
-          'bitis_saat': DateTime.now().toIso8601String(),
-          'durum': SiparisDurum.tamamlandi.value,
-        });
-
-        await logRepo.create(
-          SiparisLog(
-            id: '',
-            siparisId: orderId,
-            eskiDurum: SiparisDurum.devamEdiyor,
-            yeniDurum: SiparisDurum.tamamlandi,
-            degistirenId: userId,
-          ),
-        );
+        orders.add(m.first);
       }
 
-      // Force provider refresh so the UI doesn't wait for the next
+      // 2. Parallel auto-pricing lookup.
+      final pricingResults = await Future.wait(
+        orders.map(
+          (o) => repo.getRecentPricing(
+            musteriId: o.musteriId,
+            cikisId: o.cikisId,
+            ugramaId: o.ugramaId,
+          ),
+        ),
+      );
+
+      // 3. Split into auto-priced and manual-required.
+      final autoPriced = <(Siparis, double)>[];
+      final needManual = <Siparis>[];
+      for (var i = 0; i < orders.length; i++) {
+        final price = pricingResults[i]?.ucret;
+        if (price != null) {
+          autoPriced.add((orders[i], price));
+        } else {
+          needManual.add(orders[i]);
+          _log.w(
+            'Auto-pricing miss: musteri=${orders[i].musteriId} '
+            'cikis=${orders[i].cikisId} ugrama=${orders[i].ugramaId}',
+          );
+        }
+      }
+
+      // 4. If manual prices needed → show bulk dialog (single popup).
+      var manualPrices = <String, double>{};
+      if (needManual.isNotEmpty && mounted) {
+        final result = await _showBulkPricingDialog(
+          orders: needManual,
+          musteriMap: musteriMap,
+          ugramaMap: ugramaMap,
+        );
+        // null = user dismissed entirely → still complete auto-priced ones.
+        manualPrices = result ?? <String, double>{};
+      }
+
+      // 5. Apply completions: auto-priced + manually entered ones.
+      var completedCount = 0;
+      for (final (order, price) in autoPriced) {
+        await _completeOrder(
+          repo: repo,
+          logRepo: logRepo,
+          orderId: order.id,
+          price: price,
+          userId: userId,
+        );
+        completedCount++;
+      }
+      for (final order in needManual) {
+        final p = manualPrices[order.id];
+        if (p == null) continue; // skipped in dialog
+        await _completeOrder(
+          repo: repo,
+          logRepo: logRepo,
+          orderId: order.id,
+          price: p,
+          userId: userId,
+        );
+        completedCount++;
+      }
+
+      // 6. Force provider refresh so the UI doesn't wait for the next
       // Supabase Realtime event — completed orders disappear immediately.
       ref.invalidate(siparisStreamActiveProvider);
       final now = DateTime.now();
@@ -620,11 +651,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${selectedIds.length} sipariş tamamlandı',
-            ),
-          ),
+          SnackBar(content: Text('$completedCount sipariş tamamlandı')),
         );
       }
     } on Exception catch (e) {
@@ -644,14 +671,110 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     }
   }
 
-  Future<double?> _showManualPricingDialog() async {
-    final result = await showDialog<double>(
-      context: context,
-      builder: (ctx) {
-        return const _ManualPricingDialog(key: Key('manual_price_dialog'));
-      },
+  Future<void> _completeOrder({
+    required SiparisRepository repo,
+    required SiparisLogRepository logRepo,
+    required String orderId,
+    required double price,
+    required String userId,
+  }) async {
+    await repo.update(orderId, {
+      'ucret': price,
+      'bitis_saat': DateTime.now().toIso8601String(),
+      'durum': SiparisDurum.tamamlandi.value,
+    });
+    await logRepo.create(
+      SiparisLog(
+        id: '',
+        siparisId: orderId,
+        eskiDurum: SiparisDurum.devamEdiyor,
+        yeniDurum: SiparisDurum.tamamlandi,
+        degistirenId: userId,
+      ),
     );
-    return result;
+  }
+
+  Future<Map<String, double>?> _showBulkPricingDialog({
+    required List<Siparis> orders,
+    required Map<String, String> musteriMap,
+    required Map<String, String> ugramaMap,
+  }) async {
+    return showDialog<Map<String, double>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => _BulkPricingDialog(
+        key: const Key('bulk_pricing_dialog'),
+        orders: orders,
+        musteriMap: musteriMap,
+        ugramaMap: ugramaMap,
+        routeLabelBuilder: (s) => _routeLabel(s, ugramaMap: ugramaMap),
+      ),
+    );
+  }
+
+  // ──────────── Delete flow ────────────
+
+  Future<void> _onDeleteOrder(Siparis order) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const Key('delete_confirm_dialog'),
+        title: const Text('Siparişi sil'),
+        content: const Text(
+          'Bu siparişi kalıcı olarak silmek istediğinizden emin misiniz? '
+          'İşlem geri alınamaz.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('İptal'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sil'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      await ref.read(siparisRepositoryProvider).delete(order.id);
+      if (mounted) {
+        setState(() {
+          _waitingSelected.remove(order.id);
+          _activeSelected.remove(order.id);
+        });
+        ref.invalidate(siparisStreamActiveProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sipariş silindi')),
+        );
+      }
+    } on Exception catch (e) {
+      _log.e('Delete failed', error: e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Silme hatası: $e')),
+        );
+      }
+    }
+  }
+
+  Widget _deleteIconButton(Siparis s, {required String keyPrefix}) {
+    return IconButton(
+      key: Key('${keyPrefix}_${s.id}'),
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints.tightFor(width: 32, height: 32),
+      padding: EdgeInsets.zero,
+      icon: Icon(
+        Icons.delete_outline_rounded,
+        color: Colors.red.shade400,
+        size: 20,
+      ),
+      tooltip: 'Siparişi sil',
+      onPressed: () => _onDeleteOrder(s),
+    );
   }
 
   Future<void> _onEditOrder(
@@ -1778,9 +1901,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
         kuryeMap[k.id] = k.ad;
       }
     }
-    final timeStr = s.createdAt != null
-        ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
-        : '--:--';
+    final timeStr = AppTime.hm(s.createdAt);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
@@ -1864,28 +1985,34 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                       color: theme.textMuted,
                     ),
                   ),
-                  IconButton(
-                    key: Key('edit_waiting_${s.id}'),
-                    visualDensity: VisualDensity.compact,
-                    constraints: const BoxConstraints.tightFor(
-                      width: 32,
-                      height: 32,
-                    ),
-                    padding: EdgeInsets.zero,
-                    icon: const Icon(
-                      Icons.edit_note_rounded,
-                      color: Color(0xFFF59E0B),
-                      size: 20,
-                    ),
-                    tooltip: 'Siparişi düzenle',
-                    onPressed: () => _onEditOrder(
-                      s,
-                      ugramaMap: ugramaMap,
-                      kuryeMap: kuryeMap,
-                      personelMap: personelMap,
-                      dialogTitle: 'Bekleyen Siparişi Düzenle',
-                      successMessage: 'Bekleyen sipariş güncellendi',
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        key: Key('edit_waiting_${s.id}'),
+                        visualDensity: VisualDensity.compact,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 32,
+                          height: 32,
+                        ),
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(
+                          Icons.edit_note_rounded,
+                          color: Color(0xFFF59E0B),
+                          size: 20,
+                        ),
+                        tooltip: 'Siparişi düzenle',
+                        onPressed: () => _onEditOrder(
+                          s,
+                          ugramaMap: ugramaMap,
+                          kuryeMap: kuryeMap,
+                          personelMap: personelMap,
+                          dialogTitle: 'Bekleyen Siparişi Düzenle',
+                          successMessage: 'Bekleyen sipariş güncellendi',
+                        ),
+                      ),
+                      _deleteIconButton(s, keyPrefix: 'delete_waiting'),
+                    ],
                   ),
                 ],
               ),
@@ -2003,27 +2130,41 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
     Map<String, String> personelMap,
     List<Siparis> active,
   ) {
-    final timeStr = s.createdAt != null
-        ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
-        : '--:--';
+    final timeStr = AppTime.hm(s.createdAt);
     final kuryeAd = kuryeMap[s.kuryeId] ?? 'Atanmadı';
+    final isSelected = _activeSelected.contains(s.id);
 
     final theme = _OperasyonTheme.of(context);
-    return Container(
+    return GestureDetector(
       key: Key('active_${s.id}'),
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: theme.cardHeader.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.divider),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top row: firma + saat + edit
-            Row(
+      onTap: () {
+        setState(() {
+          if (isSelected) {
+            _activeSelected.remove(s.id);
+          } else {
+            _activeSelected.add(s.id);
+          }
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFF1F3A2E).withValues(alpha: 0.6)
+              : theme.cardHeader.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF22C55E) : theme.divider,
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top row: firma + saat + edit
+              Row(
               children: [
                 Expanded(
                   child: Column(
@@ -2073,6 +2214,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     successMessage: 'Devam eden sipariş güncellendi',
                   ),
                 ),
+                _deleteIconButton(s, keyPrefix: 'delete_active'),
               ],
             ),
             const SizedBox(height: 6),
@@ -2085,6 +2227,9 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                 fontSize: 12,
               ),
             ),
+            const SizedBox(height: 6),
+            // Progress göstergesi — kurye hangi noktada
+            _OrderProgressRow(order: s),
             const SizedBox(height: 10),
             // Bottom row: kurye badge + bitir button
             Row(
@@ -2115,11 +2260,16 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     key: Key('finish_${s.id}'),
                     onPressed: !_isFinishing
                         ? () {
-                            _activeSelected
-                              ..clear()
-                              ..add(s.id);
+                            // Mevcut checkbox seçimini koru; bu siparişi
+                            // de garanti ekle (idempotent).
+                            _activeSelected.add(s.id);
                             unawaited(
-                              _onFinish(userId: userId, activeOrders: active),
+                              _onFinish(
+                                userId: userId,
+                                activeOrders: active,
+                                musteriMap: musteriMap,
+                                ugramaMap: ugramaMap,
+                              ),
                             );
                           }
                         : null,
@@ -2152,7 +2302,8 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                 ),
               ],
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -2269,9 +2420,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           Expanded(
             child: Center(
               child: Text(
-                s.createdAt != null
-                    ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
-                    : '--:--',
+                AppTime.hm(s.createdAt),
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: timeFont,
@@ -2293,22 +2442,59 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           ),
           Expanded(
             child: Align(
-              child: IconButton(
-                key: Key('edit_waiting_${s.id}'),
-                icon: const Icon(
-                  Icons.edit_note_rounded,
-                  color: Color(0xFFF59E0B),
-                  size: 22,
-                ),
-                tooltip: 'Siparişi düzenle',
-                onPressed: () => _onEditOrder(
-                  s,
-                  ugramaMap: ugramaMap,
-                  kuryeMap: kuryeMap,
-                  personelMap: personelMap,
-                  dialogTitle: 'Bekleyen Siparişi Düzenle',
-                  successMessage: 'Bekleyen sipariş güncellendi',
-                ),
+              child: PopupMenuButton<String>(
+                key: Key('actions_waiting_${s.id}'),
+                tooltip: 'İşlemler',
+                icon: const Icon(Icons.more_vert_rounded, size: 22),
+                onSelected: (v) {
+                  switch (v) {
+                    case 'edit':
+                      unawaited(
+                        _onEditOrder(
+                          s,
+                          ugramaMap: ugramaMap,
+                          kuryeMap: kuryeMap,
+                          personelMap: personelMap,
+                          dialogTitle: 'Bekleyen Siparişi Düzenle',
+                          successMessage: 'Bekleyen sipariş güncellendi',
+                        ),
+                      );
+                    case 'delete':
+                      unawaited(_onDeleteOrder(s));
+                  }
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    key: Key('edit_waiting_${s.id}'),
+                    value: 'edit',
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.edit_note_rounded,
+                          color: Color(0xFFF59E0B),
+                          size: 18,
+                        ),
+                        SizedBox(width: 8),
+                        Text('Düzenle'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    key: Key('delete_waiting_row_${s.id}'),
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline_rounded,
+                          color: Colors.red.shade400,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('Sil'),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -2402,9 +2588,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           Expanded(
             child: Center(
               child: Text(
-                s.createdAt != null
-                    ? '${s.createdAt!.hour.toString().padLeft(2, '0')}:${s.createdAt!.minute.toString().padLeft(2, '0')}'
-                    : '--:--',
+                AppTime.hm(s.createdAt),
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: timeFont,
@@ -2428,22 +2612,59 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
           ),
           Expanded(
             child: Align(
-              child: IconButton(
-                key: Key('edit_active_${s.id}'),
-                icon: const Icon(
-                  Icons.edit_note_rounded,
-                  color: Color(0xFFF59E0B),
-                  size: 22,
-                ),
-                tooltip: 'Siparişi düzenle',
-                onPressed: () => _onEditOrder(
-                  s,
-                  ugramaMap: ugramaMap,
-                  kuryeMap: kuryeMap,
-                  personelMap: personelMap,
-                  dialogTitle: 'Devam Eden Siparişi Düzenle',
-                  successMessage: 'Devam eden sipariş güncellendi',
-                ),
+              child: PopupMenuButton<String>(
+                key: Key('actions_active_${s.id}'),
+                tooltip: 'İşlemler',
+                icon: const Icon(Icons.more_vert_rounded, size: 22),
+                onSelected: (v) {
+                  switch (v) {
+                    case 'edit':
+                      unawaited(
+                        _onEditOrder(
+                          s,
+                          ugramaMap: ugramaMap,
+                          kuryeMap: kuryeMap,
+                          personelMap: personelMap,
+                          dialogTitle: 'Devam Eden Siparişi Düzenle',
+                          successMessage: 'Devam eden sipariş güncellendi',
+                        ),
+                      );
+                    case 'delete':
+                      unawaited(_onDeleteOrder(s));
+                  }
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    key: Key('edit_active_${s.id}'),
+                    value: 'edit',
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.edit_note_rounded,
+                          color: Color(0xFFF59E0B),
+                          size: 18,
+                        ),
+                        SizedBox(width: 8),
+                        Text('Düzenle'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    key: Key('delete_active_row_${s.id}'),
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline_rounded,
+                          color: Colors.red.shade400,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('Sil'),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -2480,11 +2701,16 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     key: Key('finish_${s.id}'),
                     onPressed: !_isFinishing
                         ? () {
-                            _activeSelected
-                              ..clear()
-                              ..add(s.id);
+                            // Mevcut checkbox seçimini koru; bu siparişi
+                            // de garanti ekle (idempotent).
+                            _activeSelected.add(s.id);
                             unawaited(
-                              _onFinish(userId: userId, activeOrders: active),
+                              _onFinish(
+                                userId: userId,
+                                activeOrders: active,
+                                musteriMap: musteriMap,
+                                ugramaMap: ugramaMap,
+                              ),
                             );
                           }
                         : null,
@@ -2767,59 +2993,175 @@ class _PremiumCard extends StatelessWidget {
   }
 }
 
-/// Stateful dialog that owns its own [TextEditingController] so it is
-/// disposed together with the dialog widget, avoiding use-after-dispose
-/// errors during the dismiss animation.
-class _ManualPricingDialog extends StatefulWidget {
-  const _ManualPricingDialog({super.key});
+/// Tek pop-up'ta birden fazla siparişin manuel ücretini toplar.
+/// Sonuç: `{siparisId: ucret}` — boş bırakılan satırlar atlanır.
+class _BulkPricingDialog extends StatefulWidget {
+  const _BulkPricingDialog({
+    required this.orders,
+    required this.musteriMap,
+    required this.ugramaMap,
+    required this.routeLabelBuilder,
+    super.key,
+  });
+
+  final List<Siparis> orders;
+  final Map<String, String> musteriMap;
+  final Map<String, String> ugramaMap;
+  final String Function(Siparis) routeLabelBuilder;
 
   @override
-  State<_ManualPricingDialog> createState() => _ManualPricingDialogState();
+  State<_BulkPricingDialog> createState() => _BulkPricingDialogState();
 }
 
-class _ManualPricingDialogState extends State<_ManualPricingDialog> {
-  late final TextEditingController _controller;
+class _BulkPricingDialogState extends State<_BulkPricingDialog> {
+  late final Map<String, TextEditingController> _controllers;
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController();
+    _controllers = {
+      for (final o in widget.orders) o.id: TextEditingController(),
+    };
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    for (final c in _controllers.values) {
+      c.dispose();
+    }
     super.dispose();
+  }
+
+  Map<String, double> _collect() {
+    final result = <String, double>{};
+    for (final entry in _controllers.entries) {
+      final parsed = double.tryParse(entry.value.text.replaceAll(',', '.'));
+      if (parsed != null && parsed > 0) result[entry.key] = parsed;
+    }
+    return result;
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Ücret Giriniz'),
-      content: TextField(
-        key: const Key('manual_price_field'),
-        controller: _controller,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: const InputDecoration(
-          labelText: 'Ücret (₺)',
-          hintText: '0.00',
+      title: Text('Ücret Gir — ${widget.orders.length} sipariş'),
+      content: SizedBox(
+        width: 480,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: widget.orders.map((o) {
+              final musteri = widget.musteriMap[o.musteriId] ?? o.musteriId;
+              final route = widget.routeLabelBuilder(o);
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            musteri,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                          Text(
+                            route,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF6366F1),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      width: 110,
+                      child: TextField(
+                        key: Key('bulk_price_${o.id}'),
+                        controller: _controllers[o.id],
+                        keyboardType:
+                            const TextInputType.numberWithOptions(decimal: true),
+                        textAlign: TextAlign.right,
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          hintText: '0.00',
+                          suffixText: '₺',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('İptal'),
+          key: const Key('bulk_pricing_skip'),
+          onPressed: () => Navigator.of(context).pop(<String, double>{}),
+          child: const Text('Hepsini Atla'),
         ),
-        TextButton(
-          key: const Key('manual_price_confirm'),
-          onPressed: () {
-            final parsed = double.tryParse(_controller.text);
-            if (parsed != null && parsed > 0) {
-              Navigator.of(context).pop(parsed);
-            }
-          },
+        FilledButton(
+          key: const Key('bulk_pricing_confirm'),
+          onPressed: () => Navigator.of(context).pop(_collect()),
           child: const Text('Onayla'),
         ),
+      ],
+    );
+  }
+}
+
+/// Kurye'nin hangi noktada olduğunu gösterir: çıkış/uğrama/uğrama1
+/// timestamp'leri set olanları yeşil onay, set olmayanları gri daire
+/// ile gösterir. Her noktanın yanına TR saati eklenir.
+class _OrderProgressRow extends StatelessWidget {
+  const _OrderProgressRow({required this.order});
+
+  final Siparis order;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = _OperasyonTheme.of(context);
+    final steps = <(String, DateTime?)>[
+      ('Çıkış', order.cikisSaat),
+      ('Uğrama', order.ugramaSaat),
+      if (order.ugrama1Id != null) ('Uğrama1', order.ugrama1Saat),
+    ];
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      children: [
+        for (final (label, ts) in steps)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                ts != null
+                    ? Icons.check_circle_rounded
+                    : Icons.circle_outlined,
+                size: 14,
+                color: ts != null
+                    ? const Color(0xFF10B981)
+                    : theme.textMuted,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                ts != null ? '$label ${AppTime.hm(ts)}' : label,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: ts != null ? theme.textPrimary : theme.textMuted,
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }

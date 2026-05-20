@@ -13,8 +13,10 @@ class FakeSiparisRepository implements SiparisRepository {
   }
 
   final store = <String, Siparis>{};
+  final deletedIds = <String>[];
   Map<String, dynamic>? lastUpdatedFields;
   int updateCallCount = 0;
+  int deleteCallCount = 0;
   int _nextId = 1;
 
   /// Controllers for active stream subscriptions — keyed by musteriId or
@@ -225,6 +227,15 @@ class FakeSiparisRepository implements SiparisRepository {
         return bTime.compareTo(aTime);
       });
     return list;
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    deleteCallCount++;
+    if (store.remove(id) != null) {
+      deletedIds.add(id);
+      _notifyStreams();
+    }
   }
 
   @override

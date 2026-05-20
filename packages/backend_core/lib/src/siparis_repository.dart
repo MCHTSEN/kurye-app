@@ -20,6 +20,10 @@ abstract class SiparisRepository {
   /// `updated_at` payload'a dahil edilmez — BEFORE UPDATE trigger halleder.
   Future<Siparis> update(String id, Map<String, dynamic> fields);
 
+  /// Siparişi kalıcı olarak siler. Bağlı `siparis_log` kayıtları da temizlenir.
+  /// Sadece operasyon rolü çağırmalı (RLS koruması mevcut).
+  Future<void> delete(String id);
+
   /// Tamamlanmış ve iptal edilmiş siparişleri filtreleyerek getirir (geçmiş).
   Future<List<Siparis>> getHistory({
     DateTime? startDate,

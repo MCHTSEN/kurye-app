@@ -11,6 +11,7 @@ import '../../../app/router/custom_route.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_time.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/navigation/logout_helper.dart';
@@ -391,6 +392,55 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Hata: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _onDelete() async {
+    if (_selectedOrder == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: const Key('history_delete_confirm'),
+        title: const Text('Siparişi sil'),
+        content: const Text(
+          'Bu siparişi kalıcı olarak silmek istediğinizden emin misiniz? '
+          'İşlem geri alınamaz.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('İptal'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sil'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _isSaving = true);
+    try {
+      await ref.read(siparisRepositoryProvider).delete(_selectedOrder!.id);
+      ref.invalidate(siparisHistoryProvider);
+      _clearEditPanel();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sipariş silindi')),
+        );
+      }
+    } on Exception catch (e) {
+      _log.e('Order delete failed', error: e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Silme hatası: $e')),
         );
       }
     } finally {
@@ -784,6 +834,16 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             ],
           ),
           const SizedBox(height: AppSpacing.xs),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton.icon(
+              key: const Key('edit_delete_button'),
+              onPressed: _isSaving ? null : _onDelete,
+              style: TextButton.styleFrom(foregroundColor: Colors.red.shade700),
+              icon: const Icon(Icons.delete_outline_rounded, size: 18),
+              label: const Text('Kalıcı Olarak Sil'),
+            ),
+          ),
           TextButton(
             key: const Key('edit_close_button'),
             onPressed: _clearEditPanel,
@@ -1291,11 +1351,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
 
   // ──────────── Helpers ────────────
 
-  String _formatDate(DateTime dt) {
-    return '${dt.day.toString().padLeft(2, '0')}.'
-        '${dt.month.toString().padLeft(2, '0')}.'
-        '${dt.year}';
-  }
+  String _formatDate(DateTime dt) => AppTime.dmy(dt);
 }
 
 class _FocusHistorySearchIntent extends Intent {

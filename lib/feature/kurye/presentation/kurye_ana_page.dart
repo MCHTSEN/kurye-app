@@ -1,15 +1,18 @@
+import 'dart:async';
+
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/app_time.dart';
 import '../../../product/kurye/kurye_providers.dart';
 import '../../../product/navigation/account_delete_helper.dart';
 import '../../../product/navigation/logout_helper.dart';
 import '../../../product/navigation/password_change_helper.dart';
+import '../../../product/notifications/notification_providers.dart';
 import '../../../product/siparis/siparis_providers.dart';
 import '../../../product/ugrama/ugrama_providers.dart';
 import '../../../product/widgets/app_section_card.dart';
@@ -80,14 +83,63 @@ class KuryeAnaPage extends ConsumerWidget {
 }
 
 /// Main body — shown when the kurye record is resolved.
-class _KuryeBody extends ConsumerWidget {
+class _KuryeBody extends ConsumerStatefulWidget {
   const _KuryeBody({required this.kurye});
 
   final Kurye kurye;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_KuryeBody> createState() => _KuryeBodyState();
+}
+
+class _KuryeBodyState extends ConsumerState<_KuryeBody> {
+  @override
+  void initState() {
+    super.initState();
+    // İlk açılışta tek seferlik bildirim izni iste.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final notif = ref.read(notificationServiceProvider);
+      final granted = await notif.isPermissionGranted();
+      if (!granted) {
+        await notif.requestPermission();
+      }
+    });
+  }
+
+  Kurye get kurye => widget.kurye;
+
+  @override
+  Widget build(BuildContext context) {
     final ordersAsync = ref.watch(siparisStreamByKuryeProvider(kurye.id));
+
+    // Yeni atanan siparişler için local notification tetikleyici.
+    ref.listen<AsyncValue<List<Siparis>>>(
+      siparisStreamByKuryeProvider(kurye.id),
+      (prev, next) {
+        // İlk yüklemede mevcut siparişleri "yeni" sayma.
+        final prevList = prev is AsyncData<List<Siparis>> ? prev.value : null;
+        if (prevList == null) return;
+        final nextList = next is AsyncData<List<Siparis>>
+            ? next.value
+            : const <Siparis>[];
+        final prevIds = prevList.map((s) => s.id).toSet();
+        final nextIds = nextList.map((s) => s.id).toSet();
+        final newOrders = nextIds.difference(prevIds);
+        if (newOrders.isEmpty) return;
+        unawaited(
+          ref
+              .read(notificationServiceProvider)
+              .show(
+                NotificationMessage(
+                  title: 'Yeni iş',
+                  body: newOrders.length == 1
+                      ? 'Size yeni bir sipariş atandı'
+                      : '${newOrders.length} yeni sipariş atandı',
+                ),
+              ),
+        );
+      },
+    );
 
     // Build ugrama name map (D027 pattern).
     final ugramaListAsync = ref.watch(ugramaListProvider);
@@ -243,7 +295,7 @@ class _OrderListSection extends StatelessWidget {
   }
 }
 
-/// Individual order card with route info and timestamp buttons.
+/// Individual order card with stop names as timestamp buttons + finish action.
 class _OrderCard extends ConsumerWidget {
   const _OrderCard({required this.order, required this.ugramaMap});
 
@@ -252,49 +304,53 @@ class _OrderCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cikis = ugramaMap[order.cikisId] ?? order.cikisId;
-    final ugrama = ugramaMap[order.ugramaId] ?? order.ugramaId;
-    final ugrama1 = order.ugrama1Id != null
+    final cikisLabel = ugramaMap[order.cikisId] ?? order.cikisId;
+    final ugramaLabel = ugramaMap[order.ugramaId] ?? order.ugramaId;
+    final ugrama1Label = order.ugrama1Id != null
         ? ugramaMap[order.ugrama1Id] ?? order.ugrama1Id
         : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Route info.
-        Text(
-          '$cikis → $ugrama'
-          '${ugrama1 != null ? ' → $ugrama1' : ''}',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        // Timestamp buttons row.
         Wrap(
           spacing: AppSpacing.xs,
           runSpacing: AppSpacing.xs,
           children: [
             _TimestampButton(
               key: Key('cikis_btn_${order.id}'),
-              label: 'Çıkış',
+              label: cikisLabel,
               timestamp: order.cikisSaat,
               onPunch: () => _punchTimestamp(ref, 'cikis_saat'),
             ),
             _TimestampButton(
               key: Key('ugrama_btn_${order.id}'),
-              label: 'Uğrama',
+              label: ugramaLabel,
               timestamp: order.ugramaSaat,
               onPunch: () => _punchTimestamp(ref, 'ugrama_saat'),
             ),
-            if (order.ugrama1Id != null)
+            if (order.ugrama1Id != null && ugrama1Label != null)
               _TimestampButton(
                 key: Key('ugrama1_btn_${order.id}'),
-                label: 'Uğrama1',
+                label: ugrama1Label,
                 timestamp: order.ugrama1Saat,
                 onPunch: () => _punchTimestamp(ref, 'ugrama1_saat'),
               ),
           ],
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Align(
+          alignment: Alignment.centerRight,
+          child: FilledButton.icon(
+            key: Key('finish_btn_${order.id}'),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+            ),
+            icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+            label: const Text('İşi Bitir'),
+            onPressed: () => _confirmFinish(context, ref),
+          ),
         ),
       ],
     );
@@ -303,6 +359,51 @@ class _OrderCard extends ConsumerWidget {
   Future<void> _punchTimestamp(WidgetRef ref, String field) async {
     final repo = ref.read(siparisRepositoryProvider);
     await repo.update(order.id, {field: DateTime.now().toIso8601String()});
+  }
+
+  Future<void> _confirmFinish(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        key: Key('finish_confirm_${order.id}'),
+        title: const Text('İşi bitir'),
+        content: const Text(
+          'Bu siparişi tamamlandı olarak işaretlemek istediğinizden emin misiniz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('İptal'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Bitir'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final repo = ref.read(siparisRepositoryProvider);
+    // Otomatik fiyat lookup — geçmişten eşleşen rota varsa kullan.
+    final match = await repo.getRecentPricing(
+      musteriId: order.musteriId,
+      cikisId: order.cikisId,
+      ugramaId: order.ugramaId,
+    );
+    await repo.update(order.id, {
+      'durum': SiparisDurum.tamamlandi.value,
+      'bitis_saat': DateTime.now().toIso8601String(),
+      if (match?.ucret != null) 'ucret': match!.ucret,
+    });
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('İş tamamlandı')),
+      );
+    }
   }
 }
 
@@ -320,14 +421,12 @@ class _TimestampButton extends StatelessWidget {
   final DateTime? timestamp;
   final VoidCallback onPunch;
 
-  static final _timeFormat = DateFormat('HH:mm');
-
   @override
   Widget build(BuildContext context) {
     if (timestamp != null) {
       return OutlinedButton(
         onPressed: null, // Disabled — already set.
-        child: Text('$label ${_timeFormat.format(timestamp!)}'),
+        child: Text('$label ${AppTime.hm(timestamp)}'),
       );
     }
     return ElevatedButton(

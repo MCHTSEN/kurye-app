@@ -11,6 +11,37 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-05-20
+- Scope: 4 yönlü iyileştirme — TR saat / sipariş silme / toplu bitirme / kurye iş bitirme + bildirim
+- Summary:
+  - **AppTime helper**: `lib/core/utils/app_time.dart` ile UTC+3 sabit dönüşüm — tüm sayfalardaki manuel `HH:mm` / `dd.MM.yyyy` çağrıları merkezi formatter'a taşındı. TR'de DST yok, sabit offset güvenli.
+  - **Sipariş hard delete**: `SiparisRepository.delete()` interface'e eklendi (Supabase + fake impl). Operasyon dispatch'te 3-nokta menü, geçmiş edit panelinde "Kalıcı Olarak Sil" butonu. RLS `FOR ALL` zaten DELETE'i kapsıyor.
+  - **Toplu bitirme**: `_onFinish()` refactor — paralel auto-pricing lookup, sonra manuel ücret bekleyenler için tek `_BulkPricingDialog` (önceki sıralı popup'ları değiştirdi). "Hepsini Atla" / "Tümünü Onayla". Active card'a `GestureDetector` ile toggle seçim, multi-select etkin.
+  - **Kurye ekranı redesign**: `_TimestampButton` labelları artık uğrama adı (örn. "Fatih", "Dış Latife") — sabit "Çıkış/Uğrama" yazıları kaldırıldı. Rota satırı kalktı (artık butonlar yetiyor). Yeni "İşi Bitir" butonu: otomatik ücret lookup, yoksa `ucret=null` (operasyon geçmişten düzenler).
+  - **Operasyon kartında progress**: Devam Eden Siparişler kartına `_OrderProgressRow` eklendi — çıkış/uğrama/uğrama1 timestamp'leri yeşil ✓ veya gri ○ ile gösterilir, set olanların yanına TR saati yazılır.
+  - **Local notifications**: `LocalNotificationService` no-op stub → `flutter_local_notifications` ile gerçek impl. Bootstrap'te kanal kurulumu + permission. Kurye ekranında `ref.listen` ile yeni atanan sipariş geldiğinde anında bildirim.
+- Files:
+  - `lib/core/utils/app_time.dart` [NEW]
+  - `test/core/utils/app_time_test.dart` [NEW]
+  - `lib/feature/kurye/presentation/kurye_ana_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_gecmis_page.dart`
+  - `lib/feature/musteri_siparis/presentation/musteri_siparis_page.dart`
+  - `lib/core/notifications/local_notification_service.dart`
+  - `lib/app/bootstrap.dart`
+  - `packages/backend_core/lib/src/siparis_repository.dart`
+  - `packages/backend_supabase/lib/src/supabase_siparis_repository.dart`
+  - `test/helpers/fakes/fake_siparis_repository.dart`
+  - `test/feature/operasyon/operasyon_ekran_page_test.dart` (e1, e2 yeni testler + e güncellendi)
+  - `test/feature/kurye/kurye_ana_page_test.dart` (h0, h1 yeni testler + b/d/g güncellendi)
+  - `pubspec.yaml` (flutter_local_notifications eklendi)
+- Validation:
+  - `flutter analyze lib/feature/operasyon lib/feature/kurye lib/core` → 0 issues (yalnız pre-existing dashboard_stats info'ları)
+  - `flutter test test/core/utils/app_time_test.dart` → 6/6 PASS
+  - `flutter test test/feature/operasyon/operasyon_ekran_page_test.dart` → 19/19 PASS
+  - `flutter test test/feature/kurye/` → 10/10 PASS
+  - RLS doğrulaması: mevcut `operasyon_siparisler FOR ALL` policy DELETE'i kapsıyor; `kurye_siparisler_update` kurye'nin kendi siparişine UPDATE iznini sağlıyor — migration gerekmedi.
+
 ### 2026-05-13
 - Scope: Üç rol için manuel şifre değiştirme
 - Summary:
