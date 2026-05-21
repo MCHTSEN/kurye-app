@@ -11,6 +11,27 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-05-21
+- Scope: Shorebird code push entegrasyonu (kurulum)
+- Summary:
+  - `shorebird init` çalıştırıldı (display name: Kuryem). App ID: `8194d9b4-c976-4888-9610-86a4339e78a1`.
+  - `shorebird.yaml` kök dizine eklendi (auto_update varsayılan açık → patch'ler arka planda inip bir sonraki açılışta aktif).
+  - `pubspec.yaml` assets'ine `shorebird.yaml` eklendi.
+  - Android `AndroidManifest.xml` → `INTERNET` izni eklendi (zaten implicit ama Shorebird açıkça istiyor).
+  - macOS `Release.entitlements` → `network.client` + `allow-unsigned-executable-memory` eklendi.
+  - `shorebird doctor`: temiz, no issues.
+  - Workflow: prod release `main.dart` + `.env.prod` (BACKEND_PROVIDER=supabase) üzerinden.
+- Files:
+  - `shorebird.yaml` [NEW]
+  - `pubspec.yaml`
+  - `android/app/src/main/AndroidManifest.xml`
+  - `macos/Runner/Release.entitlements`
+- Validation: `shorebird doctor` → OK. İlk release kullanıcı tarafından store'a yüklenecek.
+- Notlar:
+  - **Release** (store'a her yüklemede): `shorebird release android --dart-define-from-file=.env.prod` / `shorebird release ios --dart-define-from-file=.env.prod`
+  - **Patch** (kullanıcıya OTA Dart kod güncellemesi): `shorebird patch android --dart-define-from-file=.env.prod` / `shorebird patch ios --dart-define-from-file=.env.prod`
+  - **Patch sadece Dart kodu** günceller. Native, dependency, asset değişikliği → yeni release zorunlu.
+
 ### 2026-05-20
 - Scope: 4 yönlü iyileştirme — TR saat / sipariş silme / toplu bitirme / kurye iş bitirme + bildirim
 - Summary:

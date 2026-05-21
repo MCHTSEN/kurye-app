@@ -93,6 +93,11 @@ class _KuryeBody extends ConsumerStatefulWidget {
 }
 
 class _KuryeBodyState extends ConsumerState<_KuryeBody> {
+  static final _notifLog = AppLogger(
+    'KuryeOrderNotif',
+    tag: LogTag.notification,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -100,8 +105,10 @@ class _KuryeBodyState extends ConsumerState<_KuryeBody> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final notif = ref.read(notificationServiceProvider);
       final granted = await notif.isPermissionGranted();
+      _notifLog.i('initState permission check — granted=$granted');
       if (!granted) {
-        await notif.requestPermission();
+        final r = await notif.requestPermission();
+        _notifLog.i('initState requestPermission → $r');
       }
     });
   }
@@ -116,16 +123,24 @@ class _KuryeBodyState extends ConsumerState<_KuryeBody> {
     ref.listen<AsyncValue<List<Siparis>>>(
       siparisStreamByKuryeProvider(kurye.id),
       (prev, next) {
-        // İlk yüklemede mevcut siparişleri "yeni" sayma.
         final prevList = prev is AsyncData<List<Siparis>> ? prev.value : null;
-        if (prevList == null) return;
         final nextList = next is AsyncData<List<Siparis>>
             ? next.value
             : const <Siparis>[];
+        _notifLog.i(
+          'stream change — prevCount=${prevList?.length ?? "null"} '
+          'nextCount=${nextList.length}',
+        );
+        // İlk yüklemede mevcut siparişleri "yeni" sayma.
+        if (prevList == null) return;
         final prevIds = prevList.map((s) => s.id).toSet();
         final nextIds = nextList.map((s) => s.id).toSet();
         final newOrders = nextIds.difference(prevIds);
-        if (newOrders.isEmpty) return;
+        if (newOrders.isEmpty) {
+          _notifLog.i('no new orders, diff empty');
+          return;
+        }
+        _notifLog.i('new orders detected: ${newOrders.length} → show()');
         unawaited(
           ref
               .read(notificationServiceProvider)
@@ -136,7 +151,11 @@ class _KuryeBodyState extends ConsumerState<_KuryeBody> {
                       ? 'Size yeni bir sipariş atandı'
                       : '${newOrders.length} yeni sipariş atandı',
                 ),
-              ),
+              )
+              .then((_) => _notifLog.i('show() completed'))
+              .catchError((Object e, StackTrace st) {
+            _notifLog.e('show() failed', error: e, stackTrace: st);
+          }),
         );
       },
     );
