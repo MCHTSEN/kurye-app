@@ -14,7 +14,7 @@ Project audit log for major changes.
 ### 2026-05-21
 - Scope: Shorebird code push entegrasyonu (kurulum)
 - Summary:
-  - `shorebird init` çalıştırıldı (display name: Kuryem). App ID: `8194d9b4-c976-4888-9610-86a4339e78a1`.
+  - `shorebird init` çalıştırıldı (display name: Kuryem, hesap: mchtsenn16@gmail.com). App ID: `b4d542e1-e5fc-476f-8768-8a56286592b1`.
   - `shorebird.yaml` kök dizine eklendi (auto_update varsayılan açık → patch'ler arka planda inip bir sonraki açılışta aktif).
   - `pubspec.yaml` assets'ine `shorebird.yaml` eklendi.
   - Android `AndroidManifest.xml` → `INTERNET` izni eklendi (zaten implicit ama Shorebird açıkça istiyor).
