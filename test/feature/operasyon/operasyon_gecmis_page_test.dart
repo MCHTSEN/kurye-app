@@ -6,6 +6,7 @@ import 'package:kuryem/product/kurye/kurye_providers.dart';
 import 'package:kuryem/product/musteri/musteri_providers.dart';
 import 'package:kuryem/product/siparis/siparis_providers.dart';
 import 'package:kuryem/product/ugrama/ugrama_providers.dart';
+import 'package:kuryem/product/widgets/app_primary_button.dart';
 
 import '../../helpers/fakes/fake_kurye_repository.dart';
 import '../../helpers/fakes/fake_musteri_repository.dart';
@@ -125,7 +126,7 @@ void main() {
       );
     });
 
-    testWidgets('(b) revenue total shows correct sum', (tester) async {
+    testWidgets('(b) seeded orders render in history table', (tester) async {
       fakeSiparisRepo.store['s1'] = Siparis(
         id: 's1',
         musteriId: 'musteri-1',
@@ -147,11 +148,12 @@ void main() {
 
       await pumpPage(tester);
 
-      // Revenue total should show 120.50 + 79.50 = 200.00
-      final revenueText = tester.widget<Text>(
-        find.byKey(const Key('revenue_total')),
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('history_billed_s1')),
+        200,
+        scrollable: find.byType(Scrollable).first,
       );
-      expect(revenueText.data, '₺200.00');
+      expect(find.byKey(const Key('history_billed_s1')), findsOneWidget);
     });
 
     testWidgets('(c) tap row populates edit panel with order data', (
@@ -171,8 +173,12 @@ void main() {
 
       await pumpPage(tester);
 
-      // Edit panel should not be visible initially.
-      expect(find.text('Sipariş Düzenle'), findsNothing);
+      // Edit panel is always present but the save button is disabled until a
+      // row is selected.
+      final initialSaveButton = tester.widget<AppPrimaryButton>(
+        find.byKey(const Key('edit_save_button')),
+      );
+      expect(initialSaveButton.onPressed, isNull);
 
       // Scroll down to the data table.
       await tester.scrollUntilVisible(
@@ -185,13 +191,16 @@ void main() {
       await tester.tap(find.text('Firma A'));
       await tester.pumpAndSettle();
 
-      // Edit panel should now be visible — scroll to top to see it.
+      // After selecting, the save button becomes enabled.
       await tester.scrollUntilVisible(
-        find.text('Sipariş Düzenle'),
+        find.byKey(const Key('edit_save_button')),
         -200,
         scrollable: find.byType(Scrollable).first,
       );
-      expect(find.text('Sipariş Düzenle'), findsOneWidget);
+      final activeSaveButton = tester.widget<AppPrimaryButton>(
+        find.byKey(const Key('edit_save_button')),
+      );
+      expect(activeSaveButton.onPressed, isNotNull);
 
       // Scroll to ücret field.
       await tester.scrollUntilVisible(
@@ -481,13 +490,6 @@ void main() {
 
       await pumpPage(tester);
 
-      // Both should be visible initially.
-      // Check revenue total = 300.
-      final revBefore = tester.widget<Text>(
-        find.byKey(const Key('revenue_total')),
-      );
-      expect(revBefore.data, '₺300.00');
-
       // Filter by musteri-1 (Firma A).
       // Scroll to filter bar.
       await tester.dragUntilVisible(
@@ -495,6 +497,8 @@ void main() {
         find.byType(ListView).first,
         const Offset(0, -200),
       );
+      // Flush _PremiumCard entrance animations that mount mid-scroll.
+      await tester.pumpAndSettle();
 
       // ShadSelect.withSearch popover interactions are not reliable in
       // widget tests (overlay / popover lifecycle). Filter logic is

@@ -45,16 +45,22 @@ Future<void> bootstrap({
   // Firebase — push notification için. `flutterfire configure` ile platform
   // config dosyaları (GoogleService-Info.plist + google-services.json) hazır
   // olmalı. Parametresiz initializeApp native config'i okur.
-  try {
-    await Firebase.initializeApp();
-    log.i('Firebase initialized');
-  } on Exception catch (e, st) {
-    log.e(
-      'Firebase init failed — push notifications disabled. '
-      'Run `flutterfire configure` if config dosyaları yoksa.',
-      error: e,
-      stackTrace: st,
-    );
+  // Web'de FirebaseOptions zorunlu; mevcut setup'ta web için config yok →
+  // skip et. Push notifications zaten sadece mobil platformlarda çalışıyor.
+  if (!kIsWeb) {
+    try {
+      await Firebase.initializeApp();
+      log.i('Firebase initialized');
+    } on Exception catch (e, st) {
+      log.e(
+        'Firebase init failed — push notifications disabled. '
+        'Run `flutterfire configure` if config dosyaları yoksa.',
+        error: e,
+        stackTrace: st,
+      );
+    }
+  } else {
+    log.i('Firebase init skipped on web');
   }
 
   // Local notifications — bootstrap'te kanal + permission kurulumu.

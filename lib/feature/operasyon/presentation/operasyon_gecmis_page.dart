@@ -550,17 +550,18 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
               ? ListView(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
                   children: [
-                    if (filteredHistoryAsync case AsyncData(value: final orders)) ...[
-                      _buildDesktopHeader(orders),
-                      const SizedBox(height: AppSpacing.md),
-                    ],
-                    if (_selectedOrder != null) ...[
-                      _buildEditPanel(musteriListAsync, ugramaListAsync),
-                      const SizedBox(height: AppSpacing.md),
-                    ],
-                    _buildSearchAndStatusCard(historyAsync),
+                    _buildEditPanel(musteriListAsync, ugramaListAsync),
                     const SizedBox(height: AppSpacing.md),
-                    _buildFilterBar(musteriListAsync, ugramaListAsync),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: _buildSearchAndStatusCard(historyAsync)),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: _buildFilterBar(musteriListAsync, ugramaListAsync),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: AppSpacing.md),
                     _buildDataTableCard(
                       filteredHistoryAsync,
@@ -573,10 +574,8 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
               : ListView(
                   padding: ProjectPadding.all.normal,
                   children: [
-                    _buildRevenueCard(filteredHistoryAsync),
+                    _buildEditPanel(musteriListAsync, ugramaListAsync),
                     const SizedBox(height: AppSpacing.md),
-                    if (_selectedOrder != null) _buildEditPanel(musteriListAsync, ugramaListAsync),
-                    if (_selectedOrder != null) const SizedBox(height: AppSpacing.md),
                     _buildSearchAndStatusCard(historyAsync),
                     const SizedBox(height: AppSpacing.md),
                     _buildFilterBar(musteriListAsync, ugramaListAsync),
@@ -589,126 +588,6 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                     ),
                   ],
                 ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDesktopHeader(List<Siparis> orders) {
-    final total = orders.fold<double>(
-      0,
-      (sum, item) => sum + (item.ucret ?? 0),
-    );
-    final completedCount = orders.where((item) => item.durum == SiparisDurum.tamamlandi).length;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1D1B41),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Row(
-        children: [
-          _buildHeaderMetric(
-            'GÖRÜNEN SİPARİŞ',
-            '${orders.length}',
-            const Color(0xFF6366F1),
-          ),
-          const SizedBox(width: 32),
-          _buildHeaderMetric(
-            'TAMAMLANAN',
-            '$completedCount',
-            const Color(0xFF10B981),
-          ),
-          const SizedBox(width: 32),
-          _buildHeaderMetric(
-            'TOPLAM CİRO',
-            '₺${total.toStringAsFixed(2)}',
-            const Color(0xFFF59E0B),
-          ),
-          const Spacer(),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                'SİSTEM AKTİF',
-                style: TextStyle(
-                  color: Color(0xFF10B981),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 10,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                '/ arama, Esc kapatır',
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeaderMetric(String label, String value, Color color) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.5),
-            fontSize: 9,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ──────────── Revenue card ────────────
-
-  Widget _buildRevenueCard(AsyncValue<List<Siparis>> historyAsync) {
-    final total = historyAsync.maybeWhen(
-      data: (orders) => orders.fold<double>(
-        0,
-        (sum, s) => sum + (s.ucret ?? 0),
-      ),
-      orElse: () => 0.0,
-    );
-
-    return AppSectionCard(
-      title: 'Toplam Ciro',
-      icon: Icons.trending_up_rounded,
-      accentColor: AppColors.primary,
-      child: Text(
-        key: const Key('revenue_total'),
-        '₺${total.toStringAsFixed(2)}',
-        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: AppColors.primary,
         ),
       ),
     );
@@ -738,118 +617,199 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       SiparisDurum.iptal,
     ].map((d) => (value: d.value, label: d.value)).toList();
 
-    return AppSectionCard(
-      title: 'Sipariş Düzenle',
-      description: 'Seçili siparişi hızlıca güncelleyin ya da iptal edin.',
-      child: Column(
+    final musteriField = SearchableDropdown<String>(
+      key: const Key('edit_musteri_dropdown'),
+      value: _editMusteriId,
+      label: 'Müşteri',
+      placeholder: 'Müşteri Seç',
+      searchPlaceholder: 'Müşteri ara...',
+      items: musteriItems,
+      onChanged: (v) {
+        setState(() {
+          _editMusteriId = v;
+          _editCikisId = null;
+          _editUgramaId = null;
+        });
+      },
+    );
+    final cikisField = SearchableDropdown<String>(
+      key: const Key('edit_cikis_dropdown'),
+      value: _editCikisId,
+      label: 'Çıkış',
+      placeholder: 'Çıkış Seç',
+      searchPlaceholder: 'Uğrama ara...',
+      items: stopItems,
+      onChanged: (v) => setState(() => _editCikisId = v),
+    );
+    final ugramaField = SearchableDropdown<String>(
+      key: const Key('edit_ugrama_dropdown'),
+      value: _editUgramaId,
+      label: 'Uğrama',
+      placeholder: 'Uğrama Seç',
+      searchPlaceholder: 'Uğrama ara...',
+      items: stopItems,
+      onChanged: (v) => setState(() => _editUgramaId = v),
+    );
+    final theme = Theme.of(context);
+    final labelStyle = theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500);
+
+    Widget labeled(String label, Widget child) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SearchableDropdown<String>(
-            key: const Key('edit_musteri_dropdown'),
-            value: _editMusteriId,
-            label: 'Müşteri',
-            placeholder: 'Müşteri Seç',
-            searchPlaceholder: 'Müşteri ara...',
-            items: musteriItems,
-            onChanged: (v) {
-              setState(() {
-                _editMusteriId = v;
-                _editCikisId = null;
-                _editUgramaId = null;
-              });
-            },
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Text(label, style: labelStyle),
           ),
-          const SizedBox(height: AppSpacing.xs),
-          SearchableDropdown<String>(
-            key: const Key('edit_cikis_dropdown'),
-            value: _editCikisId,
-            label: 'Çıkış',
-            placeholder: 'Çıkış Seç',
-            searchPlaceholder: 'Uğrama ara...',
-            items: stopItems,
-            onChanged: (v) => setState(() => _editCikisId = v),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          SearchableDropdown<String>(
-            key: const Key('edit_ugrama_dropdown'),
-            value: _editUgramaId,
-            label: 'Uğrama',
-            placeholder: 'Uğrama Seç',
-            searchPlaceholder: 'Uğrama ara...',
-            items: stopItems,
-            onChanged: (v) => setState(() => _editUgramaId = v),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          TextFormField(
-            key: const Key('edit_ucret_field'),
-            controller: _editUcretController,
-            decoration: const InputDecoration(labelText: 'Ücret (₺)'),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          SearchableDropdown<String>(
-            key: const Key('edit_durum_dropdown'),
-            value: _editDurum,
-            label: 'Durum',
-            placeholder: 'Durum Seç',
-            items: durumItems,
-            onChanged: (v) => setState(() => _editDurum = v),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          CheckboxListTile(
-            key: const Key('edit_faturalandirildi_checkbox'),
-            value: _editFaturalandirildi,
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            title: const Text('Faturalandırıldı'),
-            onChanged: (value) {
-              if (value == null) return;
-              setState(() => _editFaturalandirildi = value);
-            },
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          TextFormField(
-            key: const Key('edit_not1_field'),
-            controller: _editNot1Controller,
-            decoration: const InputDecoration(labelText: 'Not1'),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: AppPrimaryButton(
-                  key: const Key('edit_save_button'),
-                  label: 'Kaydet',
-                  onPressed: _isSaving ? null : _onSave,
-                  isLoading: _isSaving,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: AppPrimaryButton(
-                  key: const Key('edit_iptal_button'),
-                  label: 'İptal Et',
-                  onPressed: _isSaving ? null : _onIptal,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          SizedBox(
-            width: double.infinity,
-            child: TextButton.icon(
-              key: const Key('edit_delete_button'),
-              onPressed: _isSaving ? null : _onDelete,
-              style: TextButton.styleFrom(foregroundColor: Colors.red.shade700),
-              icon: const Icon(Icons.delete_outline_rounded, size: 18),
-              label: const Text('Kalıcı Olarak Sil'),
-            ),
-          ),
-          TextButton(
-            key: const Key('edit_close_button'),
-            onPressed: _clearEditPanel,
-            child: const Text('Kapat'),
-          ),
+          child,
         ],
+      );
+    }
+
+    final ucretField = labeled(
+      'Ücret (₺)',
+      TextFormField(
+        key: const Key('edit_ucret_field'),
+        controller: _editUcretController,
+        decoration: const InputDecoration(
+          isDense: true,
+          prefixIcon: Icon(Icons.payments_outlined, size: 18),
+          hintText: '0.00',
+        ),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      ),
+    );
+    final durumField = SearchableDropdown<String>(
+      key: const Key('edit_durum_dropdown'),
+      value: _editDurum,
+      label: 'Durum',
+      placeholder: 'Durum Seç',
+      items: durumItems,
+      onChanged: (v) => setState(() => _editDurum = v),
+    );
+    final not1Field = labeled(
+      'Not',
+      TextFormField(
+        key: const Key('edit_not1_field'),
+        controller: _editNot1Controller,
+        decoration: const InputDecoration(
+          isDense: true,
+          prefixIcon: Icon(Icons.notes_outlined, size: 18),
+          hintText: 'Not ekle...',
+        ),
+      ),
+    );
+    final faturaField = labeled(
+      'Faturalandırma',
+      Container(
+        decoration: BoxDecoration(
+          color: _editFaturalandirildi ? AppColors.primary.withValues(alpha: 0.08) : null,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: _editFaturalandirildi
+                ? AppColors.primary.withValues(alpha: 0.4)
+                : theme.dividerColor,
+          ),
+        ),
+        child: CheckboxListTile(
+          key: const Key('edit_faturalandirildi_checkbox'),
+          value: _editFaturalandirildi,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+          controlAffinity: ListTileControlAffinity.leading,
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          title: Text(
+            _editFaturalandirildi ? 'Faturalandırıldı' : 'Faturalandırılmadı',
+            style: const TextStyle(fontSize: 13),
+            overflow: TextOverflow.ellipsis,
+          ),
+          onChanged: (value) {
+            if (value == null) return;
+            setState(() => _editFaturalandirildi = value);
+          },
+        ),
+      ),
+    );
+
+    final hasSelection = _selectedOrder != null;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                const gap = AppSpacing.sm;
+                const minItem = 170.0;
+                const fields = 7;
+                final maxW = constraints.maxWidth;
+                final fitCount = ((maxW + gap) / (minItem + gap)).floor().clamp(1, fields);
+                final itemWidth = (maxW - gap * (fitCount - 1)) / fitCount;
+                final children = <Widget>[
+                  musteriField,
+                  durumField,
+                  cikisField,
+                  ugramaField,
+                  ucretField,
+                  faturaField,
+                  not1Field,
+                ];
+                return Wrap(
+                  spacing: gap,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    for (final child in children) SizedBox(width: itemWidth, child: child),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              alignment: WrapAlignment.end,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.xs,
+              children: [
+                TextButton.icon(
+                  key: const Key('edit_delete_button'),
+                  onPressed: (!hasSelection || _isSaving) ? null : _onDelete,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.red.shade700,
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                  label: const Text('Sil'),
+                ),
+                TextButton.icon(
+                  key: const Key('edit_close_button'),
+                  onPressed: hasSelection ? _clearEditPanel : null,
+                  style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                  icon: const Icon(Icons.close_rounded, size: 18),
+                  label: const Text('Kapat'),
+                ),
+                SizedBox(
+                  width: 120,
+                  child: AppPrimaryButton(
+                    key: const Key('edit_iptal_button'),
+                    label: 'İptal Et',
+                    onPressed: (!hasSelection || _isSaving) ? null : _onIptal,
+                  ),
+                ),
+                SizedBox(
+                  width: 120,
+                  child: AppPrimaryButton(
+                    key: const Key('edit_save_button'),
+                    label: 'Kaydet',
+                    onPressed: (!hasSelection || _isSaving) ? null : _onSave,
+                    isLoading: _isSaving,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -972,8 +932,6 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       icon: Icons.filter_list_rounded,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final isCompact = constraints.maxWidth < 900;
-
           final dateField = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1028,8 +986,6 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             placeholder: 'Hepsi',
             items: musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList(),
             onChanged: _onFilterMusteriChanged,
-            minWidth: 220,
-            maxWidth: 220,
           );
 
           final guzergahField = SearchableDropdown<String>(
@@ -1038,12 +994,10 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             placeholder: 'Hepsi',
             items: ugramalar.map((u) => (value: u.id, label: u.ugramaAdi)).toList(),
             onChanged: (v) => setState(() => _filterCikisId = v),
-            minWidth: 220,
-            maxWidth: 220,
           );
 
           final clearButton = SizedBox(
-            width: 56,
+            width: 48,
             height: 48,
             child: ElevatedButton(
               onPressed: _clearFilters,
@@ -1051,37 +1005,24 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                 backgroundColor: const Color(0xFFF1F5F9),
                 foregroundColor: AppColors.textPrimary,
                 elevation: 0,
+                padding: EdgeInsets.zero,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Icon(Icons.refresh_rounded),
+              child: const Icon(Icons.refresh_rounded, size: 20),
             ),
           );
-
-          if (isCompact) {
-            return Column(
-              children: [
-                dateField,
-                const SizedBox(height: 16),
-                musteriField,
-                const SizedBox(height: 16),
-                guzergahField,
-                const SizedBox(height: 16),
-                Align(alignment: Alignment.centerRight, child: clearButton),
-              ],
-            );
-          }
 
           return Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Expanded(child: dateField),
-              const SizedBox(width: 16),
-              SizedBox(width: 220, child: musteriField),
-              const SizedBox(width: 16),
-              SizedBox(width: 220, child: guzergahField),
-              const SizedBox(width: 16),
+              Expanded(flex: 2, child: dateField),
+              const SizedBox(width: 12),
+              Expanded(child: musteriField),
+              const SizedBox(width: 12),
+              Expanded(child: guzergahField),
+              const SizedBox(width: 12),
               clearButton,
             ],
           );
@@ -1147,8 +1088,11 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
   }) {
     final allBilled =
         visibleOrders.isNotEmpty && visibleOrders.every((order) => order.faturalandirildi);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF8FAFC),
+      ),
       child: Row(
         children: [
           for (final label in labels.take(labels.length - 1))
@@ -1169,8 +1113,8 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                 final showLabel = constraints.maxWidth >= 140;
                 final toggleButton = _isBulkUpdating
                     ? const SizedBox(
-                        width: 18,
-                        height: 18,
+                        width: 16,
+                        height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : IconButton(
@@ -1187,11 +1131,11 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                                 ),
                               ),
                         constraints: const BoxConstraints.tightFor(
-                          width: 28,
-                          height: 28,
+                          width: 22,
+                          height: 22,
                         ),
                         padding: EdgeInsets.zero,
-                        iconSize: 18,
+                        iconSize: 16,
                         icon: Icon(
                           Icons.done_all_rounded,
                           color: allBilled ? const Color(0xFF10B981) : AppColors.textMuted,
@@ -1214,7 +1158,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                         letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     toggleButton,
                   ],
                 );
@@ -1236,7 +1180,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     return InkWell(
       onTap: () => _selectOrder(s),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.05) : null,
           border: const Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
@@ -1247,7 +1191,7 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
               child: Text(
                 s.createdAt != null ? _formatDate(s.createdAt!) : '-',
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1255,8 +1199,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             Expanded(
               child: Text(
                 musteriMap[s.musteriId] ?? s.musteriId,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -1264,20 +1209,23 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             Expanded(
               child: Text(
                 ugramaMap[s.cikisId] ?? s.cikisId,
-                style: const TextStyle(fontSize: 13),
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12),
               ),
             ),
             Expanded(
               child: Text(
                 ugramaMap[s.ugramaId] ?? s.ugramaId,
-                style: const TextStyle(fontSize: 13),
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12),
               ),
             ),
             Expanded(
               child: Text(
                 kuryeMap[s.kuryeId] ?? '-',
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1286,21 +1234,22 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
               child: Text(
                 s.ucret != null ? '₺${s.ucret!.toStringAsFixed(2)}' : '-',
                 style: const TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
               ),
             ),
             Expanded(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: _getStatusColor(s.durum).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   s.durum.value.toUpperCase(),
                   textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: _getStatusColor(s.durum),
                     fontSize: 9,
@@ -1311,22 +1260,28 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             ),
             Expanded(
               child: Align(
-                child: Checkbox(
-                  key: Key('history_billed_${s.id}'),
-                  value: s.faturalandirildi,
-                  onChanged: _isSaving
-                      ? null
-                      : (value) {
-                          if (value == null || value == s.faturalandirildi) {
-                            return;
-                          }
-                          unawaited(
-                            _onListFaturalandirildiToggle(
-                              s,
-                              nextValue: value,
-                            ),
-                          );
-                        },
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: Checkbox(
+                    key: Key('history_billed_${s.id}'),
+                    value: s.faturalandirildi,
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    onChanged: _isSaving
+                        ? null
+                        : (value) {
+                            if (value == null || value == s.faturalandirildi) {
+                              return;
+                            }
+                            unawaited(
+                              _onListFaturalandirildiToggle(
+                                s,
+                                nextValue: value,
+                              ),
+                            );
+                          },
+                  ),
                 ),
               ),
             ),
@@ -1394,33 +1349,6 @@ class _PremiumCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            color: headerColor,
-            child: Row(
-              children: [
-                if (icon != null) ...[
-                  Icon(
-                    icon,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                ],
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      color: titleColor,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.all(24),
             child: child,

@@ -200,10 +200,15 @@ class _RequestCard extends ConsumerWidget {
       child: ShadCard(
         title: Row(
           children: [
-            ShadAvatar(
-              '',
-              size: const Size.square(32),
-              placeholder: Text(
+            Container(
+              width: 32,
+              height: 32,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.muted,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
                 request.displayName.isNotEmpty
                     ? request.displayName[0].toUpperCase()
                     : '?',

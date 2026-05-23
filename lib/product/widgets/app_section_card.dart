@@ -30,6 +30,7 @@ class AppSectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget card = ShadCard(
+      radius: BorderRadius.all(Radius.circular(24)),
       title: LayoutBuilder(
         builder: (context, constraints) {
           final titleLabel = Text(
@@ -46,7 +47,6 @@ class AppSectionCard extends StatelessWidget {
               Icon(icon, size: 18, color: AppColors.primary),
               const SizedBox(width: 10),
             ],
-            Expanded(child: titleLabel),
           ];
 
           if (trailing == null) {
@@ -73,7 +73,6 @@ class AppSectionCard extends StatelessWidget {
           );
         },
       ),
-      description: description != null ? Text(description!) : null,
       footer: footer,
       child: child,
     );
