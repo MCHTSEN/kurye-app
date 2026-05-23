@@ -8,4 +8,14 @@
 | ID | Time | T | Title | Read |
 |----|------|---|-------|------|
 | #4102 | 5:00 PM | 🔴 | Added local Maven repository and alternative Google Maven URL to fix dependency resolution | ~432 |
+| #4095 | 4:48 PM | 🔴 | Removed Android desugaring dependency to fix Gradle build failure | ~363 |
+| #4080 | 4:35 PM | 🔴 | Downgraded desugar_jdk_libs to resolve Android build issue | ~234 |
+| #4078 | " | 🔴 | Android desugaring dependency added to complete Java 8+ API support | ~259 |
+
+### Apr 1, 2026
+
+| ID | Time | T | Title | Read |
+|----|------|---|-------|------|
+| #4132 | 7:03 AM | ✅ | Android release builds now use production signing configuration | ~435 |
+| #4115 | 6:08 AM | 🔴 | Fixed desugar dependency Maven coordinates format | ~256 |
 </claude-mem-context>

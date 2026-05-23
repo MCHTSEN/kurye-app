@@ -12,6 +12,49 @@ Project audit log for major changes.
 ## Entries
 
 ### 2026-05-21
+- Scope: FCM push notification + delivery tracking (arka plan bildirim + kurye "gördü" sinyali)
+- Summary:
+  - **Problem**: Local notification foreground'da çalıştı (UNUserNotificationCenter delegate fix sonrası) ama app suspend olunca Supabase Realtime kopuyor → stream emit gelmiyor → bildirim hiç tetiklenmiyor. Çözüm: FCM push notification + Supabase Edge Function webhook fan-out. Ek: operasyon ekibi kuryenin bildirimi gerçekten gördüğünü tracking için `siparisler.kurye_gordu_at` timestamp eklendi (kurye uygulamayı açıp yeni sipariş card'ı görünür olduğunda set edilir).
+  - **Migration** (`supabase/migrations/20260521120000_push_notifications.sql`):
+    - `user_devices` tablosu — multi-device FCM token storage, RLS self-only (auth.uid()), `fcm_token` UNIQUE
+    - `siparisler.kurye_gordu_at TIMESTAMPTZ` sütunu
+  - **Backend abstraction**: `PushTokenRepository` interface (upsert/remove) + `BackendModule.createPushTokenRepository()` factory. Supabase impl `user_devices`'a upsert (onConflict=fcm_token → last_seen_at update). `Siparis` modeline `kuryeGorduAt` field + JSON round-trip. `SiparisRepository.markAsSeenByKurye(id)` idempotent server-side WHERE kurye_gordu_at IS NULL.
+  - **Edge Function** (`supabase/functions/send-push-on-assign/index.ts`): DB Webhook → `siparisler` INSERT/UPDATE → yeni `kurye_id` atandıysa kurye→user_id→user_devices token lookup → FCM HTTP v1 API (service account JWT + RS256 Web Crypto, cached access token). Invalid token (404/UNREGISTERED) auto-cleanup. apns priority=10 + content-available, android channel_id=orders priority=HIGH.
+  - **Flutter (push side)**: `firebase_core ^4.1.0` + `firebase_messaging ^16.2.2` eklendi. `lib/core/notifications/push_notification_service.dart`: init (permission, APNs token wait, getToken+upsert, onTokenRefresh listen, onMessage→local show fallback idempotent id=siparis.hashCode, onMessageOpenedApp/getInitialMessage→tap callback), refreshToken (login sonrası), shutdown (logout token remove + FCM deleteToken). Bootstrap `Firebase.initializeApp()` + `pushNotificationServiceProvider.init()` async, `ProviderScope` → `UncontrolledProviderScope` ile container'a erişim için.
+  - **Tap navigation**: payload `{type:'new_order'}` → `router.replacePath(CustomRoute.kuryeAna.path)` (kurye için tek detay sayfası yok, ana sipariş listesi).
+  - **Read tracking**: `KuryeAnaPage._KuryeBody` mevcut `ref.listen` (yeni order detection) içinde her yeni siparis_id için `markAsSeenByKurye` çağrılır (idempotent). Operasyon panel `_buildActiveCard` bottom row'unda yeni `_KuryeSeenBadge` widget — `kurye_gordu_at != null` → "✓ Görüldü HH:mm" yeşil, null → "⏳ Bekleniyor" amber. Sadece `kurye_id` atanmış siparişlerde gösterilir.
+  - **Logout cleanup**: `AuthController.signOut` öncesi `pushNotificationServiceProvider.shutdown()` çağrılır — cihaz token'ı DB'den silinir, FCM kaydı temizlenir (cihaz devri / hesap değişiminde eski push'u almasın).
+  - **Test fake**: `FakeSiparisRepository.markAsSeenByKurye` eklendi (idempotent in-memory).
+  - **Kullanıcı setup talimatları**: `.workflow/.scratchpad/push-notification-user-setup.md` — flutterfire configure, Apple APNs .p8 key, Firebase Console upload, Xcode capabilities (Push Notifications + Background Modes/Remote notifications), Service Account JSON → `supabase secrets set FCM_SERVICE_ACCOUNT_JSON FCM_PROJECT_ID`, `supabase db push`, `supabase functions deploy send-push-on-assign`, Dashboard Webhook setup adım adım.
+- Files:
+  - **Migration/Edge**: `supabase/migrations/20260521120000_push_notifications.sql`, `supabase/functions/send-push-on-assign/index.ts`
+  - **Backend**: `packages/backend_core/lib/src/push_token_repository.dart` [NEW], `packages/backend_core/lib/src/backend_module.dart`, `packages/backend_core/lib/src/siparis_repository.dart`, `packages/backend_core/lib/src/domain/siparis.dart`, `packages/backend_core/lib/backend_core.dart`
+  - **Backend Supabase**: `packages/backend_supabase/lib/src/supabase_push_token_repository.dart` [NEW], `packages/backend_supabase/lib/src/supabase_backend_module.dart`, `packages/backend_supabase/lib/src/supabase_siparis_repository.dart`, `packages/backend_supabase/lib/backend_supabase.dart`
+  - **Flutter**: `pubspec.yaml`, `lib/app/bootstrap.dart`, `lib/core/notifications/push_notification_service.dart` [NEW], `lib/product/notifications/notification_providers.dart`, `lib/feature/kurye/presentation/kurye_ana_page.dart`, `lib/feature/operasyon/presentation/operasyon_ekran_page.dart`, `lib/feature/auth/application/auth_controller.dart`
+  - **Test**: `test/helpers/fakes/fake_siparis_repository.dart`
+  - **Doc**: `.workflow/.scratchpad/push-notification-user-setup.md` [NEW]
+- Validation:
+  - `flutter analyze` → 0 error (2 pre-existing warning RPC type inference, ilgisiz)
+  - `flutter test` → 184 pass, 2 pre-existing failure (operasyon_gecmis desktop workbench + operasyon_ekran flaky in-suite; tek başına çalışınca pass)
+  - **Manuel test (kullanıcı tarafı)**: önce setup doc'undaki 7 adımı tamamla, sonra `flutter run -t lib/main_supabase.dart --dart-define-from-file=.env.dev`. Foreground/background/terminated bildirim akışı + tap navigation + DB `user_devices`/`siparisler.kurye_gordu_at` doğrulama curl ile.
+- Notlar:
+  - Kurye için sipariş detay route'u yok — sadece `kuryeAna`. Mark-as-seen kurye ana sayfa stream'inde yeni order detect edilince çağrılıyor (uygulamayı açık tutmak → "gördü" sayılır).
+  - Background isolate Firebase init handler registry'si şu an YOK — payload notification+data karma, iOS APNs ve Android FCM SDK sistem banner'ını otomatik gösteriyor. Data-only mesaj eklenirse top-level `_firebaseMessagingBackgroundHandler` register lazım.
+
+### 2026-05-21
+- Scope: iOS notification UI fix — UNUserNotificationCenter delegate kaydı
+- Summary:
+  - flutter_local_notifications resmi doc'u: `UNUserNotificationCenter.current().delegate = self` AppDelegate'in `didFinishLaunchingWithOptions` metoduna eklenmesi zorunlu. Bu kayıt olmadan iOS foreground/background notification UI **gösterilmez** — `plugin.show()` exception atmadan tamamlanır ama bildirim hiç çıkmaz. (Pub.dev General iOS setup bölümü ve 21.0.0 changelog'u bu noktayı vurguluyor.)
+  - `ios/Runner/AppDelegate.swift`: `import UserNotifications` + iOS 10.0+ check ile delegate kaydı eklendi. Mevcut `FlutterImplicitEngineDelegate` + Scene lifecycle pattern korundu (`didInitializeImplicitFlutterEngine` içindeki `GeneratedPluginRegistrant.register` aynı kaldı).
+  - Plugin sürüm bump (18.0.1 → 21.0.0) ŞİMDİLİK YAPILMADI — 20.0.0 breaking change ile `show()`/`initialize()`/`cancel()` positional→named param dönüşümü var ve `_plugin.show(id, title, body, details, payload:)` çağrımız kırılırdı. Önce AppDelegate fix tek başına test edilecek.
+- Files:
+  - `ios/Runner/AppDelegate.swift`
+- Validation:
+  - Test komutu: `flutter run -t lib/main_supabase.dart --dart-define-from-file=.env.dev` (full restart şart — Swift değişikliği)
+  - Gerçek iPhone'da kurye hesabıyla giriş → operasyon paneli'nden yeni sipariş ata → foreground bildirim banner'ı çıkmalı.
+  - Eğer hâlâ çıkmazsa: (a) plugin 19.x'e bump (positional API korunur), (b) iOS Ayarlar > Bildirimler > Kuryem altında "Banner Stili" Temporary/Persistent mı kontrol et.
+
+### 2026-05-21
 - Scope: Shorebird code push entegrasyonu (kurulum)
 - Summary:
   - `shorebird init` çalıştırıldı (display name: Kuryem, hesap: mchtsenn16@gmail.com). App ID: `b4d542e1-e5fc-476f-8768-8a56286592b1`.

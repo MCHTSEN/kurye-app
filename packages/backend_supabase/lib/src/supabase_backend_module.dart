@@ -6,6 +6,7 @@ import 'supabase_kurye_repository.dart';
 import 'supabase_musteri_personel_repository.dart';
 import 'supabase_musteri_repository.dart';
 import 'supabase_musteri_ugrama_repository.dart';
+import 'supabase_push_token_repository.dart';
 import 'supabase_role_request_repository.dart';
 import 'supabase_siparis_log_repository.dart';
 import 'supabase_siparis_repository.dart';
@@ -107,5 +108,10 @@ class SupabaseBackendModule extends BackendModule {
   @override
   UgramaResolutionRepository createUgramaResolutionRepository() {
     return SupabaseUgramaResolutionRepository(client: Supabase.instance.client);
+  }
+
+  @override
+  PushTokenRepository createPushTokenRepository() {
+    return SupabasePushTokenRepository(client: Supabase.instance.client);
   }
 }

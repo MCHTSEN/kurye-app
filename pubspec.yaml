@@ -29,6 +29,8 @@ dependencies:
     path: packages/backend_supabase
   connectivity_plus: ^7.0.0
   dio: ^5.9.2
+  firebase_core: ^4.1.0
+  firebase_messaging: ^16.2.2
   flutter:
     sdk: flutter
   flutter_localizations:

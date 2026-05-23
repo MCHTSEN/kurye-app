@@ -20,6 +20,10 @@ abstract class SiparisRepository {
   /// `updated_at` payload'a dahil edilmez — BEFORE UPDATE trigger halleder.
   Future<Siparis> update(String id, Map<String, dynamic> fields);
 
+  /// Kurye sipariş detayını ilk açtığında `kurye_gordu_at` = NOW() yapar.
+  /// Idempotent: değer zaten doluysa no-op (server-side WHERE kurye_gordu_at IS NULL).
+  Future<void> markAsSeenByKurye(String id);
+
   /// Siparişi kalıcı olarak siler. Bağlı `siparis_log` kayıtları da temizlenir.
   /// Sadece operasyon rolü çağırmalı (RLS koruması mevcut).
   Future<void> delete(String id);

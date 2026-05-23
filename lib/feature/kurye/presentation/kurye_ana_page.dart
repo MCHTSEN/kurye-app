@@ -101,7 +101,8 @@ class _KuryeBodyState extends ConsumerState<_KuryeBody> {
   @override
   void initState() {
     super.initState();
-    // İlk açılışta tek seferlik bildirim izni iste.
+    // İlk açılışta tek seferlik bildirim izni iste + FCM token'ı kurye user'ı
+    // için DB'ye upsert et (bootstrap'te auth yoksa skip edilmişti).
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final notif = ref.read(notificationServiceProvider);
       final granted = await notif.isPermissionGranted();
@@ -109,6 +110,11 @@ class _KuryeBodyState extends ConsumerState<_KuryeBody> {
       if (!granted) {
         final r = await notif.requestPermission();
         _notifLog.i('initState requestPermission → $r');
+      }
+      final push = ref.read(pushNotificationServiceProvider);
+      if (push != null) {
+        await push.refreshToken();
+        _notifLog.i('initState push refreshToken complete');
       }
     });
   }
@@ -157,6 +163,17 @@ class _KuryeBodyState extends ConsumerState<_KuryeBody> {
             _notifLog.e('show() failed', error: e, stackTrace: st);
           }),
         );
+        // Read receipt: kurye uygulamayı açık ve siparişler ekranda göründüğünde
+        // "gördü" sayılır. Idempotent — server-side WHERE kurye_gordu_at IS NULL.
+        final repo = ref.read(siparisRepositoryProvider);
+        for (final id in newOrders) {
+          unawaited(
+            repo.markAsSeenByKurye(id).catchError((Object e, StackTrace st) {
+              _notifLog.e('markAsSeenByKurye failed for $id',
+                  error: e, stackTrace: st);
+            }),
+          );
+        }
       },
     );
 

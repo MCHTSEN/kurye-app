@@ -238,6 +238,19 @@ class FakeSiparisRepository implements SiparisRepository {
     }
   }
 
+  int markAsSeenCallCount = 0;
+
+  @override
+  Future<void> markAsSeenByKurye(String id) async {
+    markAsSeenCallCount++;
+    final existing = store[id];
+    if (existing == null || existing.kuryeGorduAt != null) return;
+    final json = existing.toJson()
+      ..['kurye_gordu_at'] = DateTime.now().toUtc().toIso8601String();
+    store[id] = Siparis.fromJson(json);
+    _notifyStreams();
+  }
+
   @override
   Future<Siparis?> getRecentPricing({
     required String musteriId,

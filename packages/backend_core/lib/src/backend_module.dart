@@ -6,6 +6,7 @@ import 'musteri_repository.dart';
 import 'musteri_ugrama_repository.dart';
 import 'noop_payment_service.dart';
 import 'payment_service.dart';
+import 'push_token_repository.dart';
 import 'role_request_repository.dart';
 import 'siparis_log_repository.dart';
 import 'siparis_repository.dart';
@@ -42,4 +43,8 @@ abstract class BackendModule {
   MusteriUgramaRepository? createMusteriUgramaRepository() => null;
   UgramaTalebiRepository? createUgramaTalebiRepository() => null;
   UgramaResolutionRepository? createUgramaResolutionRepository() => null;
+
+  /// FCM token storage — push notification için. Sadece destekleyen backend'ler
+  /// implement eder.
+  PushTokenRepository? createPushTokenRepository() => null;
 }

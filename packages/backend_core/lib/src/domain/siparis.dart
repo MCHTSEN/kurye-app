@@ -38,6 +38,7 @@ class Siparis {
     this.ugrama1Saat,
     this.atanmaSaat,
     this.bitisSaat,
+    this.kuryeGorduAt,
     this.olusturanId,
     this.createdAt,
     this.updatedAt,
@@ -73,6 +74,9 @@ class Siparis {
       bitisSaat: json['bitis_saat'] != null
           ? DateTime.parse(json['bitis_saat'] as String)
           : null,
+      kuryeGorduAt: json['kurye_gordu_at'] != null
+          ? DateTime.parse(json['kurye_gordu_at'] as String)
+          : null,
       olusturanId: json['olusturan_id'] as String?,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
@@ -102,6 +106,9 @@ class Siparis {
   final DateTime? ugrama1Saat;
   final DateTime? atanmaSaat;
   final DateTime? bitisSaat;
+
+  /// Kurye sipariş detayını ilk açtığı an (read receipt).
+  final DateTime? kuryeGorduAt;
   final String? olusturanId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -124,6 +131,7 @@ class Siparis {
     'ugrama1_saat': ugrama1Saat?.toIso8601String(),
     'atanma_saat': atanmaSaat?.toIso8601String(),
     'bitis_saat': bitisSaat?.toIso8601String(),
+    'kurye_gordu_at': kuryeGorduAt?.toIso8601String(),
     'olusturan_id': olusturanId,
     'created_at': createdAt?.toIso8601String(),
     'updated_at': updatedAt?.toIso8601String(),

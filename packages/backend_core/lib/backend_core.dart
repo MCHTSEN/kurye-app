@@ -30,6 +30,7 @@ export 'src/musteri_ugrama_repository.dart';
 export 'src/noop_payment_service.dart';
 export 'src/notification_service.dart';
 export 'src/payment_service.dart';
+export 'src/push_token_repository.dart';
 export 'src/role_request_repository.dart';
 export 'src/siparis_log_repository.dart';
 export 'src/siparis_repository.dart';

@@ -5,6 +5,7 @@ import '../../../app/router/app_router.dart';
 import '../../../app/router/guards/app_access_guard.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/navigation/navigation_providers.dart';
+import '../../../product/notifications/notification_providers.dart';
 import '../../../product/role_request/role_request_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 
@@ -72,6 +73,12 @@ class AuthController extends _$AuthController {
 
   Future<void> signOut() async {
     state = const AsyncLoading();
+    // Logout öncesi cihaz token'ını temizle ki bu kullanıcı bir daha o cihazda
+    // push almasın (cihaz başkasına teslim edilirse de eski push'u almasın).
+    final push = ref.read(pushNotificationServiceProvider);
+    if (push != null) {
+      await push.shutdown();
+    }
     final nextState = await AsyncValue.guard(
       () => ref.read(authRepositoryProvider).signOut(),
     );

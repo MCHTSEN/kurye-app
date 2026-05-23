@@ -2235,7 +2235,7 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
             // Progress göstergesi — kurye hangi noktada
             _OrderProgressRow(order: s),
             const SizedBox(height: 10),
-            // Bottom row: kurye badge + bitir button
+            // Bottom row: kurye badge + görüldü rozeti + bitir button
             Row(
               children: [
                 Container(
@@ -2256,6 +2256,10 @@ class _OperasyonEkranPageState extends ConsumerState<OperasyonEkranPage> {
                     ),
                   ),
                 ),
+                if (s.kuryeId != null) ...[
+                  const SizedBox(width: 6),
+                  _KuryeSeenBadge(seenAt: s.kuryeGorduAt),
+                ],
                 const Spacer(),
                 SizedBox(
                   width: 88,
@@ -3167,6 +3171,40 @@ class _OrderProgressRow extends StatelessWidget {
             ],
           ),
       ],
+    );
+  }
+}
+
+/// Kurye sipariş bildirimini gördü mü? — operasyon paneli rozeti.
+/// `seenAt != null` → ✓ Görüldü HH:mm, null → ⏳ Bekleniyor.
+class _KuryeSeenBadge extends StatelessWidget {
+  const _KuryeSeenBadge({required this.seenAt});
+
+  final DateTime? seenAt;
+
+  @override
+  Widget build(BuildContext context) {
+    final seen = seenAt != null;
+    final bg = seen
+        ? const Color(0xFF10B981).withValues(alpha: 0.18)
+        : const Color(0xFFF59E0B).withValues(alpha: 0.18);
+    final fg = seen ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
+    final label = seen ? '✓ Görüldü ${AppTime.hm(seenAt)}' : '⏳ Bekleniyor';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: fg.withValues(alpha: 0.45), width: 0.8),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: fg,
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
     );
   }
 }

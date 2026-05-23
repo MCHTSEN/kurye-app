@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:backend_core/backend_core.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,6 +42,21 @@ Future<void> bootstrap({
 
   await module.initialize();
 
+  // Firebase — push notification için. `flutterfire configure` ile platform
+  // config dosyaları (GoogleService-Info.plist + google-services.json) hazır
+  // olmalı. Parametresiz initializeApp native config'i okur.
+  try {
+    await Firebase.initializeApp();
+    log.i('Firebase initialized');
+  } on Exception catch (e, st) {
+    log.e(
+      'Firebase init failed — push notifications disabled. '
+      'Run `flutterfire configure` if config dosyaları yoksa.',
+      error: e,
+      stackTrace: st,
+    );
+  }
+
   // Local notifications — bootstrap'te kanal + permission kurulumu.
   // iOS init.requestAlertPermission=true zaten prompt'u tetikler;
   // Android için ayrıca requestPermission çağrısı şart (manifest izni +
@@ -54,15 +72,39 @@ Future<void> bootstrap({
 
   log.i('Backend initialized, starting app');
 
+  final container = ProviderContainer(
+    overrides: [
+      appEnvironmentProvider.overrideWithValue(resolvedEnvironment),
+      backendModuleProvider.overrideWithValue(module),
+      notificationServiceProvider.overrideWithValue(notificationService),
+    ],
+    observers: const [AppProviderObserver()],
+  );
+
+  // FCM (push) — Firebase init başarılıysa ve backend destekliyorsa.
+  // Container üzerinden okuyoruz çünkü router/auth provider'larına ihtiyacı var.
+  unawaited(_initPushNotifications(container, log));
+
   runApp(
-    ProviderScope(
-      overrides: [
-        appEnvironmentProvider.overrideWithValue(resolvedEnvironment),
-        backendModuleProvider.overrideWithValue(module),
-        notificationServiceProvider.overrideWithValue(notificationService),
-      ],
-      observers: const [AppProviderObserver()],
+    UncontrolledProviderScope(
+      container: container,
       child: const KuryemApp(),
     ),
   );
+}
+
+Future<void> _initPushNotifications(
+  ProviderContainer container,
+  AppLogger log,
+) async {
+  try {
+    final push = container.read(pushNotificationServiceProvider);
+    if (push == null) {
+      log.i('Push notification service not available for this backend');
+      return;
+    }
+    await push.init();
+  } on Exception catch (e, st) {
+    log.e('Push notification init failed', error: e, stackTrace: st);
+  }
 }

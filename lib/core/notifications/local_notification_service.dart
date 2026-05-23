@@ -17,8 +17,7 @@ class LocalNotificationService implements NotificationService {
     tag: LogTag.notification,
   );
 
-  final FlutterLocalNotificationsPlugin _plugin =
-      FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
   final _tapController = StreamController<NotificationMessage>.broadcast();
   bool _initialized = false;
 
@@ -56,9 +55,7 @@ class LocalNotificationService implements NotificationService {
     // Android 13+ için kanal oluştur (channel id ile show'da eşleşmeli).
     if (Platform.isAndroid) {
       final android = _plugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
       await android?.createNotificationChannel(
         const AndroidNotificationChannel(
           _ordersChannelId,
@@ -77,18 +74,13 @@ class LocalNotificationService implements NotificationService {
     if (kIsWeb) return false;
     if (Platform.isIOS || Platform.isMacOS) {
       final ios = _plugin
-          .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >();
-      final granted =
-          await ios?.requestPermissions(alert: true, badge: true, sound: true);
+          .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+      final granted = await ios?.requestPermissions(alert: true, badge: true, sound: true);
       return granted ?? false;
     }
     if (Platform.isAndroid) {
       final android = _plugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
       final granted = await android?.requestNotificationsPermission();
       return granted ?? false;
     }
@@ -100,9 +92,7 @@ class LocalNotificationService implements NotificationService {
     if (kIsWeb) return false;
     if (Platform.isAndroid) {
       final android = _plugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >();
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
       return await android?.areNotificationsEnabled() ?? false;
     }
     if (Platform.isIOS || Platform.isMacOS) {

@@ -104,6 +104,17 @@ class SupabaseSiparisRepository implements SiparisRepository {
   }
 
   @override
+  Future<void> markAsSeenByKurye(String id) async {
+    _log.i('markAsSeenByKurye: $id');
+    await _client
+        .from(_table)
+        .update({'kurye_gordu_at': DateTime.now().toUtc().toIso8601String()})
+        .eq('id', id)
+        .filter('kurye_gordu_at', 'is', null);
+    _log.d('markAsSeenByKurye complete: $id');
+  }
+
+  @override
   Future<void> delete(String id) async {
     _log.i('delete: $id');
     // siparis_log FK CASCADE değil → önce log temizle, sonra siparişi sil.
