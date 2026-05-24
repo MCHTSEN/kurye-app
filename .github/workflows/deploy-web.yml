@@ -39,6 +39,7 @@ jobs:
           MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}
         run: |
           flutter build web \
+            --wasm \
             --release \
             --base-href=/ \
             --target=lib/main_supabase.dart \
