@@ -36,7 +36,7 @@ void main() {
   group('DashboardStats.compute', () {
     test('empty orders returns all-zero stats', () {
       final stats = DashboardStats.compute(
-        orders: [],
+        orders: const [],
         couriers: [makeKurye(id: 'k1', ad: 'Ali')],
         now: now,
       );
@@ -163,7 +163,7 @@ void main() {
 
       final stats = DashboardStats.compute(
         orders: orders,
-        couriers: [],
+        couriers: const [],
         now: now,
       );
 
@@ -186,7 +186,7 @@ void main() {
 
       final stats = DashboardStats.compute(
         orders: orders,
-        couriers: [],
+        couriers: const [],
         now: dayOne,
       );
 
@@ -249,7 +249,7 @@ void main() {
       ];
 
       final stats = DashboardStats.compute(
-        orders: [],
+        orders: const [],
         couriers: couriers,
         now: now,
       );
@@ -302,7 +302,7 @@ void main() {
 
       final stats = DashboardStats.compute(
         orders: orders,
-        couriers: [],
+        couriers: const [],
         now: now,
       );
 

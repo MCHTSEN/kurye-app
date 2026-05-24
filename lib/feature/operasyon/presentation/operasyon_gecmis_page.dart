@@ -30,7 +30,8 @@ class OperasyonGecmisPage extends ConsumerStatefulWidget {
   const OperasyonGecmisPage({super.key});
 
   @override
-  ConsumerState<OperasyonGecmisPage> createState() => _OperasyonGecmisPageState();
+  ConsumerState<OperasyonGecmisPage> createState() =>
+      _OperasyonGecmisPageState();
 }
 
 class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
@@ -163,7 +164,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       _editUgramaId = order.ugramaId;
       _editDurum = order.durum.value;
       _editFaturalandirildi = order.faturalandirildi;
-      _editUcretController.text = order.ucret != null ? order.ucret!.toStringAsFixed(2) : '';
+      _editUcretController.text = order.ucret != null
+          ? order.ucret!.toStringAsFixed(2)
+          : '';
       _editNot1Controller.text = order.not1 ?? '';
     });
   }
@@ -194,7 +197,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
         'ugrama_id': _editUgramaId,
         'durum': _editDurum,
         'faturalandirildi': _editFaturalandirildi,
-        'not1': _editNot1Controller.text.trim().isNotEmpty ? _editNot1Controller.text.trim() : null,
+        'not1': _editNot1Controller.text.trim().isNotEmpty
+            ? _editNot1Controller.text.trim()
+            : null,
       };
 
       final parsedUcret = double.tryParse(_editUcretController.text);
@@ -202,7 +207,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
         fields['ucret'] = parsedUcret;
       }
 
-      await ref.read(siparisRepositoryProvider).update(selectedOrder.id, fields);
+      await ref
+          .read(siparisRepositoryProvider)
+          .update(selectedOrder.id, fields);
 
       ref.invalidate(siparisHistoryProvider);
       _clearEditPanel();
@@ -507,9 +514,12 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       ),
     );
 
-    if (filteredHistoryAsync case AsyncData(
-      value: final orders,
-    ) when _selectedOrder != null && orders.every((item) => item.id != _selectedOrder!.id)) {
+    if (filteredHistoryAsync
+        case AsyncData(
+          value: final orders,
+        )
+        when _selectedOrder != null &&
+            orders.every((item) => item.id != _selectedOrder!.id)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _selectedOrder != null) {
           _clearEditPanel();
@@ -527,24 +537,28 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       body: Shortcuts(
         shortcuts: isDesktop
             ? const {
-                SingleActivator(LogicalKeyboardKey.slash): _FocusHistorySearchIntent(),
-                SingleActivator(LogicalKeyboardKey.escape): _ClearHistorySelectionIntent(),
+                SingleActivator(LogicalKeyboardKey.slash):
+                    _FocusHistorySearchIntent(),
+                SingleActivator(LogicalKeyboardKey.escape):
+                    _ClearHistorySelectionIntent(),
               }
             : const {},
         child: Actions(
           actions: {
-            _FocusHistorySearchIntent: CallbackAction<_FocusHistorySearchIntent>(
-              onInvoke: (_) {
-                _searchFocusNode.requestFocus();
-                return null;
-              },
-            ),
-            _ClearHistorySelectionIntent: CallbackAction<_ClearHistorySelectionIntent>(
-              onInvoke: (_) {
-                _clearEditPanel();
-                return null;
-              },
-            ),
+            _FocusHistorySearchIntent:
+                CallbackAction<_FocusHistorySearchIntent>(
+                  onInvoke: (_) {
+                    _searchFocusNode.requestFocus();
+                    return null;
+                  },
+                ),
+            _ClearHistorySelectionIntent:
+                CallbackAction<_ClearHistorySelectionIntent>(
+                  onInvoke: (_) {
+                    _clearEditPanel();
+                    return null;
+                  },
+                ),
           },
           child: isDesktop
               ? ListView(
@@ -555,10 +569,15 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(child: _buildSearchAndStatusCard(historyAsync)),
+                        Expanded(
+                          child: _buildSearchAndStatusCard(historyAsync),
+                        ),
                         const SizedBox(width: AppSpacing.md),
                         Expanded(
-                          child: _buildFilterBar(musteriListAsync, ugramaListAsync),
+                          child: _buildFilterBar(
+                            musteriListAsync,
+                            ugramaListAsync,
+                          ),
                         ),
                       ],
                     ),
@@ -608,9 +627,13 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
 
     final filteredStops = ugramalar;
 
-    final musteriItems = musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList();
+    final musteriItems = musteriler
+        .map((m) => (value: m.id, label: m.firmaKisaAd))
+        .toList();
 
-    final stopItems = filteredStops.map((u) => (value: u.id, label: u.ugramaAdi)).toList();
+    final stopItems = filteredStops
+        .map((u) => (value: u.id, label: u.ugramaAdi))
+        .toList();
 
     final durumItems = [
       SiparisDurum.tamamlandi,
@@ -651,7 +674,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       onChanged: (v) => setState(() => _editUgramaId = v),
     );
     final theme = Theme.of(context);
-    final labelStyle = theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500);
+    final labelStyle = theme.textTheme.bodySmall?.copyWith(
+      fontWeight: FontWeight.w500,
+    );
 
     Widget labeled(String label, Widget child) {
       return Column(
@@ -703,7 +728,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       'Faturalandırma',
       Container(
         decoration: BoxDecoration(
-          color: _editFaturalandirildi ? AppColors.primary.withValues(alpha: 0.08) : null,
+          color: _editFaturalandirildi
+              ? AppColors.primary.withValues(alpha: 0.08)
+              : null,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: _editFaturalandirildi
@@ -746,7 +773,10 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                 const minItem = 170.0;
                 const fields = 7;
                 final maxW = constraints.maxWidth;
-                final fitCount = ((maxW + gap) / (minItem + gap)).floor().clamp(1, fields);
+                final fitCount = ((maxW + gap) / (minItem + gap)).floor().clamp(
+                  1,
+                  fields,
+                );
                 final itemWidth = (maxW - gap * (fitCount - 1)) / fitCount;
                 final children = <Widget>[
                   musteriField,
@@ -761,7 +791,8 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                   spacing: gap,
                   runSpacing: AppSpacing.sm,
                   children: [
-                    for (final child in children) SizedBox(width: itemWidth, child: child),
+                    for (final child in children)
+                      SizedBox(width: itemWidth, child: child),
                   ],
                 );
               },
@@ -785,7 +816,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                 TextButton.icon(
                   key: const Key('edit_close_button'),
                   onPressed: hasSelection ? _clearEditPanel : null,
-                  style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                  ),
                   icon: const Icon(Icons.close_rounded, size: 18),
                   label: const Text('Kapat'),
                 ),
@@ -821,7 +854,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
           SiparisDurum.tamamlandi.value: orders
               .where((item) => item.durum == SiparisDurum.tamamlandi)
               .length,
-          SiparisDurum.iptal.value: orders.where((item) => item.durum == SiparisDurum.iptal).length,
+          SiparisDurum.iptal.value: orders
+              .where((item) => item.durum == SiparisDurum.iptal)
+              .length,
           SiparisDurum.devamEdiyor.value: orders
               .where((item) => item.durum == SiparisDurum.devamEdiyor)
               .length,
@@ -835,7 +870,8 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
 
     return AppSectionCard(
       title: 'Hızlı Arama',
-      description: 'Sipariş ID, müşteri, uğrama, kurye veya not ile filtreleyin.',
+      description:
+          'Sipariş ID, müşteri, uğrama, kurye veya not ile filtreleyin.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -984,7 +1020,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             value: _filterMusteriId,
             label: 'MÜŞTERİ',
             placeholder: 'Hepsi',
-            items: musteriler.map((m) => (value: m.id, label: m.firmaKisaAd)).toList(),
+            items: musteriler
+                .map((m) => (value: m.id, label: m.firmaKisaAd))
+                .toList(),
             onChanged: _onFilterMusteriChanged,
           );
 
@@ -992,7 +1030,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
             value: _filterCikisId,
             label: 'GÜZERGAH',
             placeholder: 'Hepsi',
-            items: ugramalar.map((u) => (value: u.id, label: u.ugramaAdi)).toList(),
+            items: ugramalar
+                .map((u) => (value: u.id, label: u.ugramaAdi))
+                .toList(),
             onChanged: (v) => setState(() => _filterCikisId = v),
           );
 
@@ -1087,7 +1127,8 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
     required List<Siparis> visibleOrders,
   }) {
     final allBilled =
-        visibleOrders.isNotEmpty && visibleOrders.every((order) => order.faturalandirildi);
+        visibleOrders.isNotEmpty &&
+        visibleOrders.every((order) => order.faturalandirildi);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
       decoration: const BoxDecoration(
@@ -1138,7 +1179,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                         iconSize: 16,
                         icon: Icon(
                           Icons.done_all_rounded,
-                          color: allBilled ? const Color(0xFF10B981) : AppColors.textMuted,
+                          color: allBilled
+                              ? const Color(0xFF10B981)
+                              : AppColors.textMuted,
                         ),
                       );
 
@@ -1182,7 +1225,9 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6366F1).withValues(alpha: 0.05) : null,
+          color: isSelected
+              ? const Color(0xFF6366F1).withValues(alpha: 0.05)
+              : null,
           border: const Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
         ),
         child: Row(
@@ -1330,9 +1375,6 @@ class _PremiumCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const headerColor = Colors.white;
-    const titleColor = AppColors.textPrimary;
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.9),

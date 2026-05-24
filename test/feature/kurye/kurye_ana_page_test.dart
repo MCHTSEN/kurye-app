@@ -253,7 +253,7 @@ void main() {
           cikisId: 'cikis-a',
           ugramaId: 'ugrama-b',
           durum: SiparisDurum.tamamlandi,
-          ucret: 45.0,
+          ucret: 45,
           createdAt: DateTime.now().subtract(const Duration(days: 1)),
         );
 

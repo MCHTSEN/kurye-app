@@ -67,8 +67,8 @@ Bunlar browser bundle'a girer ve admin yetkisi ele geçirilir:
 ```bash
 cd ~/kurye-app
 
-# Supabase env'leri inject ederek build et
-flutter build web --release --base-href=/ \
+# Supabase env'leri inject ederek build et (--wasm: dart2wasm + JS fallback)
+flutter build web --wasm --release --base-href=/ \
   --target=lib/main_supabase.dart \
   --dart-define=APP_ENV=development \
   --dart-define=BACKEND_PROVIDER=supabase \
@@ -88,7 +88,7 @@ Kontrol listesi:
 
 - [ ] Login akışı çalışıyor (Supabase auth)
 - [ ] Refresh (F5) yapılınca path bozulmuyor (SPA routing)
-- [ ] Bundle boyutu makul (`du -sh build/web/` → 5-15 MB normal)
+- [ ] Bundle boyutu makul (`du -sh build/web/` → wasm build ~45-50 MB normal; CanvasKit + font + dual compile dahil, gerçekte servis edilen `main.dart.wasm` ~4 MB)
 - [ ] DevTools → Console temiz, kritik error yok
 
 ## 4. Deploy
@@ -142,6 +142,8 @@ Browser doğrulaması:
 | Eski sürüm yapışıyor | Service worker cache | `index.html` için `Cache-Control: no-store` zaten var; tarayıcıda hard refresh (Cmd+Shift+R) |
 | FTP timeout / "421 Too many" | LiteSpeed connection limit | `timeout: 180000` zaten yüksek; `dangerous-clean-slate: false` olmalı (memory'deki tuning) |
 | `mixed content` warnings | HTTP asset HTTPS sayfada | Tüm asset URL'leri relative olmalı; Flutter zaten relative üretir |
+| `--wasm` build kırılıyor | `dart:html`/`dart:js_util` kullanan paket var (eski `flutter_secure_storage_web 1.2.x` gibi) | **Çözüldü** (2026-05-23): `flutter_secure_storage ^10.3.0` → web adapter `2.1.1` (`package:web` + js-interop, wasm uyumlu). Build artık `--wasm` ile alınıyor. Yeni bir paket `--wasm`'ı kırarsa: o paketin `package:web` tabanlı sürümüne geç |
+| `.wasm` dosyası yanlış MIME ile gelir / yüklenmez | Sunucu `.wasm` için `application/wasm` döndürmüyor | `.htaccess`'e `AddType application/wasm .wasm` ekle (LiteSpeed/Apache default genelde tanır ama garanti değil) |
 
 ## 7. Sonraki Adımlar (opsiyonel)
 

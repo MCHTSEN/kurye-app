@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 ///   - iOS/Android için permission ister
 ///   - Mevcut token'ı [PushTokenRepository.upsert] ile DB'ye kaydeder
 ///   - onTokenRefresh dinler → re-upsert
-///   - onMessage (foreground) → [LocalNotificationService.show] fallback
+///   - onMessage (foreground) → local notification fallback
 ///   - onMessageOpenedApp + getInitialMessage → tap handler çağrılır
 ///
 /// shutdown(): logout sırasında çağrılır; cihaz token'ını DB'den siler ve
@@ -21,8 +21,8 @@ class PushNotificationService {
     required PushTokenRepository tokenRepository,
     required NotificationService localNotificationService,
     required this.onNotificationTap,
-  })  : _tokenRepository = tokenRepository,
-        _localNotificationService = localNotificationService;
+  }) : _tokenRepository = tokenRepository,
+       _localNotificationService = localNotificationService;
 
   final PushTokenRepository _tokenRepository;
   final NotificationService _localNotificationService;
@@ -50,11 +50,7 @@ class PushNotificationService {
 
     // iOS: alert/badge/sound + provisional fallback. flutter_local_notifications
     // izni de zaten bootstrap'te isteniyor; FCM kendi auth flow'unu paylaşır.
-    final settings = await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    final settings = await messaging.requestPermission();
     _log.i('FCM permission: ${settings.authorizationStatus}');
 
     // iOS APNs token gelmeden FCM token alınamaz. APNs hazır olmasını bekle.
@@ -134,8 +130,10 @@ class PushNotificationService {
   Future<void> _handleForeground(RemoteMessage msg) async {
     _log.i('onMessage: ${msg.messageId} data=${msg.data}');
     final notification = msg.notification;
-    final title = notification?.title ?? msg.data['title'] as String? ?? 'Yeni iş';
-    final body = notification?.body ??
+    final title =
+        notification?.title ?? msg.data['title'] as String? ?? 'Yeni iş';
+    final body =
+        notification?.body ??
         msg.data['body'] as String? ??
         'Size yeni bir sipariş atandı';
     // Aynı siparis_id için idempotent — çift bildirim önlemi
@@ -155,8 +153,9 @@ class PushNotificationService {
     onNotificationTap(_dataFrom(msg));
   }
 
-  Map<String, dynamic> _dataFrom(RemoteMessage msg) =>
-      <String, dynamic>{...msg.data};
+  Map<String, dynamic> _dataFrom(RemoteMessage msg) => <String, dynamic>{
+    ...msg.data,
+  };
 
   /// Logout öncesi çağrılır — bu cihazın push token'ını sil ve FCM kaydını boş.
   Future<void> shutdown() async {

@@ -4,11 +4,8 @@ import 'package:auto_route/auto_route.dart' hide CustomRoute;
 import 'package:backend_core/backend_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../product/auth/auth_providers.dart';
+import '../../../product/navigation/app_access_snapshot.dart';
 import '../../../product/navigation/navigation_providers.dart';
-import '../../../product/onboarding/onboarding_providers.dart';
-import '../../../product/role_request/role_request_providers.dart';
-import '../../../product/user_profile/user_profile_providers.dart';
 import '../custom_route.dart';
 
 class AppAccessGuard extends AutoRouteGuard {
@@ -73,17 +70,21 @@ class AppAccessGuard extends AutoRouteGuard {
     NavigationResolver resolver,
     StackRouter router,
   ) async {
+    final guardTimer = Stopwatch()..start();
     final navState = _ref.read(appNavigationStateProvider);
-    final onboardingCompleted = await _ref
-        .read(onboardingRepositoryProvider)
-        .isCompleted();
-    final session = await _ref.read(authRepositoryProvider).currentSession();
+    final snapshot = await _ref.read(appAccessSnapshotProvider.future);
+    guardTimer.stop();
+
+    final session = snapshot.session;
+    final onboardingCompleted = snapshot.onboardingCompleted;
     final isAuthenticated = session != null && !navState.requiresLogin;
 
     final targetPath = resolver.route.path;
     _log.d(
       'guard: target=$targetPath auth=$isAuthenticated '
-      'onboarded=$onboardingCompleted',
+      'onboarded=$onboardingCompleted '
+      '${snapshot.timings.toLogFields()} '
+      'guard_total=${guardTimer.elapsed.inMilliseconds}ms',
     );
 
     // 1. Onboarding
@@ -102,12 +103,9 @@ class AppAccessGuard extends AutoRouteGuard {
 
     // 3. Authenticated kullanıcı
     if (isAuthenticated) {
-      final profile = await _getUserProfile(session.user.id);
+      final profile = snapshot.profile;
       final role = profile?.role;
-      var hasPendingRoleRequest = false;
-      if (profile == null) {
-        hasPendingRoleRequest = await _hasPendingRoleRequest(session.user.id);
-      }
+      final hasPendingRoleRequest = snapshot.hasPendingRoleRequest;
       final homePath = landingPathForUserState(
         profile: profile,
         hasPendingRoleRequest: hasPendingRoleRequest,
@@ -157,27 +155,6 @@ class AppAccessGuard extends AutoRouteGuard {
 
     _log.d('guard: allowed $targetPath');
     resolver.next();
-  }
-
-  Future<AppUserProfile?> _getUserProfile(String userId) async {
-    try {
-      final repo = _ref.read(userProfileRepositoryProvider);
-      return repo.getProfile(userId);
-    } on Object catch (e) {
-      _log.e('Failed to get user profile', error: e);
-      return null;
-    }
-  }
-
-  Future<bool> _hasPendingRoleRequest(String userId) async {
-    try {
-      final repo = _ref.read(roleRequestRepositoryProvider);
-      final request = await repo.getMyPendingRequest(userId);
-      return request != null;
-    } on Object catch (e) {
-      _log.e('Failed to get pending role request', error: e);
-      return false;
-    }
   }
 
   void _redirect(

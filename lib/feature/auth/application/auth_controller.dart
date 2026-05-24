@@ -1,13 +1,11 @@
-import 'package:backend_core/backend_core.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../app/router/app_router.dart';
 import '../../../app/router/guards/app_access_guard.dart';
 import '../../../product/auth/auth_providers.dart';
+import '../../../product/navigation/app_access_snapshot.dart';
 import '../../../product/navigation/navigation_providers.dart';
 import '../../../product/notifications/notification_providers.dart';
-import '../../../product/role_request/role_request_providers.dart';
-import '../../../product/user_profile/user_profile_providers.dart';
 
 part 'auth_controller.g.dart';
 
@@ -84,7 +82,7 @@ class AuthController extends _$AuthController {
     );
     if (!ref.mounted) return;
     state = nextState;
-    ref.invalidate(currentUserProfileProvider);
+    invalidateAppAccessCachesForProvider(ref);
     ref.read(appNavigationStateProvider).requireLogin();
   }
 
@@ -96,7 +94,7 @@ class AuthController extends _$AuthController {
     if (!ref.mounted) return;
     state = nextState;
     if (nextState.hasError) return;
-    ref.invalidate(currentUserProfileProvider);
+    invalidateAppAccessCachesForProvider(ref);
     ref.read(appNavigationStateProvider).requireLogin();
   }
 
@@ -112,37 +110,15 @@ class AuthController extends _$AuthController {
   }
 
   Future<void> _navigateAfterAuth() async {
-    ref.invalidate(currentUserProfileProvider);
+    invalidateAppAccessCachesForProvider(ref);
     ref.read(appNavigationStateProvider).clearAll();
 
-    // Profili doğrudan repository'den çek
-    final session = await ref.read(authRepositoryProvider).currentSession();
-    if (session == null || !ref.mounted) return;
-
-    AppUserProfile? profile;
-    try {
-      final repo = ref.read(userProfileRepositoryProvider);
-      profile = await repo.getProfile(session.user.id);
-    } on Object {
-      // profil yoksa null → role selection
-    }
-
+    final snapshot = await ref.read(appAccessSnapshotProvider.future);
     if (!ref.mounted) return;
 
-    var hasPendingRoleRequest = false;
-    if (profile == null) {
-      try {
-        final roleRequestRepo = ref.read(roleRequestRepositoryProvider);
-        hasPendingRoleRequest =
-            await roleRequestRepo.getMyPendingRequest(session.user.id) != null;
-      } on Object {
-        hasPendingRoleRequest = false;
-      }
-    }
-
     final targetPath = AppAccessGuard.landingPathForUserState(
-      profile: profile,
-      hasPendingRoleRequest: hasPendingRoleRequest,
+      profile: snapshot.profile,
+      hasPendingRoleRequest: snapshot.hasPendingRoleRequest,
     );
     await ref.read(appRouterProvider).replacePath(targetPath);
   }

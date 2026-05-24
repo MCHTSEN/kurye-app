@@ -89,10 +89,7 @@ class _ResponsiveScaffoldState extends State<ResponsiveScaffold> {
     }
     try {
       unawaited(
-        context.navigateToPath(
-          target.path,
-          includePrefixMatches: true,
-        ),
+        context.navigateToPath(target.path),
       );
     } on Object {
       unawaited(Navigator.of(context).pushReplacementNamed(target.path));

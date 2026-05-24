@@ -431,7 +431,6 @@ void main() {
         cikisId: 'ugrama-1',
         ugramaId: 'ugrama-2',
         durum: SiparisDurum.tamamlandi,
-        faturalandirildi: false,
         createdAt: DateTime.now().subtract(const Duration(days: 1)),
       );
       fakeSiparisRepo.store['s2'] = Siparis(

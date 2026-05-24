@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../auth/auth_providers.dart';
+import 'app_access_snapshot.dart';
 import 'app_navigation_state.dart';
 import 'route_reevaluation_notifier.dart';
 
@@ -18,6 +19,7 @@ RouteReevaluationNotifier appRouteReevaluationNotifier(Ref ref) {
   final notifier = RouteReevaluationNotifier(
     authRepository: ref.watch(authRepositoryProvider),
     navigationState: ref.watch(appNavigationStateProvider),
+    onAuthChanged: () => invalidateAppAccessCachesForProvider(ref),
   );
   ref.onDispose(notifier.dispose);
   return notifier;

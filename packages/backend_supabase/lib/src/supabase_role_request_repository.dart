@@ -2,7 +2,8 @@ import 'package:backend_core/backend_core.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseRoleRequestRepository implements RoleRequestRepository {
-  SupabaseRoleRequestRepository({required SupabaseClient client}) : _client = client;
+  SupabaseRoleRequestRepository({required SupabaseClient client})
+    : _client = client;
 
   final SupabaseClient _client;
   static final _log = AppLogger('SupabaseRoleRequestRepo', tag: LogTag.auth);
@@ -43,7 +44,7 @@ class SupabaseRoleRequestRepository implements RoleRequestRepository {
       'for ${request.userId}',
     );
     try {
-      final result = await _client.rpc(
+      final result = await _client.rpc<Map<String, dynamic>>(
         'create_role_request_with_provisioning',
         params: {
           'p_display_name': request.displayName,
@@ -55,9 +56,8 @@ class SupabaseRoleRequestRepository implements RoleRequestRepository {
         },
       );
 
-      final data = result as Map<String, dynamic>;
       _log.i('Role request + provisioning created for ${request.userId}');
-      return RoleRequest.fromJson(data);
+      return RoleRequest.fromJson(result);
     } on PostgrestException catch (e, st) {
       if (_isMissingProvisioningFunction(e)) {
         _log.w(
@@ -75,7 +75,8 @@ class SupabaseRoleRequestRepository implements RoleRequestRepository {
   }
 
   bool _isMissingProvisioningFunction(PostgrestException e) {
-    return e.code == 'PGRST202' && e.message.contains('create_role_request_with_provisioning');
+    return e.code == 'PGRST202' &&
+        e.message.contains('create_role_request_with_provisioning');
   }
 
   Future<RoleRequest> _createRequestWithoutRpc(RoleRequest request) async {
@@ -139,7 +140,11 @@ class SupabaseRoleRequestRepository implements RoleRequestRepository {
     );
 
     // Talebi getir
-    final requestData = await _client.from('role_requests').select().eq('id', requestId).single();
+    final requestData = await _client
+        .from('role_requests')
+        .select()
+        .eq('id', requestId)
+        .single();
 
     final request = RoleRequest.fromJson(requestData);
 
@@ -158,7 +163,8 @@ class SupabaseRoleRequestRepository implements RoleRequestRepository {
     await _client.from('app_users').upsert(upsertData);
 
     // Müşteri personeli ise musteri_personelleri tablosuna da ekle
-    if (request.requestedRole == UserRole.musteriPersonel && resolvedMusteriId != null) {
+    if (request.requestedRole == UserRole.musteriPersonel &&
+        resolvedMusteriId != null) {
       await _client.from('musteri_personelleri').insert({
         'musteri_id': resolvedMusteriId,
         'user_id': request.userId,
@@ -169,8 +175,12 @@ class SupabaseRoleRequestRepository implements RoleRequestRepository {
       _log.i('musteri_personelleri record created for ${request.userId}');
     }
 
-    if (request.accountType == RoleRequestAccountType.newCustomer && resolvedMusteriId != null) {
-      await _client.from('musteriler').update({'is_active': true}).eq('id', resolvedMusteriId);
+    if (request.accountType == RoleRequestAccountType.newCustomer &&
+        resolvedMusteriId != null) {
+      await _client
+          .from('musteriler')
+          .update({'is_active': true})
+          .eq('id', resolvedMusteriId);
       _log.i('Pending musteri activated for ${request.userId}');
     }
 

@@ -9,8 +9,10 @@ class RouteReevaluationNotifier extends ChangeNotifier {
   RouteReevaluationNotifier({
     required AuthRepository authRepository,
     required AppNavigationState navigationState,
+    required VoidCallback onAuthChanged,
   }) : _authRepository = authRepository,
-       _navigationState = navigationState {
+       _navigationState = navigationState,
+       _onAuthChanged = onAuthChanged {
     _navigationState.addListener(_handleNavigationStateUpdated);
     _subscription = _authRepository.authStateChanges().listen(
       _handleAuthChanged,
@@ -19,6 +21,7 @@ class RouteReevaluationNotifier extends ChangeNotifier {
 
   final AuthRepository _authRepository;
   final AppNavigationState _navigationState;
+  final VoidCallback _onAuthChanged;
   late final StreamSubscription<AuthSession?> _subscription;
 
   static final _log = AppLogger(
@@ -32,6 +35,7 @@ class RouteReevaluationNotifier extends ChangeNotifier {
   }
 
   void _handleAuthChanged(AuthSession? session) {
+    _onAuthChanged();
     if (session != null) {
       _log.i('Auth state changed: user=${session.user.id}');
       _navigationState.clearLoginRequirement();

@@ -103,4 +103,4 @@ final class AppRouteReevaluationNotifierProvider
 }
 
 String _$appRouteReevaluationNotifierHash() =>
-    r'7ffb431315caed873285548813809275686caee3';
+    r'b25b9732eca393ad231db1602258c1544f8f04f4';

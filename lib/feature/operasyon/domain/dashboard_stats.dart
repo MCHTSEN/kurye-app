@@ -1,8 +1,10 @@
 import 'package:backend_core/backend_core.dart';
+import 'package:flutter/foundation.dart';
 
 /// Per-courier job statistics for the dashboard.
 ///
 /// Immutable value object — all fields are final.
+@immutable
 class CourierStat {
   const CourierStat({
     required this.kuryeId,
@@ -43,6 +45,7 @@ class CourierStat {
 ///
 /// All computation is in the [DashboardStats.compute] factory — no side
 /// effects, fully testable with seeded data. Immutable value object.
+@immutable
 class DashboardStats {
   const DashboardStats({
     required this.revenue3mo,
@@ -124,8 +127,7 @@ class DashboardStats {
         monthlyJobs: monthlyJobMap[kid] ?? 0,
         dailyJobs: dailyJobMap[kid] ?? 0,
       );
-    }).toList()
-      ..sort((a, b) => b.monthlyJobs.compareTo(a.monthlyJobs));
+    }).toList()..sort((a, b) => b.monthlyJobs.compareTo(a.monthlyJobs));
 
     // Active couriers — those with isOnline == true.
     final onlineCouriers = couriers.where((k) => k.isOnline).toList();
@@ -176,12 +178,12 @@ class DashboardStats {
 
   @override
   int get hashCode => Object.hash(
-        revenue3mo,
-        revenue1mo,
-        revenue1wk,
-        dailyAvg,
-        activeCourierCount,
-      );
+    revenue3mo,
+    revenue1mo,
+    revenue1wk,
+    dailyAvg,
+    activeCourierCount,
+  );
 
   @override
   String toString() =>

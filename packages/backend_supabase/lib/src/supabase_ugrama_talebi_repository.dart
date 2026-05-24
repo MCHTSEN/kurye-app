@@ -3,11 +3,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseUgramaTalebiRepository implements UgramaTalebiRepository {
   SupabaseUgramaTalebiRepository({required SupabaseClient client})
-      : _client = client;
+    : _client = client;
 
   final SupabaseClient _client;
-  static final _log =
-      AppLogger('SupabaseUgramaTalebiRepo', tag: LogTag.data);
+  static final _log = AppLogger('SupabaseUgramaTalebiRepo', tag: LogTag.data);
 
   static const _table = 'ugrama_talepleri';
 
@@ -69,7 +68,7 @@ class SupabaseUgramaTalebiRepository implements UgramaTalebiRepository {
 
     // Single RPC call wraps ugrama insert + bridge insert + talep update
     // in a database transaction — no partial state on failure.
-    final result = await _client.rpc(
+    final result = await _client.rpc<Map<String, dynamic>>(
       'approve_ugrama_talebi',
       params: {
         'p_talep_id': talepId,
@@ -77,9 +76,10 @@ class SupabaseUgramaTalebiRepository implements UgramaTalebiRepository {
       },
     );
 
-    final data = result as Map<String, dynamic>;
-    _log.i('approved: talepId=$talepId → ugramaId=${data['onaylanan_ugrama_id']}');
-    return UgramaTalebi.fromJson(data);
+    _log.i(
+      'approved: talepId=$talepId → ugramaId=${result['onaylanan_ugrama_id']}',
+    );
+    return UgramaTalebi.fromJson(result);
   }
 
   @override

@@ -13,13 +13,12 @@ abstract final class AppTheme {
     FontWeight fontWeight = FontWeight.w400,
     double letterSpacing = 0,
     Color? color,
-  }) =>
-      TextStyle(
-        fontSize: fontSize,
-        fontWeight: fontWeight,
-        letterSpacing: letterSpacing,
-        color: color,
-      );
+  }) => TextStyle(
+    fontSize: fontSize,
+    fontWeight: fontWeight,
+    letterSpacing: letterSpacing,
+    color: color,
+  );
 
   static ThemeData _theme(Brightness brightness) {
     final isLight = brightness == Brightness.light;
@@ -31,40 +30,76 @@ abstract final class AppTheme {
       primary: AppColors.primary,
       onPrimary: Colors.white,
       surfaceTint: Colors.transparent,
-      surfaceVariant: isLight ? const Color(0xFFF1F5F9) : const Color(0xFF1E293B),
+      // Existing golden baselines rely on this legacy color slot.
+      // ignore: deprecated_member_use
+      surfaceVariant: isLight
+          ? const Color(0xFFF1F5F9)
+          : const Color(0xFF1E293B),
     );
 
     final textColor = isLight ? AppColors.textPrimary : Colors.white;
     final textColorSoft = isLight ? AppColors.textPrimary : Colors.white70;
 
     final textTheme = TextTheme(
-      headlineLarge: _ts(fontSize: 32, fontWeight: FontWeight.w700, letterSpacing: -0.5, color: textColor),
-      headlineMedium: _ts(fontSize: 28, fontWeight: FontWeight.w700, letterSpacing: -0.5, color: textColor),
-      headlineSmall: _ts(fontSize: 24, fontWeight: FontWeight.w600, color: textColor),
-      titleLarge: _ts(fontSize: 20, fontWeight: FontWeight.w600, color: textColor),
-      titleMedium: _ts(fontSize: 16, fontWeight: FontWeight.w600, color: textColor),
+      headlineLarge: _ts(
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.5,
+        color: textColor,
+      ),
+      headlineMedium: _ts(
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.5,
+        color: textColor,
+      ),
+      headlineSmall: _ts(
+        fontSize: 24,
+        fontWeight: FontWeight.w600,
+        color: textColor,
+      ),
+      titleLarge: _ts(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: textColor,
+      ),
+      titleMedium: _ts(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: textColor,
+      ),
       titleSmall: _ts(fontWeight: FontWeight.w600, color: textColor),
       bodyLarge: _ts(fontSize: 16, color: textColorSoft),
       bodyMedium: _ts(color: textColorSoft),
       bodySmall: _ts(fontSize: 12, color: AppColors.textMuted),
       labelLarge: _ts(fontWeight: FontWeight.w600, letterSpacing: 0.1),
       labelMedium: _ts(fontSize: 12, fontWeight: FontWeight.w500),
-      labelSmall: _ts(fontSize: 11, fontWeight: FontWeight.w500, letterSpacing: 0.5, color: AppColors.textMuted),
+      labelSmall: _ts(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.5,
+        color: AppColors.textMuted,
+      ),
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       textTheme: textTheme,
-      scaffoldBackgroundColor:
-          isLight ? AppColors.surfaceHigh : colorScheme.surface,
+      scaffoldBackgroundColor: isLight
+          ? AppColors.surfaceHigh
+          : colorScheme.surface,
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
         scrolledUnderElevation: 0.5,
         backgroundColor: isLight ? Colors.white : colorScheme.surface,
         foregroundColor: isLight ? AppColors.textPrimary : Colors.white,
-        titleTextStyle: _ts(fontSize: 18, fontWeight: FontWeight.w600, color: textColor),
+        titleTextStyle: _ts(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
         surfaceTintColor: Colors.transparent,
         shadowColor: isLight ? Colors.black12 : Colors.black26,
       ),
@@ -172,10 +207,20 @@ abstract final class AppTheme {
         unselectedItemColor: AppColors.textMuted,
         backgroundColor: isLight ? Colors.white : colorScheme.surface,
         elevation: 0,
-        selectedLabelStyle: _ts(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+        selectedLabelStyle: _ts(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primary,
+        ),
         unselectedLabelStyle: _ts(fontSize: 12, color: AppColors.textMuted),
-        selectedIconTheme: const IconThemeData(color: AppColors.primary, size: 24),
-        unselectedIconTheme: const IconThemeData(color: AppColors.textMuted, size: 24),
+        selectedIconTheme: const IconThemeData(
+          color: AppColors.primary,
+          size: 24,
+        ),
+        unselectedIconTheme: const IconThemeData(
+          color: AppColors.textMuted,
+          size: 24,
+        ),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: isLight ? Colors.white : colorScheme.surface,
@@ -189,7 +234,11 @@ abstract final class AppTheme {
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return _ts(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary);
+            return _ts(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            );
           }
           return _ts(fontSize: 12, color: AppColors.textMuted);
         }),
@@ -199,7 +248,11 @@ abstract final class AppTheme {
         selectedIconTheme: const IconThemeData(color: AppColors.primary),
         unselectedIconTheme: const IconThemeData(color: AppColors.textMuted),
         indicatorColor: AppColors.primary.withValues(alpha: 0.1),
-        selectedLabelTextStyle: _ts(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+        selectedLabelTextStyle: _ts(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primary,
+        ),
         unselectedLabelTextStyle: _ts(fontSize: 12, color: AppColors.textMuted),
       ),
       dividerTheme: DividerThemeData(

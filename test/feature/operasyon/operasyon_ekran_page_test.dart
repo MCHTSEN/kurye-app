@@ -569,7 +569,7 @@ void main() {
           cikisId: 'ugrama-1',
           ugramaId: 'ugrama-2',
           durum: SiparisDurum.tamamlandi,
-          ucret: 60.0,
+          ucret: 60,
           createdAt: DateTime.now().subtract(const Duration(days: 1)),
         );
         // Manual-required order — no historical match.
@@ -641,7 +641,7 @@ void main() {
           cikisId: 'ugrama-1',
           ugramaId: 'ugrama-2',
           durum: SiparisDurum.tamamlandi,
-          ucret: 40.0,
+          ucret: 40,
           createdAt: DateTime.now().subtract(const Duration(days: 1)),
         );
         fakeSiparisRepo.store['skip-2'] = const Siparis(
@@ -677,7 +677,10 @@ void main() {
         expect(fakeSiparisRepo.store['skip-1']!.durum, SiparisDurum.tamamlandi);
         expect(fakeSiparisRepo.store['skip-1']!.ucret, 40.0);
         // Manual one stays in devamEdiyor.
-        expect(fakeSiparisRepo.store['skip-2']!.durum, SiparisDurum.devamEdiyor);
+        expect(
+          fakeSiparisRepo.store['skip-2']!.durum,
+          SiparisDurum.devamEdiyor,
+        );
       },
     );
 

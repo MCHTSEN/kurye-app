@@ -8,6 +8,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/project_padding.dart';
 import '../../../product/musteri/musteri_providers.dart';
 import '../../../product/navigation/account_delete_helper.dart';
+import '../../../product/navigation/app_access_snapshot.dart';
 import '../../../product/role_request/role_request_providers.dart';
 import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
@@ -123,11 +124,7 @@ class HomePage extends ConsumerWidget {
                         ],
                         const SizedBox(height: AppSpacing.lg),
                         OutlinedButton.icon(
-                          onPressed: () {
-                            ref
-                              ..invalidate(currentUserProfileProvider)
-                              ..invalidate(myRoleRequestProvider);
-                          },
+                          onPressed: () => invalidateAppAccessCaches(ref),
                           icon: const Icon(Icons.refresh),
                           label: const Text('Durumu Yenile'),
                         ),

@@ -30,7 +30,7 @@ class AppSectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget card = ShadCard(
-      radius: BorderRadius.all(Radius.circular(24)),
+      radius: const BorderRadius.all(Radius.circular(24)),
       title: LayoutBuilder(
         builder: (context, constraints) {
           final titleLabel = Text(
@@ -50,14 +50,24 @@ class AppSectionCard extends StatelessWidget {
           ];
 
           if (trailing == null) {
-            return Row(children: leading);
+            return Row(
+              children: [
+                ...leading,
+                Expanded(child: titleLabel),
+              ],
+            );
           }
 
           if (constraints.maxWidth < 320) {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(children: leading),
+                Row(
+                  children: [
+                    ...leading,
+                    Expanded(child: titleLabel),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 trailing!,
               ],
@@ -67,6 +77,7 @@ class AppSectionCard extends StatelessWidget {
           return Row(
             children: [
               ...leading,
+              Expanded(child: titleLabel),
               const SizedBox(width: 12),
               Flexible(child: trailing!),
             ],

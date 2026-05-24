@@ -11,6 +11,32 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-05-23
+- Scope: Flutter Web navigasyon performansı — guard cache + wasm denemesi
+- Summary:
+  - `AppAccessGuard` her route geçişinde onboarding/session/profile/pending role request sorgularını ayrı ayrı çalıştırıyordu. `appAccessSnapshotProvider` eklendi; guard artık tek cache'li snapshot okuyor ve onboarding/session/profile/pending/toplam süreleri logluyor.
+  - Auth state değişiminde snapshot/current profile/my role request cache invalidation merkezi hale getirildi. Login/logout/delete-account, rol talebi yenileme ve home refresh aksiyonları aynı helper'ı kullanıyor.
+  - Desktop navigation `includePrefixMatches: false` ile daha hedefli route geçişi yapıyor.
+  - Wasm/skwasm build denendi ancak mevcut web dependency seti dart2wasm uyumsuz olduğu için prod workflow'a alınmadı; `DEPLOY_WEB.md` içine blocker notu eklendi.
+- Files:
+  - `lib/product/navigation/app_access_snapshot.dart` [NEW]
+  - `lib/app/router/guards/app_access_guard.dart`
+  - `lib/product/navigation/navigation_providers.dart`
+  - `lib/product/navigation/route_reevaluation_notifier.dart`
+  - `lib/feature/auth/application/auth_controller.dart`
+  - `lib/feature/home/presentation/home_page.dart`
+  - `lib/feature/role_selection/presentation/role_selection_page.dart`
+  - `lib/product/widgets/responsive_scaffold.dart`
+  - `DEPLOY_WEB.md`
+  - `test/app/router/guard_role_routing_test.dart`
+- Validation:
+  - `flutter analyze` → PASS (`No issues found!`)
+  - `flutter test test/app/router/guard_role_routing_test.dart` → PASS
+  - `flutter test --update-goldens test/feature/example_feed/example_feed_page_golden_test.dart` → PASS; `AppSectionCard` title sözleşmesiyle golden güncellendi
+  - `flutter build web --release --base-href=/ --target=lib/main_supabase.dart ...` → PASS; Flutter wasm dry-run uyumluluk uyarılarını ayrıca raporladı
+  - `flutter build web --release --wasm --base-href=/ --target=lib/main_supabase.dart ...` → BLOCKED: `flutter_secure_storage_web 1.2.1` `dart:html`/`dart:js_util` kullanıyor; wasm uyumlu adapter'a geçmeden prod workflow'a eklenmedi
+  - `flutter test` → FAIL: `test/feature/operasyon/operasyon_gecmis_page_test.dart` `(f) desktop workbench...` testinde eski `Seçili Sipariş` metni bekleniyor; mevcut ekranda bu metin yok ve değişiklik navigasyon cache kapsamı dışında
+
 ### 2026-05-21
 - Scope: FCM push notification + delivery tracking (arka plan bildirim + kurye "gördü" sinyali)
 - Summary:

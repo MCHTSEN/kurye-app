@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:backend_core/backend_core.dart';
@@ -30,21 +31,25 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   @override
   void initState() {
     super.initState();
-    _initializeVideo();
+    unawaited(_initializeVideo());
   }
 
   Future<void> _initializeVideo() async {
     _videoController = VideoPlayerController.asset('assets/sounds/kurye.mp4');
     await _videoController!.initialize();
-    _videoController!.setLooping(true);
-    _videoController!.setVolume(0);
-    _videoController!.play();
+    await _videoController!.setLooping(true);
+    await _videoController!.setVolume(0);
+    await _videoController!.play();
+    if (!mounted) return;
     setState(() {});
   }
 
   @override
   void dispose() {
-    _videoController?.dispose();
+    final videoController = _videoController;
+    if (videoController != null) {
+      unawaited(videoController.dispose());
+    }
     _emailController.dispose();
     _passwordController.dispose();
     _nameController.dispose();
@@ -68,7 +73,9 @@ class _AuthPageState extends ConsumerState<AuthPage> {
         fit: StackFit.expand,
         children: [
           AnimatedOpacity(
-            opacity: (_videoController != null && _videoController!.value.isInitialized)
+            opacity:
+                (_videoController != null &&
+                    _videoController!.value.isInitialized)
                 ? 1.0
                 : 0.0,
             duration: const Duration(milliseconds: 500),
@@ -118,158 +125,195 @@ class _AuthPageState extends ConsumerState<AuthPage> {
                         ),
                       ),
                       child: ClipRRect(
-                        borderRadius: const BorderRadius.all(Radius.circular(24)),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(24),
+                        ),
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                           child: ShadCard(
-                            backgroundColor: theme.colorScheme.background.withValues(alpha: 0.95),
-                          title: Text(
-                            _isRegisterMode ? l10n.authRegister : l10n.authTitle,
-                            style: theme.textTheme.h3.copyWith(fontWeight: FontWeight.w600),
-                            textAlign: TextAlign.center,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 24),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // Removed redundant title since it's already in ShadCard
-                                // Register: name field
-                                if (_isRegisterMode) ...[
-                                  Text(l10n.authName, style: theme.textTheme.small),
+                            backgroundColor: theme.colorScheme.background
+                                .withValues(alpha: 0.95),
+                            title: Text(
+                              _isRegisterMode
+                                  ? l10n.authRegister
+                                  : l10n.authTitle,
+                              style: theme.textTheme.h3.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 24),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  // Removed redundant title since it's already in ShadCard
+                                  // Register: name field
+                                  if (_isRegisterMode) ...[
+                                    Text(
+                                      l10n.authName,
+                                      style: theme.textTheme.small,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    ShadInput(
+                                      controller: _nameController,
+                                      placeholder: Text(l10n.authName),
+                                      enabled: !isLoading,
+                                    ),
+                                    const SizedBox(height: AppSpacing.md),
+                                  ],
+
+                                  // Email
+                                  Text(
+                                    l10n.authEmail,
+                                    style: theme.textTheme.small,
+                                  ),
                                   const SizedBox(height: 6),
                                   ShadInput(
-                                    controller: _nameController,
-                                    placeholder: Text(l10n.authName),
+                                    controller: _emailController,
+                                    placeholder: Text(l10n.authEmail),
+                                    keyboardType: TextInputType.emailAddress,
                                     enabled: !isLoading,
+                                    leading: const Padding(
+                                      padding: EdgeInsets.only(right: 8),
+                                      child: Icon(LucideIcons.mail, size: 16),
+                                    ),
                                   ),
                                   const SizedBox(height: AppSpacing.md),
-                                ],
 
-                                // Email
-                                Text(l10n.authEmail, style: theme.textTheme.small),
-                                const SizedBox(height: 6),
-                                ShadInput(
-                                  controller: _emailController,
-                                  placeholder: Text(l10n.authEmail),
-                                  keyboardType: TextInputType.emailAddress,
-                                  enabled: !isLoading,
-                                  leading: const Padding(
-                                    padding: EdgeInsets.only(right: 8),
-                                    child: Icon(LucideIcons.mail, size: 16),
+                                  // Password
+                                  Text(
+                                    l10n.authPassword,
+                                    style: theme.textTheme.small,
                                   ),
-                                ),
-                                const SizedBox(height: AppSpacing.md),
-
-                                // Password
-                                Text(l10n.authPassword, style: theme.textTheme.small),
-                                const SizedBox(height: 6),
-                                ShadInput(
-                                  controller: _passwordController,
-                                  placeholder: Text(l10n.authPassword),
-                                  obscureText: !_showPassword,
-                                  enabled: !isLoading,
-                                  leading: const Padding(
-                                    padding: EdgeInsets.only(right: 8),
-                                    child: Icon(LucideIcons.lock, size: 16),
-                                  ),
-                                  trailing: ShadButton.ghost(
-                                    width: 24,
-                                    height: 24,
-                                    padding: EdgeInsets.zero,
-                                    onPressed: () {
-                                      setState(
-                                        () => _showPassword = !_showPassword,
-                                      );
-                                    },
-                                    leading: Icon(
-                                      _showPassword ? LucideIcons.eyeOff : LucideIcons.eye,
-                                      size: 16,
+                                  const SizedBox(height: 6),
+                                  ShadInput(
+                                    controller: _passwordController,
+                                    placeholder: Text(l10n.authPassword),
+                                    obscureText: !_showPassword,
+                                    enabled: !isLoading,
+                                    leading: const Padding(
+                                      padding: EdgeInsets.only(right: 8),
+                                      child: Icon(LucideIcons.lock, size: 16),
                                     ),
-                                  ),
-                                  onSubmitted: (_) async => _handleEmailSignIn(authController),
-                                ),
-
-                                // Error
-                                if (authError != null) ...[
-                                  const SizedBox(height: AppSpacing.md),
-                                  _buildErrorBanner(authError, theme),
-                                ],
-
-                                const SizedBox(height: AppSpacing.lg),
-
-                                // Submit
-                                ShadButton(
-                                  enabled: !isLoading,
-                                  onPressed: isLoading
-                                      ? null
-                                      : () => _handleEmailSignIn(authController),
-                                  leading: isLoading
-                                      ? const SizedBox.square(
-                                          dimension: 16,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : null,
-                                  size: ShadButtonSize.lg,
-                                  child: Text(
-                                    _isRegisterMode ? l10n.authRegister : l10n.authSignInWithEmail,
-                                  ),
-                                ),
-
-                                const SizedBox(height: AppSpacing.md),
-
-                                // Login/Register toggle
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      _isRegisterMode
-                                          ? l10n.authAlreadyHaveAccount
-                                          : l10n.authDontHaveAccount,
-                                      style: theme.textTheme.small.copyWith(
-                                        color: theme.colorScheme.mutedForeground,
+                                    trailing: ShadButton.ghost(
+                                      width: 24,
+                                      height: 24,
+                                      padding: EdgeInsets.zero,
+                                      onPressed: () {
+                                        setState(
+                                          () => _showPassword = !_showPassword,
+                                        );
+                                      },
+                                      leading: Icon(
+                                        _showPassword
+                                            ? LucideIcons.eyeOff
+                                            : LucideIcons.eye,
+                                        size: 16,
                                       ),
                                     ),
-                                    ShadButton.link(
-                                      onPressed: isLoading
-                                          ? null
-                                          : () => setState(() => _isRegisterMode = !_isRegisterMode),
-                                      size: ShadButtonSize.sm,
-                                      child: Text(
-                                        _isRegisterMode ? l10n.authSignInLink : l10n.authRegisterLink,
-                                      ),
-                                    ),
+                                    onSubmitted: (_) async =>
+                                        _handleEmailSignIn(authController),
+                                  ),
+
+                                  // Error
+                                  if (authError != null) ...[
+                                    const SizedBox(height: AppSpacing.md),
+                                    _buildErrorBanner(authError, theme),
                                   ],
-                                ),
-                              ],
+
+                                  const SizedBox(height: AppSpacing.lg),
+
+                                  // Submit
+                                  ShadButton(
+                                    enabled: !isLoading,
+                                    onPressed: isLoading
+                                        ? null
+                                        : () => _handleEmailSignIn(
+                                            authController,
+                                          ),
+                                    leading: isLoading
+                                        ? const SizedBox.square(
+                                            dimension: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : null,
+                                    size: ShadButtonSize.lg,
+                                    child: Text(
+                                      _isRegisterMode
+                                          ? l10n.authRegister
+                                          : l10n.authSignInWithEmail,
+                                    ),
+                                  ),
+
+                                  const SizedBox(height: AppSpacing.md),
+
+                                  // Login/Register toggle
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        _isRegisterMode
+                                            ? l10n.authAlreadyHaveAccount
+                                            : l10n.authDontHaveAccount,
+                                        style: theme.textTheme.small.copyWith(
+                                          color:
+                                              theme.colorScheme.mutedForeground,
+                                        ),
+                                      ),
+                                      ShadButton.link(
+                                        onPressed: isLoading
+                                            ? null
+                                            : () => setState(
+                                                () => _isRegisterMode =
+                                                    !_isRegisterMode,
+                                              ),
+                                        size: ShadButtonSize.sm,
+                                        child: Text(
+                                          _isRegisterMode
+                                              ? l10n.authSignInLink
+                                              : l10n.authRegisterLink,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
                     if (kDebugMode) ...[
                       const SizedBox(height: AppSpacing.xl),
                       ClipRRect(
-                        borderRadius: const BorderRadius.all(Radius.circular(16)),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(16),
+                        ),
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                           child: ShadCard(
-                            backgroundColor: theme.colorScheme.background.withValues(alpha: 0.85),
+                            backgroundColor: theme.colorScheme.background
+                                .withValues(alpha: 0.85),
                             title: Text(
                               'Hızlı Giriş (Kısayollar)',
-                              style: theme.textTheme.small.copyWith(fontWeight: FontWeight.w600),
+                              style: theme.textTheme.small.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                             child: Padding(
-                              padding: const EdgeInsets.only(top: AppSpacing.md),
+                              padding: const EdgeInsets.only(
+                                top: AppSpacing.md,
+                              ),
                               child: _QuickLoginButtons(
                                 emailController: _emailController,
                                 passwordController: _passwordController,
-                                onLogin: () => _handleEmailSignIn(authController),
+                                onLogin: () =>
+                                    _handleEmailSignIn(authController),
                                 isLoading: isLoading,
                               ),
                             ),
@@ -290,10 +334,10 @@ class _AuthPageState extends ConsumerState<AuthPage> {
   Widget _buildErrorBanner(Object error, ShadThemeData theme) {
     final isConfirmation = error is EmailConfirmationRequiredException;
     if (isConfirmation) {
-      return ShadAlert(
-        icon: const Icon(LucideIcons.mailCheck),
-        title: const Text('Kayıt Başarılı!'),
-        description: const Text(
+      return const ShadAlert(
+        icon: Icon(LucideIcons.mailCheck),
+        title: Text('Kayıt Başarılı!'),
+        description: Text(
           'E-posta adresinize onay bağlantısı gönderildi. '
           'Lütfen gelen kutunuzu kontrol edip hesabınızı onaylayın.',
         ),
@@ -329,7 +373,8 @@ class _AuthPageState extends ConsumerState<AuthPage> {
 
   String _friendlyError(Object error) {
     final msg = error.toString().toLowerCase();
-    if (msg.contains('invalid login credentials') || msg.contains('invalid_credentials')) {
+    if (msg.contains('invalid login credentials') ||
+        msg.contains('invalid_credentials')) {
       return 'E-posta veya şifre hatalı.';
     }
     if (msg.contains('email not confirmed')) {
@@ -338,13 +383,16 @@ class _AuthPageState extends ConsumerState<AuthPage> {
     if (msg.contains('user not found')) {
       return 'Bu e-posta ile kayıtlı kullanıcı bulunamadı.';
     }
-    if (msg.contains('email already registered') || msg.contains('user already registered')) {
+    if (msg.contains('email already registered') ||
+        msg.contains('user already registered')) {
       return 'Bu e-posta adresi zaten kayıtlı. Giriş yapmayı deneyin.';
     }
     if (msg.contains('too many requests') || msg.contains('rate limit')) {
       return 'Çok fazla deneme yaptınız. Lütfen biraz bekleyin.';
     }
-    if (msg.contains('network') || msg.contains('socket') || msg.contains('connection')) {
+    if (msg.contains('network') ||
+        msg.contains('socket') ||
+        msg.contains('connection')) {
       return 'Bağlantı hatası. İnternet bağlantınızı kontrol edin.';
     }
     if (msg.contains('weak password') || msg.contains('password')) {

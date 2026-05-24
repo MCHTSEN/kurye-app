@@ -9,8 +9,8 @@ import '../../../core/constants/project_padding.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../product/auth/auth_providers.dart';
 import '../../../product/musteri/musteri_providers.dart';
+import '../../../product/navigation/app_access_snapshot.dart';
 import '../../../product/role_request/role_request_providers.dart';
-import '../../../product/user_profile/user_profile_providers.dart';
 import '../../../product/widgets/app_primary_button.dart';
 import '../../../product/widgets/searchable_dropdown.dart';
 import '../../auth/application/auth_controller.dart';
@@ -153,7 +153,10 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
           ],
           const SizedBox(height: AppSpacing.xl),
           OutlinedButton.icon(
-            onPressed: () => ref.read(myRoleRequestProvider.notifier).refresh(),
+            onPressed: () async {
+              invalidateAppAccessCaches(ref);
+              await ref.read(myRoleRequestProvider.notifier).refresh();
+            },
             icon: const Icon(Icons.refresh),
             label: const Text('Durumu Kontrol Et'),
           ),
@@ -177,7 +180,7 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
           AppPrimaryButton(
             label: 'Devam Et',
             onPressed: () async {
-              ref.invalidate(currentUserProfileProvider);
+              invalidateAppAccessCaches(ref);
               await ref.read(myRoleRequestProvider.notifier).refresh();
             },
           ),
@@ -205,7 +208,7 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
             label: 'Tekrar Talep Oluştur',
             onPressed: () {
               // Son talebi temizle, form göster
-              ref.invalidate(myRoleRequestProvider);
+              invalidateAppAccessCaches(ref);
             },
           ),
         ],
@@ -375,9 +378,7 @@ class _RoleSelectionPageState extends ConsumerState<RoleSelectionPage> {
       );
 
       if (mounted) {
-        ref
-          ..invalidate(currentUserProfileProvider)
-          ..invalidate(myRoleRequestProvider);
+        invalidateAppAccessCaches(ref);
         await context.router.replacePath(CustomRoute.home.path);
       }
     } on Object catch (e) {
