@@ -160,6 +160,13 @@ class PushNotificationService {
   /// Logout öncesi çağrılır — bu cihazın push token'ını sil ve FCM kaydını boş.
   Future<void> shutdown() async {
     if (!_initialized) return;
+    // init() ile simetrik: web/desktop'ta Firebase hiç kurulmadı, dokunma.
+    // (dart2wasm'da firebase_core_web'in JS-interop cast'i _TypeError fırlatır
+    // ve aşağıdaki `on Exception` bunu yakalayamaz → uncaught crash.)
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      _initialized = false;
+      return;
+    }
     try {
       final token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
