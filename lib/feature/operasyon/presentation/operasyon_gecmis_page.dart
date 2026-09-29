@@ -738,22 +738,25 @@ class _OperasyonGecmisPageState extends ConsumerState<OperasyonGecmisPage> {
                 : theme.dividerColor,
           ),
         ),
-        child: CheckboxListTile(
-          key: const Key('edit_faturalandirildi_checkbox'),
-          value: _editFaturalandirildi,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-          controlAffinity: ListTileControlAffinity.leading,
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          title: Text(
-            _editFaturalandirildi ? 'Faturalandırıldı' : 'Faturalandırılmadı',
-            style: const TextStyle(fontSize: 13),
-            overflow: TextOverflow.ellipsis,
+        child: Material(
+          type: MaterialType.transparency,
+          child: CheckboxListTile(
+            key: const Key('edit_faturalandirildi_checkbox'),
+            value: _editFaturalandirildi,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+            controlAffinity: ListTileControlAffinity.leading,
+            dense: true,
+            visualDensity: VisualDensity.compact,
+            title: Text(
+              _editFaturalandirildi ? 'Faturalandırıldı' : 'Faturalandırılmadı',
+              style: const TextStyle(fontSize: 13),
+              overflow: TextOverflow.ellipsis,
+            ),
+            onChanged: (value) {
+              if (value == null) return;
+              setState(() => _editFaturalandirildi = value);
+            },
           ),
-          onChanged: (value) {
-            if (value == null) return;
-            setState(() => _editFaturalandirildi = value);
-          },
         ),
       ),
     );

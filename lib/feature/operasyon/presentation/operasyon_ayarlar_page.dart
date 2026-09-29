@@ -173,23 +173,26 @@ class _SettingsSection extends ConsumerWidget {
       child: Column(
         children: [
           for (final item in items) ...[
-            ListTile(
-              leading: Icon(item.icon),
-              title: Text(item.title),
-              subtitle: Text(item.subtitle),
-              trailing: const Icon(Icons.chevron_right_rounded),
-              onTap: () {
-                unawaited(
-                  analytics.track(
-                    AppEvents.operasyonSettingsItemSelected(item.title),
-                  ),
-                );
-                unawaited(
-                  context.router.push(
-                    PageRouteInfo(item.route.routeName),
-                  ),
-                );
-              },
+            Material(
+              type: MaterialType.transparency,
+              child: ListTile(
+                leading: Icon(item.icon),
+                title: Text(item.title),
+                subtitle: Text(item.subtitle),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  unawaited(
+                    analytics.track(
+                      AppEvents.operasyonSettingsItemSelected(item.title),
+                    ),
+                  );
+                  unawaited(
+                    context.router.push(
+                      PageRouteInfo(item.route.routeName),
+                    ),
+                  );
+                },
+              ),
             ),
             if (item != items.last) const Divider(height: 1),
           ],

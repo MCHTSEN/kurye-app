@@ -260,3 +260,59 @@ A task is not complete until:
 8. Add logging with appropriate `LogTag`
 9. Create `DOC.md` + `SCREENS.md` for the feature
 10. Write tests: unit (repository), widget (page + robot), update smoke test
+
+## iOS Simulator — simslim
+
+Bu makinedeki iOS simülatörleri `simslim` ile slimlenmiş: simülatör başına ~170
+Apple arka plan daemon'u kapalı (Siri, Spotlight, iCloud/Mail/Safari sync, Photos
+analizi, widget/wallpaper). RAM ~5 GB yerine ~1.2 GB. Simülatörler **varsayılan
+olarak kapalı** tutulur — iş bitince kapat, gerektiğinde aç.
+
+```sh
+simslim list              # simülatörler, UDID'ler ve slim durumu
+simslim boot <udid>       # aç
+simslim shutdown <udid>   # kapat (Simulator penceresini 'x' ile kapatmak da shutdown eder)
+simslim measure <udid>    # gerçek RAM ayak izi (phys_footprint)
+```
+
+### Bu projenin ihtiyacı: `store,icloud`
+
+Kanıt: pubspec → `firebase_messaging`, `flutter_local_notifications`, `flutter_secure_storage` (Keychain). Not: `Runner.entitlements` boş, `aps-environment` YOK — gerçek cihazda push için o da gerekir
+
+Tam slim simülatörde bu servisler **kapalı**, yani push bildirimleri gelmez ve Keychain'e yazan secure storage kırılabilir. Bu akışları test etmeden
+önce gerekli kategorileri açık bırakarak slimle:
+
+```sh
+simslim on <udid> --except store,icloud   # geri kalan daemon'lar kapalı kalır
+simslim off <udid>                    # ya da tamamen stok (RAM ~5 GB)
+```
+
+Testten önce ön kontrol (bozuksa non-zero exit):
+
+```sh
+simslim doctor <udid> --requires push,keychain-sync
+```
+
+`simslim profiles` kategori listesini, `simslim doctor --list` kontrol
+edilebilir özellikleri gösterir.
+
+## UI Etkileşim Testi — Marionette MCP
+
+Flutter widget/etkileşim testleri (tap, scroll, text girişi, screenshot, widget ağacı inceleme) için **marionette_mcp** MCP server'ı kullanılır — Claude Code'a `marionette` adıyla user scope'ta bağlı (`claude mcp list` ile görülür), ayrı kurulum gerekmez.
+
+**Bu projede aktif değilse önce entegre et:**
+1. `flutter pub add marionette_flutter`
+2. `main.dart`'ta debug modda başlat:
+   ```dart
+   void main() {
+     if (kDebugMode) {
+       MarionetteBinding.ensureInitialized();
+     } else {
+       WidgetsFlutterBinding.ensureInitialized();
+     }
+     runApp(const MyApp());
+   }
+   ```
+3. `flutter run` ile debug modda başlat, konsoldaki VM service URI'sini (`ws://127.0.0.1:PORT/ws`) agent'a ver.
+
+Release build'de `kDebugMode` false olduğundan `MarionetteBinding` devreye girmez — production'ı etkilemez. `integration_test`/`flutter_driver` yerine, çalışan uygulamada AI-agent'ın gerçek zamanlı etkileşimli doğrulama yapması gerektiğinde tercih edilir.

@@ -11,6 +11,25 @@ Project audit log for major changes.
 
 ## Entries
 
+### 2026-09-23
+- Scope: Flutter 3.47.5 + Xcode 27 / iOS 27 uyumu
+- Summary:
+  - Android: Flutter 3.47 alt sınırları için Gradle wrapper 8.12 → 8.14.3, AGP 8.9.1 → 8.11.1, Kotlin 2.1.0 → 2.2.20. Flutter migrator `gradle.properties`'e `android.builtInKotlin=false` / `android.newDsl=false` ekledi (kalıyor). Build uyarısı: Flutter yakında AGP ≥ 9.0.1 ve Kotlin ≥ 2.3.20 isteyecek.
+  - Flutter 3.43+ `ListTile`'ın renkli `DecoratedBox` altında kalmasını debug assertion'la raporluyor (ink/arka plan görünmüyor). ShadCard içindeki ayarlar `ListTile`'ı ve fatura `CheckboxListTile`'ı şeffaf `Material` ile sarıldı.
+  - `example_feed_page.png` golden'ı 3.47 render farkı (%0.03, köşe/metin anti-aliasing) için yeniden üretildi.
+  - iOS: UIScene geçişi (AppDelegate `FlutterImplicitEngineDelegate` + Info.plist scene manifest) zaten yapılmıştı; Podfile tüm pod'ları 15.0'a çektiği için Xcode 27 deployment target hatası çıkmadı. Deep link/OAuth/telefon auth kullanılmıyor, `CFBundleURLTypes` yok → UIScene'de kaybolan `openURL` callback'i bu uygulamayı etkilemiyor.
+- Files:
+  - `android/gradle/wrapper/gradle-wrapper.properties`
+  - `android/settings.gradle.kts`
+  - `lib/feature/operasyon/presentation/operasyon_ayarlar_page.dart`
+  - `lib/feature/operasyon/presentation/operasyon_gecmis_page.dart`
+  - `test/feature/example_feed/goldens/example_feed_page.png`
+- Validation:
+  - `flutter analyze`: 0 error. `flutter test`: 189 geçen, 1 düşen — `operasyon_gecmis_page_test (f)` "Seçili Sipariş" metnini arıyor; metin e9ea3de'de lib'den kaldırılmış, önceden kırık (3.47 ile ilgisiz).
+  - `flutter build apk --debug` + cp_test emülatöründe açıldı (süreç ayakta, FATAL yok, bildirim izni diyaloğu).
+  - `flutter build ios --simulator --debug` + iPhone 17 / iOS 27 simülatöründe açıldı (crash raporu yok, bildirim izni diyaloğu).
+  - Doğrulanmadı: izin diyaloğunun arkasındaki ekranlar, login/Supabase akışı, push bildirimi, fiziksel cihaz, release build.
+
 ### 2026-05-23
 - Scope: Flutter Web navigasyon performansı — guard cache + wasm denemesi
 - Summary:
